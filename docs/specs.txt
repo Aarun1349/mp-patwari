@@ -1,0 +1,653 @@
+I have an idea of providing real time online assessment of mp patwari exam where user login and take one free test and purchase package kf 5 to 20 tests to test his preparation and get used to with online examination experience first build a plan and landing page
+
+You are an experienced Product engineering you have developed multiple large scale enterprises application your job is to build this scalable onlien assessment system to help students, use modern SOLID principles 
+
+Objectives 
+1.End to end user authentication flow via google or mobile otp
+2.User profile crud 
+3.User free mock test on dashboard 
+4.Exam instructions 
+5.User information page
+6.Disclaimer page
+7Real replication of exam page with all functionality of real Time exam with countdown timer
+8.admin panel to view users, upade users , add exams via excle upload and ai generated exams
+9. View after analysis or exams his report and week areas and comparison with other users who took free mock 
+10. Exam package 
+11 ecom flow from add to cart to billings to payment then email notifications 
+13 upade user dashboard after purchase only show numbers of wxams based on 📦 he purchased 
+14. Similar analysis of each exam he took 
+15.purchase history 
+16. Old practice history 
+17. Security features to prevent hacking of system 
+18. admin dashboards for full analysis of from user to exams to revenue 
+19. Real exam should open in new full screen window with only close icon no minimize or maximize button and we prevent user to use keyboard 
+As we are providing real time experience 
+
+Output:
+Full running exam platform to practice real time real experience based  where user practice with out lagging
+
+Show less
+
+Architected phased SaaS roadmap, flagged browser limitations, prioritized implementation sequence
+Architected phased SaaS roadmap, flagged browser limitations, prioritized implementation sequence
+This is a full platform, not a single build — let's sequence it right. Two things first:
+
+Reality check on #19: Browsers can't fully block OS-level keyboard shortcuts (Alt+Tab, Cmd+Tab, Win key) or remove the OS window chrome — that's outside any web app's sandbox, even native apps struggle with this on locked-down student devices. What we can do realistically:
+
+Fullscreen API (forces fullscreen, exits are detected and logged/flagged)
+Detect tab-switch / window-blur / visibility-change → auto-pause test + flag attempt + warn user
+Disable right-click, text-selection, copy-paste within the exam screen
+Block browser back button via history trapping
+Kick user out and lock the attempt if fullscreen is exited 2-3 times
+This gets you 90% of the deterrent effect real exam centers rely on, without promising something the browser physically can't do. Worth setting that expectation now rather than after you build.
+
+Build sequence (mapping your 19 objectives):
+
+Phase	Covers	Why this order
+0 – Foundation	DB schema, auth (Google + mobile OTP)	Everything depends on this
+1 – Core flow	Profile CRUD, dashboard, instructions/info/disclaimer pages, free test unlock logic	Gets a user end-to-end on the free test — your validation loop
+2 – Exam Engine	Real exam UI, countdown timer, fullscreen + anti-cheat, auto-submit	The actual product differentiator, needs to be rock solid before anything else
+3 – Analysis	Post-exam report, weak areas, comparison vs other free-test takers, purchase/practice history	Makes the free test convert to paid
+4 – Ecom	Packages, cart, billing, payment, email notifications, dashboard gating by package	Revenue layer
+5 – Admin	User view/update, Excel exam upload, AI-generated exams, revenue/analytics dashboard	Ops layer, needed before scale not before first user
+6 – Hardening	Rate limiting, session security, anti-scraping on question bank, audit logs	Ongoing, but do a pass before real money moves
+Given the size (this is 8-10 weeks of solo dev, not a one-shot artifact), I'd build this properly in a repo via Claude Code rather than chat files — same as your TOP setup (Fastify/Prisma/Postgres backend + web frontend).
+
+
+
+Frontend Landing page Code to Follow:
+One thinsg is missing  english-Hindi conversion
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP पटवारी टेस्ट सीरीज़ | ExamsExpress</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1A2A44;
+    --navy-deep:#101a2c;
+    --cream:#F0E9D8;
+    --paper:#FAF6EC;
+    --seal:#A3242A;
+    --gold:#C9A227;
+    --ink:#2B2B2B;
+    --line:rgba(26,42,68,0.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:'Noto Sans Devanagari','Noto Sans',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.serif{font-family:'Noto Serif Devanagari',serif;}
+  .mono{font-family:'Space Mono',monospace;letter-spacing:0.02em;}
+  a{color:inherit;text-decoration:none;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px;}
+  img,svg{display:block;max-width:100%;}
+
+  /* subtle ledger texture background */
+  .ledger-bg{
+    background-image:repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 27px,
+      var(--line) 27px,
+      var(--line) 28px
+    );
+  }
+
+  /* NAV */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:var(--navy);
+    border-bottom:3px solid var(--gold);
+  }
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:10px;
+    color:var(--cream);
+  }
+  .brand .seal-mark{
+    width:34px;height:34px;border-radius:50%;
+    border:2px solid var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--gold);font-family:'Noto Serif Devanagari',serif;font-weight:700;font-size:15px;
+    flex-shrink:0;
+  }
+  .brand-text{line-height:1.15;}
+  .brand-text .en{font-size:11px;letter-spacing:0.14em;opacity:0.7;text-transform:uppercase;font-family:'Space Mono',monospace;}
+  .brand-text .hi{font-family:'Noto Serif Devanagari',serif;font-size:18px;font-weight:600;}
+  .nav-cta{
+    background:var(--gold);color:var(--navy-deep);
+    padding:9px 20px;border-radius:2px;
+    font-weight:700;font-size:14px;
+    border:none;cursor:pointer;
+  }
+
+  /* HERO */
+  .hero{
+    background:var(--navy);
+    color:var(--cream);
+    padding:64px 0 80px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::after{
+    content:"";
+    position:absolute;inset:0;
+    background:
+      radial-gradient(circle at 85% 20%, rgba(201,162,39,0.10), transparent 45%),
+      radial-gradient(circle at 10% 90%, rgba(163,36,42,0.12), transparent 40%);
+    pointer-events:none;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:56px;
+    align-items:center;
+    position:relative;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:'Space Mono',monospace;
+    font-size:12px;letter-spacing:0.12em;
+    color:var(--gold);
+    border:1px solid rgba(201,162,39,0.4);
+    padding:6px 12px;border-radius:20px;
+    margin-bottom:22px;
+  }
+  .eyebrow::before{content:"●";font-size:8px;}
+  .hero h1{
+    font-size:clamp(30px,4.2vw,46px);
+    font-weight:700;
+    line-height:1.28;
+    margin-bottom:20px;
+  }
+  .hero h1 .accent{color:var(--gold);}
+  .hero p.lede{
+    font-size:17px;
+    color:rgba(240,233,216,0.82);
+    max-width:480px;
+    margin-bottom:32px;
+  }
+  .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .btn-primary{
+    background:var(--seal);color:#fff;
+    padding:15px 30px;border-radius:2px;
+    font-weight:700;font-size:15.5px;
+    border:none;cursor:pointer;
+    box-shadow:0 6px 0 #6f181c;
+    transition:transform 0.12s ease;
+  }
+  .btn-primary:hover{transform:translateY(-2px);}
+  .btn-ghost{
+    color:var(--cream);
+    font-size:14px;font-weight:600;
+    border-bottom:1px solid rgba(240,233,216,0.4);
+    padding-bottom:2px;
+  }
+  .hero-stats{
+    display:flex;gap:28px;margin-top:38px;
+    font-family:'Space Mono',monospace;
+  }
+  .hero-stats div{font-size:22px;font-weight:700;color:var(--gold);}
+  .hero-stats span{display:block;font-size:11.5px;color:rgba(240,233,216,0.65);font-family:'Noto Sans Devanagari',sans-serif;margin-top:3px;}
+
+  /* ADMIT CARD — signature element */
+  .admit-card{
+    background:var(--cream);
+    border:1.5px solid var(--navy);
+    border-radius:6px;
+    padding:0;
+    position:relative;
+    box-shadow:14px 14px 0 rgba(0,0,0,0.28);
+    transform:rotate(-1.5deg);
+  }
+  .admit-card::before{
+    content:"";
+    position:absolute;left:-9px;top:0;bottom:0;width:18px;
+    background-image:radial-gradient(circle, var(--navy) 4px, transparent 4.5px);
+    background-size:18px 20px;
+    background-position:center;
+  }
+  .ac-head{
+    background:var(--navy);color:var(--cream);
+    padding:14px 22px 14px 30px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-radius:5px 5px 0 0;
+  }
+  .ac-head .t1{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:0.1em;opacity:0.75;}
+  .ac-head .t2{font-family:'Noto Serif Devanagari',serif;font-size:16px;font-weight:600;}
+  .ac-body{padding:24px 22px 22px 30px;}
+  .ac-row{
+    display:flex;justify-content:space-between;
+    padding:9px 0;
+    border-bottom:1px dashed var(--line);
+    font-size:13.5px;
+  }
+  .ac-row:last-of-type{border-bottom:none;}
+  .ac-row .label{color:#5c5c5c;}
+  .ac-row .value{font-family:'Space Mono',monospace;font-weight:700;color:var(--navy);}
+  .ac-stamp{
+    position:absolute;right:20px;bottom:18px;
+    width:98px;height:98px;
+    border:2.5px solid var(--seal);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    transform:rotate(-18deg);
+    color:var(--seal);
+    text-align:center;
+    font-family:'Noto Serif Devanagari',serif;
+    font-weight:700;font-size:14px;
+    line-height:1.2;
+    opacity:0.88;
+  }
+  .ac-photo{
+    width:56px;height:68px;
+    background:repeating-linear-gradient(45deg, #dcd4bd, #dcd4bd 4px, #e8e2cf 4px, #e8e2cf 8px);
+    border:1px solid var(--navy);
+    border-radius:2px;
+    flex-shrink:0;
+  }
+  .ac-topline{display:flex;gap:14px;align-items:center;margin-bottom:14px;}
+  .ac-topline .who .name{font-weight:700;font-size:14.5px;color:var(--navy);}
+  .ac-topline .who .role{font-size:12px;color:#666;}
+
+  /* SECTIONS shared */
+  section{padding:72px 0;}
+  .section-head{max-width:640px;margin-bottom:44px;}
+  .kicker{
+    font-family:'Space Mono',monospace;
+    font-size:12px;letter-spacing:0.14em;
+    color:var(--seal);text-transform:uppercase;
+    margin-bottom:10px;display:block;
+  }
+  .section-head h2{font-size:clamp(24px,3vw,32px);color:var(--navy);}
+
+  /* HOW IT WORKS */
+  .steps{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  }
+  .step{
+    padding:32px 26px;background:var(--paper);
+    border-right:1px solid var(--line);
+    position:relative;
+  }
+  .step:last-child{border-right:none;}
+  .step .num{
+    font-family:'Space Mono',monospace;
+    font-size:12px;color:var(--seal);font-weight:700;
+    margin-bottom:14px;
+  }
+  .step h3{font-size:17px;color:var(--navy);margin-bottom:8px;}
+  .step p{font-size:14px;color:#555;}
+
+  /* EXAM PATTERN */
+  .pattern-wrap{
+    display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;
+  }
+  table.pattern{width:100%;border-collapse:collapse;font-size:14.5px;}
+  table.pattern th{
+    text-align:left;font-family:'Space Mono',monospace;font-size:11px;
+    letter-spacing:0.08em;text-transform:uppercase;color:#777;
+    padding:10px 0;border-bottom:2px solid var(--navy);
+  }
+  table.pattern td{padding:13px 0;border-bottom:1px solid var(--line);}
+  table.pattern tr td:last-child{text-align:right;font-family:'Space Mono',monospace;font-weight:700;color:var(--navy);}
+  .pattern-note{
+    background:var(--navy);color:var(--cream);
+    padding:26px 28px;border-radius:6px;
+  }
+  .pattern-note .big{font-family:'Space Mono',monospace;font-size:34px;color:var(--gold);font-weight:700;}
+  .pattern-note p{font-size:14px;color:rgba(240,233,216,0.8);margin-top:10px;}
+
+  /* WHY ONLINE PRACTICE */
+  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .why-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:6px;
+    padding:26px;
+  }
+  .why-card .icon{
+    width:40px;height:40px;border-radius:50%;
+    background:var(--navy);color:var(--gold);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Noto Serif Devanagari',serif;font-weight:700;
+    margin-bottom:16px;
+  }
+  .why-card h3{font-size:16px;color:var(--navy);margin-bottom:8px;}
+  .why-card p{font-size:13.5px;color:#555;}
+
+  /* PRICING */
+  .pricing-bg{background:var(--navy);color:var(--cream);}
+  .pricing-bg .kicker{color:var(--gold);}
+  .pricing-bg .section-head h2{color:var(--cream);}
+  .price-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;
+  }
+  .price-card{
+    background:rgba(240,233,216,0.05);
+    border:1px solid rgba(240,233,216,0.18);
+    border-radius:6px;padding:26px 22px;
+    display:flex;flex-direction:column;
+    position:relative;
+  }
+  .price-card.popular{
+    border-color:var(--gold);
+    background:rgba(201,162,39,0.08);
+  }
+  .price-card .tag{
+    position:absolute;top:-12px;left:22px;
+    background:var(--gold);color:var(--navy-deep);
+    font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;
+  }
+  .price-card .name{font-family:'Noto Serif Devanagari',serif;font-size:17px;margin-bottom:6px;}
+  .price-card .amount{font-family:'Space Mono',monospace;font-size:30px;font-weight:700;color:var(--gold);margin-bottom:4px;}
+  .price-card .per{font-size:12px;color:rgba(240,233,216,0.6);margin-bottom:18px;}
+  .price-card ul{list-style:none;font-size:13px;color:rgba(240,233,216,0.85);margin-bottom:22px;flex-grow:1;}
+  .price-card li{padding:5px 0;padding-left:16px;position:relative;}
+  .price-card li::before{content:"—";position:absolute;left:0;color:var(--gold);}
+  .price-card button{
+    background:transparent;border:1.5px solid var(--gold);color:var(--gold);
+    padding:11px;border-radius:2px;font-weight:700;font-size:13.5px;cursor:pointer;
+  }
+  .price-card.popular button{background:var(--gold);color:var(--navy-deep);}
+
+  /* FAQ */
+  .faq-item{
+    border-bottom:1px solid var(--line);
+    padding:20px 0;
+  }
+  .faq-item summary{
+    cursor:pointer;font-weight:600;color:var(--navy);font-size:15.5px;
+    list-style:none;display:flex;justify-content:space-between;align-items:center;
+  }
+  .faq-item summary::-webkit-details-marker{display:none;}
+  .faq-item summary::after{content:"+";font-family:'Space Mono',monospace;font-size:18px;color:var(--seal);}
+  .faq-item[open] summary::after{content:"−";}
+  .faq-item p{margin-top:12px;font-size:14px;color:#555;max-width:640px;}
+
+  /* FOOTER CTA */
+  .final-cta{
+    background:var(--seal);color:#fff;text-align:center;padding:64px 24px;
+  }
+  .final-cta h2{font-size:clamp(22px,3vw,30px);margin-bottom:10px;color:#fff;}
+  .final-cta p{opacity:0.9;margin-bottom:26px;}
+  .final-cta button{
+    background:#fff;color:var(--seal);
+    padding:15px 32px;border:none;border-radius:2px;
+    font-weight:700;font-size:15.5px;cursor:pointer;
+  }
+
+  footer{
+    background:var(--navy-deep);color:rgba(240,233,216,0.6);
+    padding:32px 24px;text-align:center;font-size:12.5px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width:860px){
+    .hero-grid{grid-template-columns:1fr;}
+    .admit-card{transform:none;margin-top:20px;}
+    .steps{grid-template-columns:1fr;}
+    .step{border-right:none;border-bottom:1px solid var(--line);}
+    .pattern-wrap{grid-template-columns:1fr;}
+    .why-grid{grid-template-columns:1fr;}
+    .price-grid{grid-template-columns:1fr 1fr;}
+    .hero-stats{flex-wrap:wrap;gap:20px;}
+  }
+  @media (max-width:520px){
+    .price-grid{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="nav wrap">
+    <div class="brand">
+      <div class="seal-mark">ऐ</div>
+      <div class="brand-text">
+        <div class="en">ExamsExpress</div>
+        <div class="hi">MP पटवारी टेस्ट सीरीज़</div>
+      </div>
+    </div>
+    <button class="nav-cta">लॉगिन / रजिस्टर</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">MPPEB पैटर्न पर आधारित · 2026</div>
+      <h1>परीक्षा हॉल में <span class="accent">पहली बार</span> कंप्यूटर पर टेस्ट मत दीजिए</h1>
+      <p class="lede">MP पटवारी की असली ऑनलाइन परीक्षा जैसा मॉक टेस्ट — वही टाइमर, वही सेक्शन, वही स्क्रीन। पहला फुल टेस्ट बिल्कुल मुफ़्त, बिना कार्ड डिटेल के।</p>
+      <div class="hero-ctas">
+        <button class="btn-primary">फ्री टेस्ट शुरू करें →</button>
+        <a href="#pattern" class="btn-ghost">एग्ज़ाम पैटर्न देखें</a>
+      </div>
+      <div class="hero-stats">
+        <div>200<span>कुल अंक</span></div>
+        <div>3<span>घंटे की परीक्षा</span></div>
+        <div>6<span>विषय कवर</span></div>
+        <div>₹0<span>पहला टेस्ट</span></div>
+      </div>
+    </div>
+
+    <div class="admit-card">
+      <div class="ac-head">
+        <div>
+          <div class="t1">PRACTICE HALL TICKET</div>
+          <div class="t2">अभ्यास प्रवेश पत्र</div>
+        </div>
+        <div class="mono" style="font-size:11px;">#MP-PTW</div>
+      </div>
+      <div class="ac-body">
+        <div class="ac-topline">
+          <div class="ac-photo"></div>
+          <div class="who">
+            <div class="name">उम्मीदवार का नाम</div>
+            <div class="role">MP पटवारी भर्ती परीक्षा</div>
+          </div>
+        </div>
+        <div class="ac-row"><span class="label">परीक्षा</span><span class="value">MOCK TEST 01</span></div>
+        <div class="ac-row"><span class="label">कुल प्रश्न</span><span class="value">100</span></div>
+        <div class="ac-row"><span class="label">कुल अंक</span><span class="value">200</span></div>
+        <div class="ac-row"><span class="label">अवधि</span><span class="value">180 MIN</span></div>
+        <div class="ac-row"><span class="label">मोड</span><span class="value">ऑनलाइन</span></div>
+      </div>
+      <div class="ac-stamp">फ्री<br>टेस्ट</div>
+    </div>
+  </div>
+</section>
+
+<section class="ledger-bg">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">प्रोसेस</span>
+      <h2>तीन स्टेप में शुरुआत</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="num">01 / लॉगिन</div>
+        <h3>अकाउंट बनाएं</h3>
+        <p>मोबाइल नंबर से 30 सेकंड में रजिस्टर करें, कोई फॉर्म नहीं भरना।</p>
+      </div>
+      <div class="step">
+        <div class="num">02 / फ्री टेस्ट</div>
+        <h3>1 फुल टेस्ट मुफ़्त दें</h3>
+        <p>असली परीक्षा जैसा इंटरफ़ेस — टाइमर, सेक्शन नेविगेशन, इंस्टेंट स्कोरकार्ड।</p>
+      </div>
+      <div class="step">
+        <div class="num">03 / पैकेज</div>
+        <h3>5, 10 या 20 टेस्ट लें</h3>
+        <p>अपनी तैयारी के हिसाब से पैकेज चुनें और लगातार प्रैक्टिस करें।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pattern">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">एग्ज़ाम पैटर्न</span>
+      <h2>हर मॉक टेस्ट इसी पैटर्न पर बना है</h2>
+    </div>
+    <div class="pattern-wrap">
+      <table class="pattern">
+        <thead>
+          <tr><th>विषय</th><th>वेटेज</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>सामान्य ज्ञान</td><td>उच्च</td></tr>
+          <tr><td>सामान्य गणित एवं रीज़निंग</td><td>उच्च</td></tr>
+          <tr><td>सामान्य हिंदी</td><td>मध्यम</td></tr>
+          <tr><td>सामान्य अंग्रेज़ी</td><td>मध्यम</td></tr>
+          <tr><td>कंप्यूटर ज्ञान</td><td>मध्यम</td></tr>
+          <tr><td>ग्रामीण अर्थव्यवस्था एवं पंचायती राज</td><td>मध्यम</td></tr>
+        </tbody>
+      </table>
+      <div class="pattern-note">
+        <div class="big">200</div>
+        <p>कुल अंकों की ऑनलाइन परीक्षा, 3 घंटे की अवधि। MPPEB की आधिकारिक अधिसूचना के अनुसार पैटर्न अपडेट किया जाता है, ताकि आपकी तैयारी हमेशा नए फॉर्मैट से मेल खाए।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="ledger-bg">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">क्यों ज़रूरी है</span>
+      <h2>ऑनलाइन प्रैक्टिस के बिना असली परीक्षा में झटका लगता है</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="icon">क</div>
+        <h3>कंप्यूटर स्क्रीन की आदत</h3>
+        <p>बहुत से उम्मीदवार पहली बार माउस से आंसर सेलेक्ट करना परीक्षा हॉल में सीखते हैं। यहाँ पहले से अभ्यास हो जाता है।</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">स</div>
+        <h3>समय का दबाव</h3>
+        <p>असली टाइमर के साथ अभ्यास करने से पता चलता है कि कौन सा सेक्शन ज़्यादा समय ले रहा है, एग्ज़ाम में सरप्राइज़ नहीं मिलता।</p>
+      </div>
+      <div class="why-card">
+        <div class="icon">रि</div>
+        <h3>इंस्टेंट रिज़ल्ट</h3>
+        <p>हर टेस्ट के बाद तुरंत सेक्शन-वाइज़ स्कोर और कमज़ोर विषय पता चलते हैं, अगली तैयारी उसी हिसाब से करें।</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing-bg" id="pricing">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">पैकेज</span>
+      <h2>पहला टेस्ट मुफ़्त, फिर अपनी ज़रूरत के हिसाब से पैकेज चुनें</h2>
+    </div>
+    <div class="price-grid">
+      <div class="price-card">
+        <div class="name">फ्री ट्रायल</div>
+        <div class="amount">₹0</div>
+        <div class="per">1 फुल टेस्ट</div>
+        <ul>
+          <li>असली परीक्षा इंटरफ़ेस</li>
+          <li>इंस्टेंट स्कोरकार्ड</li>
+          <li>कोई कार्ड डिटेल नहीं</li>
+        </ul>
+        <button>अभी शुरू करें</button>
+      </div>
+      <div class="price-card">
+        <div class="name">स्टार्टर</div>
+        <div class="amount">₹99</div>
+        <div class="per">5 टेस्ट · ₹20/टेस्ट</div>
+        <ul>
+          <li>5 फुल-लेंथ मॉक टेस्ट</li>
+          <li>सेक्शन-वाइज़ एनालिसिस</li>
+          <li>30 दिन वैलिडिटी</li>
+        </ul>
+        <button>पैकेज लें</button>
+      </div>
+      <div class="price-card popular">
+        <div class="tag">सबसे लोकप्रिय</div>
+        <div class="name">पॉपुलर</div>
+        <div class="amount">₹179</div>
+        <div class="per">10 टेस्ट · ₹18/टेस्ट</div>
+        <ul>
+          <li>10 फुल-लेंथ मॉक टेस्ट</li>
+          <li>ऑल-इंडिया रैंक कंपेरिज़न</li>
+          <li>60 दिन वैलिडिटी</li>
+        </ul>
+        <button>पैकेज लें</button>
+      </div>
+      <div class="price-card">
+        <div class="name">प्रो</div>
+        <div class="amount">₹299</div>
+        <div class="per">20 टेस्ट · ₹15/टेस्ट</div>
+        <ul>
+          <li>20 फुल-लेंथ मॉक टेस्ट</li>
+          <li>वीक-वाइज़ प्रोग्रेस रिपोर्ट</li>
+          <li>90 दिन वैलिडिटी</li>
+        </ul>
+        <button>पैकेज लें</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">सवाल-जवाब</span>
+      <h2>अक्सर पूछे जाने वाले सवाल</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item" open>
+        <summary>क्या ये MPPEB की आधिकारिक परीक्षा है?</summary>
+        <p>नहीं, ये एक स्वतंत्र प्रैक्टिस प्लेटफ़ॉर्म है। हम MPPEB से जुड़े नहीं हैं, हमारे टेस्ट सिर्फ़ आधिकारिक अधिसूचना में बताए गए पैटर्न और सिलेबस पर आधारित होते हैं।</p>
+      </details>
+      <details class="faq-item">
+        <summary>क्या नेगेटिव मार्किंग शामिल है?</summary>
+        <p>हां, अगर आधिकारिक परीक्षा में नेगेटिव मार्किंग लागू होती है तो हमारे मॉक टेस्ट में भी वही स्कीम लागू होती है, ताकि आपकी तैयारी असली परीक्षा जैसी हो।</p>
+      </details>
+      <details class="faq-item">
+        <summary>क्या मैं मोबाइल से टेस्ट दे सकता हूं?</summary>
+        <p>हां, टेस्ट मोबाइल और कंप्यूटर दोनों पर चलता है, लेकिन असली परीक्षा अनुभव के लिए कंप्यूटर या लैपटॉप पर प्रैक्टिस करने की सलाह दी जाती है।</p>
+      </details>
+      <details class="faq-item">
+        <summary>पैकेज खरीदने के बाद रिफंड मिलेगा?</summary>
+        <p>चूंकि टेस्ट एक्सेस डिजिटल है, एक बार टेस्ट शुरू करने के बाद रिफंड संभव नहीं है। इसीलिए खरीदने से पहले फ्री टेस्ट ज़रूर दें।</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="wrap" style="padding:0;">
+    <h2>आज ही अपना पहला मॉक टेस्ट दें</h2>
+    <p>बिल्कुल मुफ़्त, बिना कार्ड डिटेल के, सिर्फ़ 5 मिनट में शुरू करें।</p>
+    <button>फ्री टेस्ट शुरू करें →</button>
+  </div>
+</section>
+
+<footer>
+  ExamsExpress · MP पटवारी टेस्ट सीरीज़ — MPPEB से असंबद्ध एक स्वतंत्र प्रैक्टिस प्लेटफ़ॉर्म
+</footer>
+
+</body>
+</html>
+
