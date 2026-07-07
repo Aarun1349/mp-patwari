@@ -1,0 +1,256 @@
+// Prisma schema for the MP Patwari mock exam platform.
+// Deliberately flat / Patwari-hardcoded — no generic multi-exam-type abstraction (see docs/specs.txt decisions).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  phone       String?  @unique
+  googleId    String?  @unique
+  name        String?
+  email       String?
+  createdAt   DateTime @default(now())
+  lastLoginAt DateTime?
+
+  sessions      Session[]
+  otpChallenges OtpChallenge[]
+  attempts      Attempt[]
+  orders        Order[]
+  credit        UserCredit?
+  contentUploads ContentUpload[]
+
+  @@map("users")
+}
+
+model OtpChallenge {
+  id         String    @id @default(cuid())
+  phone      String
+  codeHash   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user   User?  @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@index([phone])
+  @@map("otp_challenges")
+}
+
+// Single-active-session enforcement: on login, reject if another session for
+// this user has lastSeenAt within the 20-minute idle window; otherwise replace it.
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  expiresAt  DateTime
+  ip         String?
+  userAgent  String?
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// Fixed 6 rows, seeded once — not a user-configurable/generalized taxonomy.
+model Section {
+  id      String @id @default(cuid())
+  code    String @unique
+  nameEn  String
+  nameHi  String
+  sortOrder Int  @default(0)
+
+  questions Question[]
+
+  @@map("sections")
+}
+
+model Paper {
+  id                    String   @id @default(cuid())
+  title                 String
+  sequenceNo            Int
+  isFree                Boolean  @default(false)
+  totalQuestions        Int
+  totalMarks            Int
+  durationMinutes       Int
+  negativeMarkingRatio  Float    @default(0)
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+
+  questions      Question[]
+  attempts       Attempt[]
+  contentUploads ContentUpload[]
+
+  @@map("papers")
+}
+
+model Question {
+  id             String   @id @default(cuid())
+  paper          Paper    @relation(fields: [paperId], references: [id])
+  paperId        String
+  section        Section  @relation(fields: [sectionId], references: [id])
+  sectionId      String
+  text           String
+  marks          Float
+  negativeMarks  Float    @default(0)
+  isActive       Boolean  @default(true)
+  sourceUploadId String?
+  createdAt      DateTime @default(now())
+
+  options QuestionOption[]
+  answers Answer[]
+
+  @@index([paperId])
+  @@map("questions")
+}
+
+model QuestionOption {
+  id         String  @id @default(cuid())
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  label      String
+  text       String
+  isCorrect  Boolean @default(false)
+  sortOrder  Int     @default(0)
+
+  answers Answer[]
+
+  @@index([questionId])
+  @@map("question_options")
+}
+
+enum AttemptStatus {
+  in_progress
+  paused
+  locked
+  submitted
+  expired
+}
+
+model Attempt {
+  id                  String        @id @default(cuid())
+  user                User          @relation(fields: [userId], references: [id])
+  userId              String
+  paper               Paper         @relation(fields: [paperId], references: [id])
+  paperId             String
+  status              AttemptStatus @default(in_progress)
+  startedAt           DateTime      @default(now())
+  endsAt              DateTime
+  submittedAt         DateTime?
+  fullscreenExitCount Int           @default(0)
+  flagged             Boolean       @default(false)
+  questionOrder       Json
+  optionOrder         Json
+  totalScore          Float?
+  accuracyPct         Float?
+
+  answers Answer[]
+
+  @@unique([userId, paperId])
+  @@index([userId])
+  @@index([paperId])
+  @@map("attempts")
+}
+
+model Answer {
+  id               String    @id @default(cuid())
+  attempt          Attempt   @relation(fields: [attemptId], references: [id])
+  attemptId        String
+  question         Question  @relation(fields: [questionId], references: [id])
+  questionId       String
+  selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id])
+  selectedOptionId String?
+  markedForReview  Boolean   @default(false)
+  answeredAt       DateTime  @default(now())
+
+  @@unique([attemptId, questionId])
+  @@map("answers")
+}
+
+enum PackageKind {
+  standard
+  topup
+}
+
+model Package {
+  id            String      @id @default(cuid())
+  name          String
+  testCount     Int
+  pricePaise    Int
+  kind          PackageKind @default(standard)
+  validityDays  Int
+  sortOrder     Int         @default(0)
+  isActive      Boolean     @default(true)
+
+  orders Order[]
+
+  @@map("packages")
+}
+
+enum OrderStatus {
+  created
+  paid
+  failed
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  user              User        @relation(fields: [userId], references: [id])
+  userId            String
+  package           Package     @relation(fields: [packageId], references: [id])
+  packageId         String
+  amountPaise       Int
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  status            OrderStatus @default(created)
+  createdAt         DateTime    @default(now())
+  paidAt            DateTime?
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model UserCredit {
+  userId             String   @id
+  user               User     @relation(fields: [userId], references: [id])
+  testsRemaining     Int      @default(0)
+  testsTotalPurchased Int     @default(0)
+  updatedAt          DateTime @updatedAt
+
+  @@map("user_credits")
+}
+
+model ContentUpload {
+  id           String   @id @default(cuid())
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  uploadedById String
+  paper        Paper    @relation(fields: [paperId], references: [id])
+  paperId      String
+  filename     String
+  rowCount     Int
+  successCount Int
+  errorCount   Int
+  errors       Json?
+  createdAt    DateTime @default(now())
+
+  @@map("content_uploads")
+}
+
+// Reused for OTP send/verify, login, and question-serving rate limits.
+model RateLimitCounter {
+  key         String   @id
+  windowStart DateTime
+  count       Int      @default(0)
+
+  @@map("rate_limit_counters")
+}
