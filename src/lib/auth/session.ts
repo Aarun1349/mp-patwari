@@ -100,7 +100,13 @@ async function loadSession() {
     if (session) {
       await prisma.session.delete({ where: { id: session.id } });
     }
-    cookieStore.delete(SESSION_COOKIE_NAME);
+    try {
+      // Only succeeds in Server Actions/Route Handlers; loadSession() is also called
+      // during page render (verifySession), where Next.js forbids cookie mutation.
+      // The DB session is already gone above, so leaving the stale cookie in the
+      // browser a little longer is harmless — it just won't authenticate anything.
+      cookieStore.delete(SESSION_COOKIE_NAME);
+    } catch {}
     return null;
   }
 

@@ -1,39 +1,51 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import "../landing.css";
+import { type Lang } from "../landing-content";
+import content from "./about-content";
+import SiteHeader from "../SiteHeader";
+import SiteFooter from "../SiteFooter";
 
 export default function AboutPage() {
+  const [lang, setLang] = useState<Lang>("hi");
+  const t = content[lang];
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   return (
-    <main className="auth-page">
-      <div className="auth-card auth-card-wide static-content">
-        <h1>About ExamsExpress</h1>
+    <div className="landing">
+      <SiteHeader lang={lang} onToggleLang={() => setLang(lang === "hi" ? "en" : "hi")} />
 
-        <p>
-          The MP Patwari recruitment exam is conducted online by the Madhya Pradesh Employees
-          Selection Board (MPPEB/ESB). For many candidates, this is the first time they take a
-          computer-based exam — and the unfamiliar interface, on-screen timer, and mouse-based
-          navigation can cost valuable time on exam day.
-        </p>
+      <section className="ledger-bg">
+        <div className="wrap">
+          <div className="section-head">
+            <span className="kicker">{t.kicker}</span>
+          </div>
+          <div className="static-card">
+            <h1>{t.title}</h1>
 
-        <p>
-          ExamsExpress is an independent practice platform built to close that gap. We replicate
-          the real exam&apos;s online interface, timer, and rules as closely as possible, so your
-          first computer-based exam experience happens during practice, not on exam day.
-        </p>
+            <p>{t.intro1}</p>
+            <p>{t.intro2}</p>
 
-        <h2>What our tests cover</h2>
-        <ul>
-          <li>General Knowledge</li>
-          <li>General Math &amp; Reasoning</li>
-          <li>General Hindi</li>
-          <li>General English</li>
-          <li>Computer Knowledge</li>
-          <li>Rural Economy &amp; Panchayati Raj</li>
-        </ul>
+            <h2>{t.coverTitle}</h2>
+            <ul>
+              {t.subjects.map((subject) => (
+                <li key={subject}>{subject}</li>
+              ))}
+            </ul>
 
-        <p className="muted">
-          ExamsExpress is not affiliated with MPPEB. See our{" "}
-          <Link href="/disclaimer">Disclaimer &amp; Policies</Link> for details.
-        </p>
-      </div>
-    </main>
+            <p className="muted">
+              {t.disclaimerPre} <Link href="/disclaimer">{t.disclaimerLinkText}</Link>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <SiteFooter lang={lang} />
+    </div>
   );
 }

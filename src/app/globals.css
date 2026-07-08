@@ -106,6 +106,7 @@ a {
 }
 .auth-card {
   background: #faf6ec;
+  color: #2b2b2b;
   border: 1px solid rgba(26, 42, 68, 0.22);
   border-radius: 8px;
   padding: 36px;
@@ -171,18 +172,27 @@ a {
   color: #444;
   margin-top: 10px;
 }
-.auth-form input {
+.auth-form input,
+.auth-form select {
   padding: 10px 12px;
   border: 1px solid rgba(26, 42, 68, 0.3);
   border-radius: 4px;
   font-size: 15px;
+  font-family: inherit;
+  color: #2b2b2b;
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.auth-form input:focus {
+.auth-form input:focus,
+.auth-form select:focus {
   outline: none;
   border-color: #1a2a44;
   box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
+}
+.auth-form input[type="radio"],
+.auth-form input[type="checkbox"] {
+  width: auto;
+  padding: 0;
 }
 .auth-form button[type="submit"] {
   margin-top: 16px;
@@ -234,23 +244,198 @@ a {
   color: #2a7a2a;
   font-size: 13px;
 }
-.dashboard-section {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px dashed rgba(26, 42, 68, 0.18);
+.dashboard-highlight {
+  background: #1a2a44;
+  color: #f0e9d8;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-top: 16px;
 }
-.dashboard-section h2 {
-  font-size: 15px;
+.dashboard-highlight h2 {
+  font-size: 14px;
+  color: #c9a227;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.dashboard-highlight p {
+  font-size: 14px;
+  color: rgba(240, 233, 216, 0.85);
+}
+.dashboard-highlight a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.dashboard-links-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+.dashboard-links-grid a {
+  display: block;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid rgba(26, 42, 68, 0.15);
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13.5px;
   color: #1a2a44;
-  margin-bottom: 6px;
+  text-align: center;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
-.dashboard-nav {
+.dashboard-links-grid a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(26, 42, 68, 0.1);
+}
+
+/* Logged-in app shell: sidebar + topbar + content + footer (dashboard, profile, history, purchases, packages, upload) */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+.app-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #1a2a44;
+  color: #f0e9d8;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+}
+.app-sidebar-brand {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 20px 20px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(240, 233, 216, 0.15);
 }
+.app-sidebar-brand .brand-text {
+  line-height: 1.15;
+}
+.app-sidebar-brand .brand-text .en {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  opacity: 0.7;
+  text-transform: uppercase;
+  font-family: "Space Mono", monospace;
+}
+.app-sidebar-brand .brand-text .hi {
+  font-family: "Noto Serif Devanagari", serif;
+  font-size: 16px;
+  font-weight: 600;
+}
+.app-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 12px;
+}
+.app-sidebar-link {
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: rgba(240, 233, 216, 0.85);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.app-sidebar-link:hover {
+  background: rgba(240, 233, 216, 0.08);
+  color: #fff;
+}
+.app-sidebar-link.active {
+  background: #c9a227;
+  color: #101a2c;
+  font-weight: 700;
+}
+.app-sidebar-divider {
+  height: 1px;
+  background: rgba(240, 233, 216, 0.15);
+  margin: 16px 20px;
+}
+.app-sidebar-nav-info .app-sidebar-link {
+  font-size: 13px;
+  color: rgba(240, 233, 216, 0.55);
+}
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #f0e9d8;
+}
+.app-topbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 28px;
+  background: #faf6ec;
+  border-bottom: 1px solid rgba(26, 42, 68, 0.12);
+  font-size: 13px;
+  color: #444;
+}
+.app-topbar .logout-btn {
+  background: transparent;
+  border: 1px solid rgba(26, 42, 68, 0.25);
+  color: #1a2a44;
+  padding: 7px 14px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.app-topbar .logout-btn:hover {
+  background: rgba(26, 42, 68, 0.06);
+}
+.app-content {
+  flex: 1;
+  padding: 40px 28px;
+}
+.app-footer {
+  background: #101a2c;
+  color: rgba(240, 233, 216, 0.6);
+  padding: 20px 24px;
+  text-align: center;
+  font-size: 12px;
+}
+.app-footer .footer-links {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.app-footer .footer-links a {
+  color: rgba(240, 233, 216, 0.85);
+  text-decoration: underline;
+}
+@media (max-width: 760px) {
+  .app-shell {
+    flex-direction: column;
+  }
+  .app-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+    overflow-x: auto;
+  }
+  .app-sidebar-brand {
+    border-bottom: none;
+    padding: 0;
+    margin: 0 16px 0 0;
+  }
+  .app-sidebar-nav {
+    flex-direction: row;
+    padding: 0;
+  }
+  .app-sidebar-divider,
+  .app-sidebar-nav-info {
+    display: none;
+  }
+}
+
 .auth-card-wide {
   max-width: 720px;
 }

@@ -613,6 +613,52 @@
   cursor: pointer;
 }
 
+.landing .static-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 44px 48px;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.landing .static-card h1 {
+  font-size: clamp(26px, 3.2vw, 34px);
+  color: var(--navy);
+  margin-bottom: 22px;
+}
+.landing .static-card h2 {
+  font-size: 18px;
+  color: var(--navy);
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+.landing .static-card p,
+.landing .static-card li {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 12px;
+  line-height: 1.65;
+}
+.landing .static-card ul {
+  padding-left: 20px;
+}
+.landing .static-card a {
+  text-decoration: underline;
+  color: var(--seal);
+}
+.landing .static-card .muted {
+  font-size: 13.5px;
+  color: #777;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--line);
+}
+@media (max-width: 600px) {
+  .landing .static-card {
+    padding: 32px 24px;
+  }
+}
+
 .landing footer {
   background: var(--navy-deep);
   color: rgba(240, 233, 216, 0.6);

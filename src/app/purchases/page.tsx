@@ -1,9 +1,10 @@
-import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
+import { canUploadContent } from "@/lib/auth/uploadGate";
+import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
 
 export default async function PurchasesPage() {
-  const { userId } = await verifySession();
+  const { userId, user } = await verifySession();
 
   const orders = await prisma.order.findMany({
     where: { userId, status: "paid" },
@@ -12,7 +13,7 @@ export default async function PurchasesPage() {
   });
 
   return (
-    <main className="auth-page">
+    <AppShell userLabel={user.phone ?? user.email ?? ""} canUpload={canUploadContent(user.phone)}>
       <div className="auth-card auth-card-wide">
         <h1>Purchase History</h1>
 
@@ -45,13 +46,7 @@ export default async function PurchasesPage() {
             </tbody>
           </table>
         )}
-
-        <nav className="dashboard-nav">
-          <Link href="/dashboard" className="auth-secondary-link">
-            Back to dashboard
-          </Link>
-        </nav>
       </div>
-    </main>
+    </AppShell>
   );
 }

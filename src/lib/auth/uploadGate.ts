@@ -10,10 +10,14 @@ export class ForbiddenError extends Error {
  * content tooling, not a public feature, so no new role/permission system.
  */
 export function assertUploadAllowed(phone: string | null | undefined): void {
+  if (!canUploadContent(phone)) throw new ForbiddenError();
+}
+
+export function canUploadContent(phone: string | null | undefined): boolean {
   const allowed = (process.env.ALLOWED_UPLOAD_PHONES ?? "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
 
-  if (!phone || !allowed.includes(phone)) throw new ForbiddenError();
+  return !!phone && allowed.includes(phone);
 }

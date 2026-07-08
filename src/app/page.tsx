@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import "./landing.css";
 import content, { type Lang } from "./landing-content";
+import SiteHeader from "./SiteHeader";
+import SiteFooter from "./SiteFooter";
 
 export default function LandingPage() {
   const [lang, setLang] = useState<Lang>("hi");
@@ -15,25 +17,7 @@ export default function LandingPage() {
 
   return (
     <div className="landing">
-      <header>
-        <div className="nav wrap">
-          <div className="brand">
-            <div className="seal-mark">ऐ</div>
-            <div className="brand-text">
-              <div className="en">{t.brandEn}</div>
-              <div className="hi">{t.brandHi}</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <button className="lang-toggle" onClick={() => setLang(lang === "hi" ? "en" : "hi")}>
-              {lang === "hi" ? "English" : "हिंदी"}
-            </button>
-            <Link href="/login">
-              <button className="nav-cta">{t.navCta}</button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader lang={lang} onToggleLang={() => setLang(lang === "hi" ? "en" : "hi")} />
 
       <section className="hero">
         <div className="wrap hero-grid">
@@ -214,14 +198,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer>
-        {t.footer}
-        <div className="footer-links">
-          <Link href="/about">{t.footerLinks.about}</Link>
-          <Link href="/how-it-works">{t.footerLinks.howItWorks}</Link>
-          <Link href="/disclaimer">{t.footerLinks.disclaimer}</Link>
-        </div>
-      </footer>
+      <SiteFooter lang={lang} />
     </div>
   );
 }

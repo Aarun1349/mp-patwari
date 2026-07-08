@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { verifySession } from "@/lib/auth/session";
-import { assertUploadAllowed, ForbiddenError } from "@/lib/auth/uploadGate";
+import { assertUploadAllowed, ForbiddenError, canUploadContent } from "@/lib/auth/uploadGate";
+import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
 import { UploadForm } from "./UploadForm";
 
@@ -20,12 +21,12 @@ export default async function UploadPage() {
   });
 
   return (
-    <main className="auth-page">
+    <AppShell userLabel={user.phone ?? user.email ?? ""} canUpload={canUploadContent(user.phone)}>
       <div className="auth-card" style={{ maxWidth: "560px" }}>
         <h1>Upload Questions</h1>
         <p className="muted">Internal content tool — no UI polish, functional only.</p>
         <UploadForm papers={papers} />
       </div>
-    </main>
+    </AppShell>
   );
 }
