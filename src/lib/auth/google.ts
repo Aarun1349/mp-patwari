@@ -80,6 +80,12 @@ export async function fetchGoogleProfile(accessToken: string): Promise<GooglePro
  * Resolves a Google profile to a User row: match by googleId, else link onto
  * an existing user with the same verified email (preserves credits/attempts
  * for someone who signed up by phone first), else create a new user.
+ *
+ * The email-fallback match is gated on the target row's own `emailVerified`
+ * flag, not just Google's claim about the incoming profile — `User.email` can
+ * be set to an arbitrary, unverified address via the profile form, so trusting
+ * it here would let an attacker pre-plant a victim's email on their own
+ * account and hijack the victim's first Google sign-in.
  */
 export async function resolveGoogleUser(profile: GoogleProfile): Promise<string> {
   if (!profile.sub) throw new GoogleAuthError("Google profile missing subject id.");
@@ -89,7 +95,7 @@ export async function resolveGoogleUser(profile: GoogleProfile): Promise<string>
 
   if (profile.email && profile.email_verified) {
     const byEmail = await prisma.user.findFirst({
-      where: { email: { equals: profile.email, mode: "insensitive" } },
+      where: { email: { equals: profile.email, mode: "insensitive" }, emailVerified: true },
     });
     if (byEmail) {
       await prisma.user.update({ where: { id: byEmail.id }, data: { googleId: profile.sub } });
@@ -101,6 +107,7 @@ export async function resolveGoogleUser(profile: GoogleProfile): Promise<string>
     data: {
       googleId: profile.sub,
       email: profile.email,
+      emailVerified: Boolean(profile.email && profile.email_verified),
       name: profile.name,
     },
   });

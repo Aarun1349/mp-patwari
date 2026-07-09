@@ -27,11 +27,18 @@ export async function updateProfileAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
+  const newEmail = parsed.data.email || null;
+  const current = await prisma.user.findUnique({ where: { id: userId }, select: { email: true } });
+  const emailChanged = newEmail !== current?.email;
+
   await prisma.user.update({
     where: { id: userId },
     data: {
       name: parsed.data.name,
-      email: parsed.data.email || null,
+      email: newEmail,
+      // A self-reported email is unverified until proven via Google OAuth
+      // (resolveGoogleUser) — never trust it as an identity-linking anchor.
+      ...(emailChanged ? { emailVerified: false } : {}),
     },
   });
 

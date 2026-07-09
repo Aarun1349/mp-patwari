@@ -16,6 +16,7 @@ model User {
   googleId    String?  @unique
   name        String?
   email       String?
+  emailVerified Boolean @default(false)
   createdAt   DateTime @default(now())
   lastLoginAt DateTime?
 
