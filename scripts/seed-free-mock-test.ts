@@ -157,15 +157,15 @@ async function main() {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Questions");
   const buffer: Buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
 
-  const uploader = process.env.SEED_UPLOADER_PHONE
-    ? await prisma.user.upsert({
-        where: { phone: process.env.SEED_UPLOADER_PHONE },
+  const uploader = process.env.SEED_UPLOADER_EMAIL
+    ? await prisma.adminUser.upsert({
+        where: { email: process.env.SEED_UPLOADER_EMAIL },
         update: {},
-        create: { phone: process.env.SEED_UPLOADER_PHONE, name: "Content Team" },
+        create: { email: process.env.SEED_UPLOADER_EMAIL, passwordHash: "seed-script-placeholder", name: "Content Team" },
       })
-    : await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
+    : await prisma.adminUser.findFirst({ orderBy: { createdAt: "asc" } });
   if (!uploader) {
-    throw new Error("No user rows exist yet to attribute this upload to. Sign in once first, or set SEED_UPLOADER_PHONE.");
+    throw new Error("No admin rows exist yet to attribute this upload to. Run scripts/create-admin.ts first, or set SEED_UPLOADER_EMAIL.");
   }
 
   let paper = await prisma.paper.findFirst({ where: { isFree: true } });

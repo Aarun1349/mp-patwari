@@ -11,7 +11,7 @@ const NAV_LINKS = [
   { href: "/profile", label: "Profile" },
 ];
 
-export function AppSidebar({ canUpload }: { canUpload: boolean }) {
+export function AppSidebar() {
   const pathname = usePathname();
 
   return (
@@ -34,11 +34,6 @@ export function AppSidebar({ canUpload }: { canUpload: boolean }) {
             {link.label}
           </Link>
         ))}
-        {canUpload && (
-          <Link href="/upload" className={`app-sidebar-link${pathname === "/upload" ? " active" : ""}`}>
-            Upload Questions
-          </Link>
-        )}
       </nav>
 
     </aside>

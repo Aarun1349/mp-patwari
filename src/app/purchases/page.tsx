@@ -1,5 +1,4 @@
 import { verifySession } from "@/lib/auth/session";
-import { canUploadContent } from "@/lib/auth/uploadGate";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
 
@@ -13,7 +12,7 @@ export default async function PurchasesPage() {
   });
 
   return (
-    <AppShell userLabel={user.phone ?? user.email ?? ""} canUpload={canUploadContent(user.phone)}>
+    <AppShell userLabel={user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Purchase History</h1>
 

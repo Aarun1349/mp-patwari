@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
-import { canUploadContent } from "@/lib/auth/uploadGate";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
 import { BuyButton } from "./BuyButton";
@@ -19,7 +18,7 @@ export default async function PackagesPage() {
   );
 
   return (
-    <AppShell userLabel={user.phone ?? user.email ?? ""} canUpload={canUploadContent(user.phone)}>
+    <AppShell userLabel={user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Test Packages</h1>
         <p className="muted">One-time purchase. Tests are added to your account immediately.</p>

@@ -25,7 +25,6 @@ model User {
   attempts      Attempt[]
   orders        Order[]
   credit        UserCredit?
-  contentUploads ContentUpload[]
 
   @@map("users")
 }
@@ -232,8 +231,8 @@ model UserCredit {
 }
 
 model ContentUpload {
-  id           String   @id @default(cuid())
-  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  id           String    @id @default(cuid())
+  uploadedBy   AdminUser @relation(fields: [uploadedById], references: [id])
   uploadedById String
   paper        Paper    @relation(fields: [paperId], references: [id])
   paperId      String
@@ -245,6 +244,37 @@ model ContentUpload {
   createdAt    DateTime @default(now())
 
   @@map("content_uploads")
+}
+
+// Separate identity from User (students) — internal tool for the
+// founder/teachers, not part of the student auth system (no phone/Google
+// login, no single-device lock, no exam-idle-timeout semantics).
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime  @default(now())
+  lastLoginAt  DateTime?
+
+  sessions       AdminSession[]
+  contentUploads ContentUpload[]
+
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id          String    @id @default(cuid())
+  tokenHash   String    @unique
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id])
+  adminUserId String
+  createdAt   DateTime  @default(now())
+  expiresAt   DateTime
+  ip          String?
+  userAgent   String?
+
+  @@index([adminUserId])
+  @@map("admin_sessions")
 }
 
 // Reused for OTP send/verify, login, and question-serving rate limits.

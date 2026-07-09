@@ -5,16 +5,14 @@ import { AppFooter } from "./AppFooter";
 
 export function AppShell({
   userLabel,
-  canUpload,
   children,
 }: {
   userLabel: string;
-  canUpload: boolean;
   children: ReactNode;
 }) {
   return (
     <div className="app-shell">
-      <AppSidebar canUpload={canUpload} />
+      <AppSidebar />
       <div className="app-main">
         <div className="app-topbar">
           <span>{userLabel}</span>

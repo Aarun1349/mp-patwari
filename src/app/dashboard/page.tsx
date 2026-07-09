@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
-import { canUploadContent } from "@/lib/auth/uploadGate";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/app/AppShell";
 
@@ -24,10 +23,8 @@ export default async function DashboardPage() {
         })
       : null;
 
-  const canUpload = canUploadContent(user.phone);
-
   return (
-    <AppShell userLabel={user.phone ?? user.email ?? ""} canUpload={canUpload}>
+    <AppShell userLabel={user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Welcome{user.name ? `, ${user.name}` : ""}</h1>
         <p className="muted">{user.phone ?? user.email ?? ""}</p>
@@ -51,7 +48,6 @@ export default async function DashboardPage() {
           <Link href="/packages">Buy Tests</Link>
           <Link href="/history">Practice History</Link>
           <Link href="/purchases">Purchase History</Link>
-          {canUpload && <Link href="/upload">Upload Questions</Link>}
         </nav>
       </div>
     </AppShell>

@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { verifySession } from "@/lib/auth/session";
-import { assertUploadAllowed, ForbiddenError } from "@/lib/auth/uploadGate";
+import { getAdminSession } from "@/lib/auth/adminSession";
 import { parseAndImportQuestions } from "@/lib/exam/importQuestions";
 import { prisma } from "@/lib/prisma";
 
@@ -25,14 +24,8 @@ export async function uploadQuestionsAction(
   _prevState: UploadActionState,
   formData: FormData
 ): Promise<UploadActionState> {
-  const { user } = await verifySession();
-
-  try {
-    assertUploadAllowed(user.phone);
-  } catch (err) {
-    if (err instanceof ForbiddenError) return { error: err.message };
-    throw err;
-  }
+  const adminSession = await getAdminSession();
+  if (!adminSession) return { error: "Not authorized. Please sign in again." };
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
@@ -76,11 +69,11 @@ export async function uploadQuestionsAction(
   const buffer = Buffer.from(await file.arrayBuffer());
   let result;
   try {
-    result = await parseAndImportQuestions(buffer, paperId, user.id, file.name);
+    result = await parseAndImportQuestions(buffer, paperId, adminSession.adminUserId, file.name);
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Import failed." };
   }
 
-  revalidatePath("/upload");
+  revalidatePath("/admin/upload");
   return { success: true, paperId, ...result };
 }
