@@ -158,10 +158,14 @@ async function main() {
   const buffer: Buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
 
   const uploader = process.env.SEED_UPLOADER_PHONE
-    ? await prisma.user.findFirst({ where: { phone: process.env.SEED_UPLOADER_PHONE } })
+    ? await prisma.user.upsert({
+        where: { phone: process.env.SEED_UPLOADER_PHONE },
+        update: {},
+        create: { phone: process.env.SEED_UPLOADER_PHONE, name: "Content Team" },
+      })
     : await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
   if (!uploader) {
-    throw new Error("No user rows exist yet to attribute this upload to. Sign in once first.");
+    throw new Error("No user rows exist yet to attribute this upload to. Sign in once first, or set SEED_UPLOADER_PHONE.");
   }
 
   let paper = await prisma.paper.findFirst({ where: { isFree: true } });
