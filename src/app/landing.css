@@ -8,7 +8,7 @@
   --ink: #2b2b2b;
   --line: rgba(26, 42, 68, 0.18);
 
-  font-family: "Noto Sans Devanagari", "Noto Sans", sans-serif;
+  font-family: var(--font-noto-sans-devanagari), "Noto Sans", sans-serif;
   background: var(--paper);
   color: var(--ink);
   line-height: 1.6;
@@ -21,10 +21,10 @@
 .landing h2,
 .landing h3,
 .landing .serif {
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
 }
 .landing .mono {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   letter-spacing: 0.02em;
 }
 .landing a {
@@ -75,7 +75,7 @@
   align-items: center;
   justify-content: center;
   color: var(--gold);
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
   font-weight: 700;
   font-size: 15px;
   flex-shrink: 0;
@@ -88,10 +88,10 @@
   letter-spacing: 0.14em;
   opacity: 0.7;
   text-transform: uppercase;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
 }
 .landing .brand-text .hi {
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
   font-size: 18px;
   font-weight: 600;
 }
@@ -143,7 +143,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--gold);
@@ -205,7 +205,7 @@
   display: flex;
   gap: 28px;
   margin-top: 38px;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   flex-wrap: wrap;
 }
 .landing .hero-stats div {
@@ -217,7 +217,7 @@
   display: block;
   font-size: 11.5px;
   color: rgba(240, 233, 216, 0.65);
-  font-family: "Noto Sans Devanagari", sans-serif;
+  font-family: var(--font-noto-sans-devanagari), sans-serif;
   margin-top: 3px;
 }
 
@@ -251,13 +251,13 @@
   border-radius: 5px 5px 0 0;
 }
 .landing .ac-head .t1 {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 10.5px;
   letter-spacing: 0.1em;
   opacity: 0.75;
 }
 .landing .ac-head .t2 {
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
   font-size: 16px;
   font-weight: 600;
 }
@@ -278,7 +278,7 @@
   color: #5c5c5c;
 }
 .landing .ac-row .value {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-weight: 700;
   color: var(--navy);
 }
@@ -296,7 +296,7 @@
   transform: rotate(-18deg);
   color: var(--seal);
   text-align: center;
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
   font-weight: 700;
   font-size: 14px;
   line-height: 1.2;
@@ -334,7 +334,7 @@
   margin-bottom: 44px;
 }
 .landing .kicker {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   letter-spacing: 0.14em;
   color: var(--seal);
@@ -365,7 +365,7 @@
   border-right: none;
 }
 .landing .step .num {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 12px;
   color: var(--seal);
   font-weight: 700;
@@ -394,7 +394,7 @@
 }
 .landing table.pattern th {
   text-align: left;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -408,7 +408,7 @@
 }
 .landing table.pattern tr td:last-child {
   text-align: right;
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-weight: 700;
   color: var(--navy);
 }
@@ -419,7 +419,7 @@
   border-radius: 6px;
 }
 .landing .pattern-note .big {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 34px;
   color: var(--gold);
   font-weight: 700;
@@ -450,7 +450,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
   font-weight: 700;
   margin-bottom: 16px;
 }
@@ -504,12 +504,12 @@
   border-radius: 12px;
 }
 .landing .price-card .name {
-  font-family: "Noto Serif Devanagari", serif;
+  font-family: var(--font-noto-serif-devanagari), serif;
   font-size: 17px;
   margin-bottom: 6px;
 }
 .landing .price-card .amount {
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 30px;
   font-weight: 700;
   color: var(--gold);
@@ -539,17 +539,19 @@
   left: 0;
   color: var(--gold);
 }
-.landing .price-card button {
+.landing .price-card-action {
   background: transparent;
   border: 1.5px solid var(--gold);
   color: var(--gold);
+  display: block;
   padding: 11px;
   border-radius: 2px;
   font-weight: 700;
   font-size: 13.5px;
   cursor: pointer;
+  text-align: center;
 }
-.landing .price-card.popular button {
+.landing .price-card.popular .price-card-action {
   background: var(--gold);
   color: var(--navy-deep);
 }
@@ -573,7 +575,7 @@
 }
 .landing .faq-item summary::after {
   content: "+";
-  font-family: "Space Mono", monospace;
+  font-family: var(--font-space-mono), monospace;
   font-size: 18px;
   color: var(--seal);
 }
@@ -602,15 +604,17 @@
   opacity: 0.9;
   margin-bottom: 26px;
 }
-.landing .final-cta button {
+.landing .final-cta-action {
   background: #fff;
   color: var(--seal);
+  display: inline-block;
   padding: 15px 32px;
   border: none;
   border-radius: 2px;
   font-weight: 700;
   font-size: 15.5px;
   cursor: pointer;
+  text-align: center;
 }
 
 .landing .static-card {

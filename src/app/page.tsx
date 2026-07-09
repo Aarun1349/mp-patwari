@@ -30,8 +30,8 @@ export default function LandingPage() {
             </h1>
             <p className="lede">{t.heroLede}</p>
             <div className="hero-ctas">
-              <Link href="/login">
-                <button className="btn-primary">{t.ctaPrimary}</button>
+              <Link href="/login" className="btn-primary">
+                {t.ctaPrimary}
               </Link>
               <a href="#pattern" className="btn-ghost">
                 {t.ctaGhost}
@@ -162,8 +162,8 @@ export default function LandingPage() {
                     <li key={f}>{f}</li>
                   ))}
                 </ul>
-                <Link href="/login">
-                  <button>{plan.cta}</button>
+                <Link href="/login" className="price-card-action">
+                  {plan.cta}
                 </Link>
               </div>
             ))}
@@ -192,8 +192,8 @@ export default function LandingPage() {
         <div className="wrap" style={{ padding: 0 }}>
           <h2>{t.finalTitle}</h2>
           <p>{t.finalDesc}</p>
-          <Link href="/login">
-            <button>{t.finalCta}</button>
+          <Link href="/login" className="final-cta-action">
+            {t.finalCta}
           </Link>
         </div>
       </section>

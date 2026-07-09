@@ -11,12 +11,6 @@ const NAV_LINKS = [
   { href: "/profile", label: "Profile" },
 ];
 
-const INFO_LINKS = [
-  { href: "/how-it-works", label: "How It Works" },
-  { href: "/about", label: "About" },
-  { href: "/disclaimer", label: "Disclaimer" },
-];
-
 export function AppSidebar({ canUpload }: { canUpload: boolean }) {
   const pathname = usePathname();
 
@@ -47,15 +41,6 @@ export function AppSidebar({ canUpload }: { canUpload: boolean }) {
         )}
       </nav>
 
-      <div className="app-sidebar-divider" />
-
-      <nav className="app-sidebar-nav app-sidebar-nav-info">
-        {INFO_LINKS.map((link) => (
-          <Link key={link.href} href={link.href} className="app-sidebar-link">
-            {link.label}
-          </Link>
-        ))}
-      </nav>
     </aside>
   );
 }

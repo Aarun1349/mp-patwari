@@ -26,8 +26,8 @@ export default function SiteHeader({
           <button className="lang-toggle" onClick={onToggleLang}>
             {lang === "hi" ? "English" : "हिंदी"}
           </button>
-          <Link href="/login">
-            <button className="nav-cta">{t.navCta}</button>
+          <Link href="/login" className="nav-cta">
+            {t.navCta}
           </Link>
         </div>
       </div>
