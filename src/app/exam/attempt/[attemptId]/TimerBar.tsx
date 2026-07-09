@@ -8,16 +8,27 @@ function formatTime(totalSeconds: number): string {
 export function TimerBar({ remainingSeconds }: { remainingSeconds: number }) {
   const low = remainingSeconds <= 5 * 60;
   return (
-    <div
-      className="mono"
-      style={{
-        fontSize: "20px",
-        fontWeight: 700,
-        color: low ? "#a3242a" : "#1a2a44",
-        padding: "8px 0",
-      }}
-    >
-      {formatTime(remainingSeconds)}
+    <div style={{ textAlign: "right" }}>
+      <div
+        style={{
+          fontSize: "9.5px",
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          color: "rgba(240,233,216,0.6)",
+        }}
+      >
+        Time Left
+      </div>
+      <div
+        className="mono"
+        style={{
+          fontSize: "20px",
+          fontWeight: 700,
+          color: low ? "#ff8a80" : "#f0e9d8",
+        }}
+      >
+        {formatTime(remainingSeconds)}
+      </div>
     </div>
   );
 }
