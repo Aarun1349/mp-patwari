@@ -18,12 +18,14 @@ export async function GET(req: Request) {
   const expectedState = cookieStore.get(GOOGLE_STATE_COOKIE_NAME)?.value;
   cookieStore.delete(GOOGLE_STATE_COOKIE_NAME);
 
+  const origin = getRequestOrigin(req);
+
   if (!code || !state || !expectedState || state !== expectedState) {
-    return NextResponse.redirect(new URL("/login?error=google_failed", req.url));
+    return NextResponse.redirect(new URL("/login?error=google_failed", origin));
   }
 
   try {
-    const redirectUri = `${getRequestOrigin(req)}/api/auth/google/callback`;
+    const redirectUri = `${origin}/api/auth/google/callback`;
     const accessToken = await exchangeGoogleCode(code, redirectUri);
     const profile = await fetchGoogleProfile(accessToken);
     const userId = await resolveGoogleUser(profile);
@@ -35,11 +37,11 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     if (err instanceof SessionConflictError) {
-      return NextResponse.redirect(new URL("/login?error=session_conflict", req.url));
+      return NextResponse.redirect(new URL("/login?error=session_conflict", origin));
     }
     console.error("Google login failed", err);
-    return NextResponse.redirect(new URL("/login?error=google_failed", req.url));
+    return NextResponse.redirect(new URL("/login?error=google_failed", origin));
   }
 
-  return NextResponse.redirect(new URL("/dashboard", req.url));
+  return NextResponse.redirect(new URL("/dashboard", origin));
 }

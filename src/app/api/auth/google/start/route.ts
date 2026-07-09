@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     authUrl = buildGoogleAuthUrl(state, redirectUri);
   } catch (err) {
     if (err instanceof GoogleAuthError) {
-      return NextResponse.redirect(new URL("/login?error=google_not_configured", req.url));
+      return NextResponse.redirect(new URL("/login?error=google_not_configured", getRequestOrigin(req)));
     }
     throw err;
   }
