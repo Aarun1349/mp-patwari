@@ -11,10 +11,10 @@ export function QuestionPanel({
 }) {
   return (
     <div>
-      <p className="muted">
+      <p style={{ fontSize: "13px", fontWeight: 600, color: "#5c5c5c", margin: 0 }}>
         Question {question.index + 1} of {question.total} — {question.section.nameEn}
       </p>
-      <p style={{ fontSize: "16px", margin: "12px 0" }}>{question.text}</p>
+      <p style={{ fontSize: "16px", margin: "12px 0", color: "#1a2a44" }}>{question.text}</p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         {question.options.map((option) => (
@@ -25,10 +25,14 @@ export function QuestionPanel({
               gap: "8px",
               alignItems: "center",
               padding: "10px",
-              border: "1px solid rgba(26,42,68,0.2)",
+              border:
+                question.selectedOptionId === option.id
+                  ? "1px solid #a3242a"
+                  : "1px solid rgba(26,42,68,0.2)",
               borderRadius: "4px",
               cursor: "pointer",
               background: question.selectedOptionId === option.id ? "rgba(163,36,42,0.08)" : "transparent",
+              color: "#1a2a44",
             }}
           >
             <input
@@ -44,7 +48,7 @@ export function QuestionPanel({
         ))}
       </div>
 
-      <label style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "14px" }}>
+      <label style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "14px", color: "#1a2a44" }}>
         <input
           type="checkbox"
           checked={question.markedForReview}

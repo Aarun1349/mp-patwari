@@ -241,7 +241,7 @@ export function ExamRoom({
   const isLastQuestion = state.currentIndex >= totalQuestions - 1;
 
   return (
-    <main style={{ minHeight: "100vh", background: "#f0ece0", userSelect: "none" }}>
+    <main style={{ minHeight: "100vh", background: "#ffffff", userSelect: "none" }}>
       {state.status === "paused" && (
         <ViolationModal fullscreenExitCount={state.fullscreenExitCount} onResume={handleResume} />
       )}
@@ -264,7 +264,15 @@ export function ExamRoom({
         {state.error && <p className="auth-error">{state.error}</p>}
 
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", alignItems: "start" }}>
-          <div style={{ background: "#fff", border: "1px solid rgba(26,42,68,0.15)", borderRadius: "6px", padding: "24px" }}>
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid rgba(26,42,68,0.15)",
+              borderRadius: "6px",
+              padding: "24px",
+              boxShadow: "0 1px 3px rgba(26,42,68,0.08)",
+            }}
+          >
             {state.currentQuestion && !state.loadingQuestion ? (
               <QuestionPanel
                 question={state.currentQuestion}
@@ -272,7 +280,7 @@ export function ExamRoom({
                 onToggleReview={(marked) => saveAnswer(state.currentQuestion!.selectedOptionId, marked)}
               />
             ) : (
-              <p className="muted">Loading question…</p>
+              <p style={{ color: "#5c5c5c", fontSize: "14px" }}>Loading question…</p>
             )}
 
             <div
@@ -324,7 +332,19 @@ export function ExamRoom({
             </div>
           </div>
 
-          <div style={{ background: "#fff", border: "1px solid rgba(26,42,68,0.15)", borderRadius: "6px", padding: "20px" }}>
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid rgba(26,42,68,0.15)",
+              borderRadius: "6px",
+              padding: "20px",
+              boxShadow: "0 1px 3px rgba(26,42,68,0.08)",
+              maxHeight: "calc(100vh - 140px)",
+              overflowY: "auto",
+              position: "sticky",
+              top: "24px",
+            }}
+          >
             <Palette
               sections={sections}
               currentIndex={state.currentIndex}
