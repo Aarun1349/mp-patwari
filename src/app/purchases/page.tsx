@@ -12,7 +12,7 @@ export default async function PurchasesPage() {
   });
 
   return (
-    <AppShell userLabel={user.phone ?? user.email ?? ""}>
+    <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Purchase History</h1>
 

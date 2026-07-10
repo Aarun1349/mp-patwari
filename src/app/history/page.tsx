@@ -32,7 +32,7 @@ export default async function HistoryPage() {
   }
 
   return (
-    <AppShell userLabel={user.phone ?? user.email ?? ""}>
+    <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Practice History</h1>
 

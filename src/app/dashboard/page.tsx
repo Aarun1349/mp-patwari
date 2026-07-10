@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       : null;
 
   return (
-    <AppShell userLabel={user.phone ?? user.email ?? ""}>
+    <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Welcome{user.name ? `, ${user.name}` : ""}</h1>
         <p className="muted">{user.phone ?? user.email ?? ""}</p>

@@ -109,7 +109,7 @@ export function Palette({
       </div>
 
       {activeSection && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "6px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))", gap: "8px" }}>
           {activeSection.indices.map((i) => {
             const state = questionState(answered[i]);
             const { background, border } = LEGEND_INDEX[state];
@@ -121,11 +121,13 @@ export function Palette({
                 type="button"
                 onClick={() => onJump(i)}
                 style={{
-                  padding: "7px 0",
-                  fontSize: "12px",
+                  aspectRatio: "1 / 1",
+                  width: "100%",
+                  padding: 0,
+                  fontSize: "14px",
                   fontWeight: 700,
                   border: isCurrent ? "2px solid #1a2a44" : `1px solid ${border}`,
-                  borderRadius: "4px",
+                  borderRadius: "5px",
                   background,
                   color: state === "answered" ? "#fff" : "#1a2a44",
                   cursor: "pointer",

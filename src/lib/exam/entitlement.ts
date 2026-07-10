@@ -2,7 +2,9 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { shuffleAttempt } from "@/lib/exam/shuffle";
 
-export const MAX_ATTEMPTS_PER_PAPER = 5;
+// Temporarily raised for end-to-end testing during launch prep — drop back to
+// 5 before real users arrive.
+export const MAX_ATTEMPTS_PER_PAPER = 50;
 const NON_TERMINAL_STATUSES = ["in_progress", "paused"] as const;
 const TERMINAL_STATUSES = ["submitted", "expired", "locked"] as const;
 
