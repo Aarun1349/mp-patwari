@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { GrantCreditsForm } from "./GrantCreditsForm";
 
@@ -47,6 +48,7 @@ export default async function AdminUsersPage({
             <th>Orders</th>
             <th>Tests remaining</th>
             <th>Grant free tests</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -61,6 +63,9 @@ export default async function AdminUsersPage({
               <td>{user.credit?.testsRemaining ?? 0}</td>
               <td>
                 <GrantCreditsForm userId={user.id} />
+              </td>
+              <td>
+                <Link href={`/admin/users/${user.id}`}>View</Link>
               </td>
             </tr>
           ))}

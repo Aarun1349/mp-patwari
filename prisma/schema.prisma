@@ -10,6 +10,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserCategory {
+  GENERAL
+  OBC
+  SC
+  ST
+  EWS
+}
+
+enum Qualification {
+  TENTH
+  TWELFTH
+  GRADUATE
+  POST_GRADUATE
+  OTHER
+}
+
 model User {
   id          String   @id @default(cuid())
   phone       String?  @unique
@@ -19,6 +35,20 @@ model User {
   emailVerified Boolean @default(false)
   createdAt   DateTime @default(now())
   lastLoginAt DateTime?
+
+  // Additional profile info — all optional, filled in anytime via /profile
+  // (matches this platform's low-friction phone-OTP-only signup; nothing
+  // here gates access to anything). contactPhone is deliberately separate
+  // from the OTP-verified `phone` field above — a self-reported number must
+  // never double as a login credential without its own verification (same
+  // class of issue as the email-hijack fix earlier: don't trust unverified
+  // user input as an identity anchor).
+  dateOfBirth   DateTime?
+  city          String?
+  category      UserCategory?
+  qualification Qualification?
+  examInterest  String?
+  contactPhone  String?
 
   sessions      Session[]
   otpChallenges OtpChallenge[]
