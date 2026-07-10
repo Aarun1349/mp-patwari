@@ -104,19 +104,22 @@ export default async function HistoryPage() {
                       <td>{isTerminal ? `${attempt.accuracyPct?.toFixed(1) ?? 0}%` : "—"}</td>
                       <td>
                         {isTerminal ? (
-                          <>
-                            <Link href={`/exam/result/${attempt.id}`}>View report</Link>
+                          <div className="table-actions">
+                            <Link href={`/exam/result/${attempt.id}`} className="action-primary">
+                              View report
+                            </Link>
                             {canRetakeHere && (
-                              <>
-                                {" · "}
-                                <Link href={`/exam/${attempt.paperId}`}>
-                                  Retake ({paperInfo.terminalCount}/{MAX_ATTEMPTS_PER_PAPER})
-                                </Link>
-                              </>
+                              <Link href={`/exam/${attempt.paperId}`}>
+                                Retake ({paperInfo.terminalCount}/{MAX_ATTEMPTS_PER_PAPER})
+                              </Link>
                             )}
-                          </>
+                          </div>
                         ) : (
-                          <Link href={`/exam/attempt/${attempt.id}`}>Resume</Link>
+                          <div className="table-actions">
+                            <Link href={`/exam/attempt/${attempt.id}`} className="action-primary">
+                              Resume
+                            </Link>
+                          </div>
                         )}
                       </td>
                     </tr>
