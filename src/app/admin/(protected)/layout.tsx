@@ -16,8 +16,29 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
         <nav className="app-sidebar-nav">
+          <a href="/admin" className="app-sidebar-link">
+            Dashboard
+          </a>
+          <a href="/admin/users" className="app-sidebar-link">
+            Users
+          </a>
+          <a href="/admin/papers" className="app-sidebar-link">
+            Papers &amp; Questions
+          </a>
           <a href="/admin/upload" className="app-sidebar-link">
             Upload Questions
+          </a>
+          <a href="/admin/packages" className="app-sidebar-link">
+            Packages
+          </a>
+          <a href="/admin/coupons" className="app-sidebar-link">
+            Coupons
+          </a>
+          <a href="/admin/orders" className="app-sidebar-link">
+            Orders &amp; Revenue
+          </a>
+          <a href="/admin/attempts" className="app-sidebar-link">
+            Attempts
           </a>
         </nav>
       </aside>

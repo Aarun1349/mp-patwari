@@ -59,6 +59,10 @@ export async function creditOrderForPayment(
       },
     });
 
+    if (order.couponId) {
+      await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
+    }
+
     return {
       credited: true,
       orderId: order.id,
@@ -90,6 +94,80 @@ export async function creditOrderForPayment(
     }
   } else if (result.credited) {
     console.log(`Order ${result.orderId} credited — no email on file, skipping receipt.`);
+  }
+
+  return { credited: result.credited, orderId: result.orderId, status: result.status };
+}
+
+/**
+ * Same crediting logic as creditOrderForPayment(), but for a coupon that
+ * discounts a package to ₹0 — there's no Razorpay payment to confirm, so this
+ * is keyed by Order.id directly and called synchronously from
+ * createOrderAction() instead of from the webhook/client-confirm paths.
+ */
+export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
+  const result = await prisma.$transaction(async (tx) => {
+    const flip = await tx.order.updateMany({
+      where: { id: orderId, status: "created" },
+      data: { status: "paid", paidAt: new Date() },
+    });
+
+    if (flip.count === 0) {
+      const existing = await tx.order.findUnique({ where: { id: orderId } });
+      return { credited: false, orderId, status: existing?.status ?? "unknown" };
+    }
+
+    const order = await tx.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { package: true, user: true },
+    });
+
+    await tx.userCredit.upsert({
+      where: { userId: order.userId },
+      create: {
+        userId: order.userId,
+        testsRemaining: order.package.testCount,
+        testsTotalPurchased: order.package.testCount,
+      },
+      update: {
+        testsRemaining: { increment: order.package.testCount },
+        testsTotalPurchased: { increment: order.package.testCount },
+      },
+    });
+
+    if (order.couponId) {
+      await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
+    }
+
+    return {
+      credited: true,
+      orderId: order.id,
+      status: "paid",
+      receipt: {
+        to: order.user.email,
+        userName: order.user.name,
+        packageName: order.package.name,
+        testCount: order.package.testCount,
+        amountPaise: order.amountPaise,
+      },
+    };
+  });
+
+  const receipt = "receipt" in result ? result.receipt : undefined;
+
+  if (result.credited && receipt?.to) {
+    try {
+      await sendReceiptEmail({
+        to: receipt.to,
+        userName: receipt.userName,
+        packageName: receipt.packageName,
+        testCount: receipt.testCount,
+        amountPaise: receipt.amountPaise,
+        orderId: result.orderId,
+      });
+    } catch (err) {
+      console.error("sendReceiptEmail failed (payment already credited)", err);
+    }
   }
 
   return { credited: result.credited, orderId: result.orderId, status: result.status };

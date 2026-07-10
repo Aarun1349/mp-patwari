@@ -4,13 +4,15 @@ import { verifySession } from "@/lib/auth/session";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder, verifyPaymentSignature, RazorpayApiError } from "@/lib/payments/razorpay";
-import { creditOrderForPayment } from "@/lib/payments/creditOrder";
+import { creditOrderForPayment, creditFreeOrder } from "@/lib/payments/creditOrder";
+import { validateAndPriceCoupon, InvalidCouponError } from "@/lib/payments/coupon";
 
 export type CreateOrderResult =
   | { orderId: string; amount: number; keyId: string; packageName: string }
+  | { freeOrderCredited: true }
   | { error: string };
 
-export async function createOrderAction(packageId: string): Promise<CreateOrderResult> {
+export async function createOrderAction(packageId: string, couponCode?: string): Promise<CreateOrderResult> {
   const { userId } = await verifySession();
 
   const { allowed } = await checkRateLimit(`order:create:${userId}`, {
@@ -33,17 +35,46 @@ export async function createOrderAction(packageId: string): Promise<CreateOrderR
     }
   }
 
+  let couponId: string | undefined;
+  let discountPaise = 0;
+  let finalAmountPaise = pkg.pricePaise;
+  if (couponCode?.trim()) {
+    try {
+      const priced = await validateAndPriceCoupon(couponCode, pkg);
+      couponId = priced.coupon.id;
+      discountPaise = priced.discountPaise;
+      finalAmountPaise = priced.finalAmountPaise;
+    } catch (err) {
+      if (err instanceof InvalidCouponError) return { error: err.message };
+      throw err;
+    }
+  }
+
+  const order = await prisma.order.create({
+    data: {
+      userId,
+      packageId: pkg.id,
+      amountPaise: finalAmountPaise,
+      discountPaise,
+      couponId,
+      status: "created",
+    },
+  });
+
+  // A coupon can discount a package to ₹0 — Razorpay doesn't support ₹0
+  // orders, so credit it directly instead of opening the checkout modal.
+  if (finalAmountPaise <= 0) {
+    await creditFreeOrder(order.id);
+    return { freeOrderCredited: true };
+  }
+
   const keyId = process.env.RAZORPAY_KEY_ID;
   if (!keyId) {
     return { error: "Payments are not configured yet. Please try again later." };
   }
 
-  const order = await prisma.order.create({
-    data: { userId, packageId: pkg.id, amountPaise: pkg.pricePaise, status: "created" },
-  });
-
   try {
-    const razorpayOrder = await createRazorpayOrder(pkg.pricePaise, order.id, {
+    const razorpayOrder = await createRazorpayOrder(finalAmountPaise, order.id, {
       userId,
       packageId: pkg.id,
     });
@@ -55,7 +86,7 @@ export async function createOrderAction(packageId: string): Promise<CreateOrderR
 
     return {
       orderId: razorpayOrder.id,
-      amount: pkg.pricePaise,
+      amount: finalAmountPaise,
       keyId,
       packageName: pkg.name,
     };

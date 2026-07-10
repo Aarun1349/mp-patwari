@@ -37,14 +37,20 @@ export function BuyButton({ packageId }: { packageId: string }) {
   const router = useRouter();
   const [scriptReady, setScriptReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [couponCode, setCouponCode] = useState("");
   const [pending, startTransition] = useTransition();
 
   function handleBuy() {
     setError(null);
     startTransition(async () => {
-      const result = await createOrderAction(packageId);
+      const result = await createOrderAction(packageId, couponCode);
       if ("error" in result) {
         setError(result.error);
+        return;
+      }
+
+      if ("freeOrderCredited" in result) {
+        router.push("/purchases");
         return;
       }
 
@@ -83,6 +89,13 @@ export function BuyButton({ packageId }: { packageId: string }) {
         src="https://checkout.razorpay.com/v1/checkout.js"
         strategy="afterInteractive"
         onReady={() => setScriptReady(true)}
+      />
+      <input
+        type="text"
+        placeholder="Coupon code (optional)"
+        value={couponCode}
+        onChange={(e) => setCouponCode(e.target.value)}
+        style={{ width: "140px", marginRight: "6px", fontSize: "12px", padding: "4px" }}
       />
       {error && <p className="auth-error">{error}</p>}
       <button type="button" onClick={handleBuy} disabled={pending || !scriptReady}>

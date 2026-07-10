@@ -210,6 +210,9 @@ model Order {
   package           Package     @relation(fields: [packageId], references: [id])
   packageId         String
   amountPaise       Int
+  discountPaise     Int         @default(0)
+  coupon            Coupon?     @relation(fields: [couponId], references: [id])
+  couponId          String?
   razorpayOrderId   String?     @unique
   razorpayPaymentId String?     @unique
   status            OrderStatus @default(created)
@@ -218,6 +221,29 @@ model Order {
 
   @@index([userId])
   @@map("orders")
+}
+
+enum CouponDiscountType {
+  percent
+  flat
+}
+
+model Coupon {
+  id              String             @id @default(cuid())
+  code            String             @unique
+  discountType    CouponDiscountType
+  // percent: 1-100. flat: paise.
+  discountValue   Int
+  maxRedemptions  Int?
+  redemptionCount Int                @default(0)
+  validFrom       DateTime?
+  validUntil      DateTime?
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+
+  orders Order[]
+
+  @@map("coupons")
 }
 
 model UserCredit {
