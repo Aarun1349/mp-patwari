@@ -22,34 +22,38 @@ export default async function PackagesPage() {
       <div className="auth-card auth-card-wide">
         <h1>Test Packages</h1>
         <p className="muted">One-time purchase. Tests are added to your account immediately.</p>
+        <p className="muted">
+          {credit?.testsRemaining ?? 0} paid test(s) remaining on your account.
+        </p>
 
-        <table className="report-table">
-          <thead>
-            <tr>
-              <th>Package</th>
-              <th>Tests</th>
-              <th>Price</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {visiblePackages.map((pkg) => (
-              <tr key={pkg.id}>
-                <td>
+        <div className="package-grid">
+          {visiblePackages.map((pkg) => {
+            const isPopular = pkg.name.toLowerCase() === "popular";
+            const perTest = pkg.testCount > 0 ? pkg.pricePaise / 100 / pkg.testCount : 0;
+            return (
+              <div key={pkg.id} className={`package-card${isPopular ? " popular" : ""}`}>
+                {isPopular && <span className="tag">Most Popular</span>}
+                <div className="name">
                   {pkg.name}
-                  {pkg.kind === "topup" && " (top-up)"}
-                </td>
-                <td>{pkg.testCount}</td>
-                <td>₹{(pkg.pricePaise / 100).toFixed(2)}</td>
-                <td>
-                  <BuyButton packageId={pkg.id} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  {pkg.kind === "topup" && " (Top-up)"}
+                </div>
+                <div className="amount">₹{(pkg.pricePaise / 100).toFixed(0)}</div>
+                <div className="per">
+                  {pkg.testCount} test{pkg.testCount === 1 ? "" : "s"} · ₹{perTest.toFixed(0)}/test
+                </div>
+                <ul>
+                  <li>{pkg.testCount} full-length mock tests</li>
+                  <li>Section-wise analysis after each test</li>
+                  <li>{pkg.validityDays} days validity</li>
+                  {pkg.kind === "topup" && <li>Existing-customer pricing</li>}
+                </ul>
+                <BuyButton packageId={pkg.id} />
+              </div>
+            );
+          })}
+        </div>
 
-        <p className="muted" style={{ marginTop: "16px" }}>
+        <p className="muted" style={{ marginTop: "20px" }}>
           See our <Link href="/disclaimer">Disclaimer &amp; Policies</Link> — all purchases are
           final, no refunds.
         </p>

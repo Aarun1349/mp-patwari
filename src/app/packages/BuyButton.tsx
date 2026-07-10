@@ -90,16 +90,19 @@ export function BuyButton({ packageId }: { packageId: string }) {
         strategy="afterInteractive"
         onReady={() => setScriptReady(true)}
       />
-      <input
-        type="text"
-        placeholder="Coupon code (optional)"
-        value={couponCode}
-        onChange={(e) => setCouponCode(e.target.value)}
-        style={{ width: "140px", marginRight: "6px", fontSize: "12px", padding: "4px" }}
-      />
-      {error && <p className="auth-error">{error}</p>}
-      <button type="button" onClick={handleBuy} disabled={pending || !scriptReady}>
-        {pending ? "Starting…" : "Buy"}
+      <div className="coupon-row">
+        <input
+          type="text"
+          placeholder="Coupon code (optional)"
+          value={couponCode}
+          onChange={(e) => setCouponCode(e.target.value)}
+        />
+      </div>
+      {error && (
+        <p style={{ color: "#ff8a80", fontSize: "12px", marginBottom: "8px" }}>{error}</p>
+      )}
+      <button type="button" className="package-card-buy" onClick={handleBuy} disabled={pending || !scriptReady}>
+        {pending ? "Starting…" : "Buy Now"}
       </button>
     </>
   );
