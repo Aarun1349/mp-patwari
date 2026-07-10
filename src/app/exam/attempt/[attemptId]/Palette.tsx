@@ -31,6 +31,12 @@ function questionState(entry: AnsweredEntry | undefined): keyof typeof LEGEND_IN
   return "visited";
 }
 
+/** Switching to a subject should land on the first question in it that still
+ * needs an answer, not just show the palette grid with the question unchanged. */
+function firstUnansweredIndex(section: PaletteSection, answered: Record<number, AnsweredEntry>): number {
+  return section.indices.find((i) => !answered[i]?.selectedOptionId) ?? section.indices[0];
+}
+
 export function Palette({
   sections,
   currentIndex,
@@ -82,7 +88,10 @@ export function Palette({
           <button
             key={section.code}
             type="button"
-            onClick={() => setActiveCode(section.code)}
+            onClick={() => {
+              setActiveCode(section.code);
+              if (section.code !== activeCode) onJump(firstUnansweredIndex(section, answered));
+            }}
             style={{
               padding: "6px 10px",
               fontSize: "11.5px",

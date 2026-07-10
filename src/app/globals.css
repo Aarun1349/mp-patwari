@@ -497,27 +497,45 @@ input[type="checkbox"] {
 }
 
 /* Exam room / instructions — responsive breakpoint. Inline styles can't
-   express media queries, so the two-column layout and sticky sidebar live
-   here instead of as inline styles on ExamRoom.tsx. */
+   express media queries, so the full-height desktop layout (main pinned to
+   100vh, sidebar scrolling internally) and the mobile fallback (natural page
+   scroll, no fixed height — otherwise content would just get clipped once
+   the stacked column exceeds one screen) live here instead of as inline
+   styles on ExamRoom.tsx. */
+.exam-room-main {
+  height: 100vh;
+}
+.exam-room-content {
+  flex: 1;
+  min-height: 0;
+}
 .exam-room-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
 }
 .exam-room-sidebar {
-  position: sticky;
-  top: 24px;
-  max-height: calc(100vh - 140px);
+  height: 100%;
   overflow-y: auto;
 }
 @media (max-width: 860px) {
+  .exam-room-main {
+    height: auto;
+    min-height: 100vh;
+  }
+  .exam-room-content {
+    flex: none;
+  }
   .exam-room-grid {
     grid-template-columns: 1fr;
+    flex: none;
   }
   .exam-room-sidebar {
-    position: static;
-    max-height: none;
+    height: auto;
+    overflow-y: visible;
   }
 }
 

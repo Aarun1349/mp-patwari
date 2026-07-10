@@ -32,10 +32,10 @@ export function ExamRoom({
   const lastViolationAt = useRef(0);
 
   const loadQuestion = useCallback(
-    async (index: number) => {
+    async (index: number, lang: "original" | "alt" = state.displayLang) => {
       dispatch({ type: "QUESTION_LOADING" });
       try {
-        const res = await fetch(`/api/exam/${attemptId}/question/${index}`);
+        const res = await fetch(`/api/exam/${attemptId}/question/${index}?lang=${lang}`);
         if (res.status === 409) {
           const body = await res.json();
           dispatch({ type: "HEARTBEAT", status: body.status, remainingSeconds: 0 });
@@ -51,8 +51,14 @@ export function ExamRoom({
         dispatch({ type: "ERROR", message: "Network error loading question." });
       }
     },
-    [attemptId]
+    [attemptId, state.displayLang]
   );
+
+  function toggleLang() {
+    const next = state.displayLang === "original" ? "alt" : "original";
+    dispatch({ type: "SET_DISPLAY_LANG", lang: next });
+    loadQuestion(state.currentIndex, next);
+  }
 
   // Initial question load.
   useEffect(() => {
@@ -239,9 +245,10 @@ export function ExamRoom({
   }
 
   const isLastQuestion = state.currentIndex >= totalQuestions - 1;
+  const canTranslate = state.currentQuestion?.translatable ?? false;
 
   return (
-    <main style={{ minHeight: "100vh", background: "#ffffff", userSelect: "none" }}>
+    <main className="exam-room-main" style={{ display: "flex", flexDirection: "column", background: "#ffffff", userSelect: "none" }}>
       {state.status === "paused" && (
         <ViolationModal fullscreenExitCount={state.fullscreenExitCount} onResume={handleResume} />
       )}
@@ -253,16 +260,35 @@ export function ExamRoom({
           alignItems: "center",
           flexWrap: "wrap",
           rowGap: "8px",
+          flexShrink: 0,
           background: "#1a2a44",
           borderBottom: "3px solid #c9a227",
           padding: "14px 28px",
         }}
       >
         <h1 style={{ fontSize: "16px", color: "#f0e9d8", fontWeight: 700, margin: 0 }}>{paperTitle}</h1>
-        <TimerBar remainingSeconds={state.remainingSeconds} />
+        <div style={{ display: "flex", alignItems: "center", gap: "18px" }}>
+          <button
+            type="button"
+            onClick={toggleLang}
+            disabled={!canTranslate}
+            title={canTranslate ? "Switch question language" : "Not available for this section"}
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(240,233,216,0.4)",
+              color: canTranslate ? "#f0e9d8" : "rgba(240,233,216,0.35)",
+              padding: "6px 12px",
+              fontSize: "12.5px",
+              fontWeight: 700,
+            }}
+          >
+            {state.displayLang === "original" ? "हिंदी / English" : "English / हिंदी"}
+          </button>
+          <TimerBar remainingSeconds={state.remainingSeconds} />
+        </div>
       </div>
 
-      <div style={{ padding: "24px", maxWidth: "1120px", margin: "0 auto" }}>
+      <div className="exam-room-content" style={{ padding: "20px 32px", display: "flex", flexDirection: "column" }}>
         {state.error && <p className="auth-error">{state.error}</p>}
 
         <div className="exam-room-grid">
@@ -273,17 +299,23 @@ export function ExamRoom({
               borderRadius: "6px",
               padding: "24px",
               boxShadow: "0 1px 3px rgba(26,42,68,0.08)",
+              display: "flex",
+              flexDirection: "column",
+              height: "100%",
+              overflowY: "auto",
             }}
           >
-            {state.currentQuestion && !state.loadingQuestion ? (
-              <QuestionPanel
-                question={state.currentQuestion}
-                onSelect={(optionId) => saveAnswer(optionId, state.currentQuestion!.markedForReview)}
-                onToggleReview={(marked) => saveAnswer(state.currentQuestion!.selectedOptionId, marked)}
-              />
-            ) : (
-              <p style={{ color: "#5c5c5c", fontSize: "14px" }}>Loading question…</p>
-            )}
+            <div style={{ flex: 1 }}>
+              {state.currentQuestion && !state.loadingQuestion ? (
+                <QuestionPanel
+                  question={state.currentQuestion}
+                  onSelect={(optionId) => saveAnswer(optionId, state.currentQuestion!.markedForReview)}
+                  onToggleReview={(marked) => saveAnswer(state.currentQuestion!.selectedOptionId, marked)}
+                />
+              ) : (
+                <p style={{ color: "#5c5c5c", fontSize: "14px" }}>Loading question…</p>
+              )}
+            </div>
 
             <div
               style={{
@@ -291,7 +323,7 @@ export function ExamRoom({
                 justifyContent: "space-between",
                 alignItems: "center",
                 gap: "10px",
-                marginTop: "24px",
+                marginTop: "auto",
                 paddingTop: "18px",
                 borderTop: "1px solid rgba(26,42,68,0.12)",
                 flexWrap: "wrap",

@@ -101,6 +101,11 @@ model Question {
   section        Section  @relation(fields: [sectionId], references: [id])
   sectionId      String
   text           String
+  // Lazily-populated machine translation into the other language (Hindi<->English),
+  // generated on first request and cached — see src/lib/ai/translate.ts. Never
+  // populated for language-skill sections (General Hindi / General English),
+  // where translating the question would defeat what it's testing.
+  textAlt        String?
   marks          Float
   negativeMarks  Float    @default(0)
   isActive       Boolean  @default(true)
@@ -120,6 +125,7 @@ model QuestionOption {
   questionId String
   label      String
   text       String
+  textAlt    String?
   isCorrect  Boolean @default(false)
   sortOrder  Int     @default(0)
 

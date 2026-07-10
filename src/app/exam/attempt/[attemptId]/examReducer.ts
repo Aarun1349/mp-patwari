@@ -7,9 +7,12 @@ export interface QuestionPayload {
   section: { code: string; nameEn: string; nameHi: string };
   text: string;
   options: { id: string; label: string; text: string }[];
+  translatable: boolean;
   selectedOptionId: string | null;
   markedForReview: boolean;
 }
+
+export type DisplayLang = "original" | "alt";
 
 export interface AnsweredEntry {
   selectedOptionId: string | null;
@@ -27,6 +30,7 @@ export interface ExamState {
   fullscreenExitCount: number;
   fullscreenUnsupported: boolean;
   error: string | null;
+  displayLang: DisplayLang;
 }
 
 export type ExamAction =
@@ -38,6 +42,7 @@ export type ExamAction =
   | { type: "VIOLATION"; status: ExamStatus; fullscreenExitCount: number }
   | { type: "RESUMED" }
   | { type: "FULLSCREEN_UNSUPPORTED" }
+  | { type: "SET_DISPLAY_LANG"; lang: DisplayLang }
   | { type: "ERROR"; message: string };
 
 export function createInitialState(totalQuestions: number, remainingSeconds: number): ExamState {
@@ -52,6 +57,7 @@ export function createInitialState(totalQuestions: number, remainingSeconds: num
     fullscreenExitCount: 0,
     fullscreenUnsupported: false,
     error: null,
+    displayLang: "original",
   };
 }
 
@@ -120,6 +126,9 @@ export function examReducer(state: ExamState, action: ExamAction): ExamState {
 
     case "FULLSCREEN_UNSUPPORTED":
       return { ...state, fullscreenUnsupported: true };
+
+    case "SET_DISPLAY_LANG":
+      return { ...state, displayLang: action.lang };
 
     case "ERROR":
       return { ...state, loadingQuestion: false, error: action.message };
