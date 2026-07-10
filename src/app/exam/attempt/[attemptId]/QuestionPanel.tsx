@@ -16,36 +16,39 @@ export function QuestionPanel({
       </p>
       <p style={{ fontSize: "16px", margin: "12px 0", color: "#1a2a44" }}>{question.text}</p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        {question.options.map((option) => (
-          <label
-            key={option.id}
-            style={{
-              display: "flex",
-              gap: "8px",
-              alignItems: "center",
-              padding: "10px",
-              border:
-                question.selectedOptionId === option.id
-                  ? "1px solid #a3242a"
-                  : "1px solid rgba(26,42,68,0.2)",
-              borderRadius: "4px",
-              cursor: "pointer",
-              background: question.selectedOptionId === option.id ? "rgba(163,36,42,0.08)" : "transparent",
-              color: "#1a2a44",
-            }}
-          >
-            <input
-              type="radio"
-              name={`question-${question.questionId}`}
-              checked={question.selectedOptionId === option.id}
-              onChange={() => onSelect(option.id)}
-            />
-            <span>
-              <strong>{option.label}.</strong> {option.text}
-            </span>
-          </label>
-        ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {question.options.map((option) => {
+          const isSelected = question.selectedOptionId === option.id;
+          return (
+            <label
+              key={option.id}
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                padding: "12px 14px",
+                border: isSelected ? "2px solid #a3242a" : "1px solid rgba(26,42,68,0.25)",
+                borderRadius: "4px",
+                cursor: "pointer",
+                background: isSelected ? "rgba(163,36,42,0.1)" : "#fff",
+                color: "#1a2a44",
+                fontWeight: isSelected ? 700 : 400,
+              }}
+            >
+              <input
+                type="radio"
+                name={`question-${question.questionId}`}
+                checked={isSelected}
+                onChange={() => onSelect(option.id)}
+                style={{ width: "18px", height: "18px", flexShrink: 0 }}
+              />
+              <span>
+                <strong>{option.label}.</strong> {option.text}
+              </span>
+              {isSelected && <span style={{ marginLeft: "auto", color: "#a3242a" }}>✓</span>}
+            </label>
+          );
+        })}
       </div>
 
       <label style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "14px", color: "#1a2a44" }}>

@@ -3,15 +3,13 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* This is a fixed light-themed brand (navy/gold/cream), not a theme-adaptive
+   app — deliberately not following prefers-color-scheme. Native form
+   controls (buttons, radios) would otherwise render with dark-mode UI chrome
+   under an OS dark theme, clashing with the light custom styling. */
 html {
   height: 100%;
+  color-scheme: light;
 }
 
 html,
@@ -42,10 +40,34 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Base styling for every plain <button> in the app — components that need a
+   different look (Save & Next, Finish & Submit, nav-cta, ...) set their own
+   background/color inline or via a more specific class, which wins over this. */
+button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 4px;
+  border: 1px solid rgba(26, 42, 68, 0.3);
+  background: #fff;
+  color: #1a2a44;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+button:hover:not(:disabled) {
+  background: #f0e9d8;
+  border-color: #1a2a44;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: #a3242a;
+  width: 16px;
+  height: 16px;
 }
 
 /* Auth / dashboard / profile shell — shares the landing page's navy/gold/cream brand system */
@@ -465,4 +487,29 @@ a {
 .report-table th {
   color: #1a2a44;
   font-size: 13px;
+}
+
+/* Exam room / instructions — responsive breakpoint. Inline styles can't
+   express media queries, so the two-column layout and sticky sidebar live
+   here instead of as inline styles on ExamRoom.tsx. */
+.exam-room-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.exam-room-sidebar {
+  position: sticky;
+  top: 24px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+@media (max-width: 860px) {
+  .exam-room-grid {
+    grid-template-columns: 1fr;
+  }
+  .exam-room-sidebar {
+    position: static;
+    max-height: none;
+  }
 }

@@ -16,13 +16,22 @@ export default async function ExamInstructionsPage({
   if (!paper || !paper.isActive) notFound();
 
   return (
-    <main className="auth-page">
-      <div className="auth-card">
-        <h1>{paper.title}</h1>
-        <p className="muted">Read the instructions carefully before starting.</p>
+    <main style={{ minHeight: "100vh", background: "#ffffff" }}>
+      <div
+        style={{
+          background: "#1a2a44",
+          borderBottom: "3px solid #c9a227",
+          padding: "14px 28px",
+        }}
+      >
+        <h1 style={{ fontSize: "16px", color: "#f0e9d8", fontWeight: 700, margin: 0 }}>{paper.title}</h1>
+      </div>
 
-        <section className="dashboard-section">
-          <ul>
+      <div style={{ padding: "32px 28px", maxWidth: "860px", margin: "0 auto" }}>
+        <p style={{ color: "#5c5c5c", marginBottom: "24px" }}>Read the instructions carefully before starting.</p>
+
+        <section style={{ marginBottom: "28px" }}>
+          <ul style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", color: "#1a2a44", listStyle: "none" }}>
             <li>Total questions: {paper.totalQuestions}</li>
             <li>Total marks: {paper.totalMarks}</li>
             <li>Duration: {paper.durationMinutes} minutes</li>
@@ -30,16 +39,19 @@ export default async function ExamInstructionsPage({
           </ul>
         </section>
 
-        <section className="dashboard-section">
-          <h2>Exam rules</h2>
-          <ul>
+        <section style={{ marginBottom: "28px" }}>
+          <h2 style={{ fontSize: "18px", color: "#1a2a44", marginBottom: "12px" }}>Exam rules</h2>
+          <ul style={{ display: "flex", flexDirection: "column", gap: "8px", color: "#2b2b2b", paddingLeft: "20px" }}>
             <li>The exam runs in fullscreen mode. Exiting fullscreen 3 times locks your attempt.</li>
             <li>Right-click, text selection, and copy/paste are disabled during the exam.</li>
             <li>The timer is server-controlled and cannot be paused by closing the tab.</li>
             <li>On mobile browsers that don&apos;t support fullscreen, the exam still proceeds, but tab-switch violations still count.</li>
             <li>
               By starting this test you agree to our{" "}
-              <Link href="/disclaimer">Disclaimer &amp; Policies</Link>.
+              <Link href="/disclaimer" style={{ color: "#a3242a", textDecoration: "underline" }}>
+                Disclaimer &amp; Policies
+              </Link>
+              .
             </li>
           </ul>
         </section>

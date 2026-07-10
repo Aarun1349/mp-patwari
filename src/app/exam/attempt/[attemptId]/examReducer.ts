@@ -85,6 +85,18 @@ export function examReducer(state: ExamState, action: ExamAction): ExamState {
             markedForReview: action.markedForReview,
           },
         },
+        // currentQuestion is a separate piece of state from `answered` (which
+        // only drives the palette) — without this, the radio/checkbox inputs
+        // never visually reflect the selection since QuestionPanel reads
+        // currentQuestion.selectedOptionId, not the answered map.
+        currentQuestion:
+          state.currentQuestion && state.currentQuestion.index === action.index
+            ? {
+                ...state.currentQuestion,
+                selectedOptionId: action.selectedOptionId,
+                markedForReview: action.markedForReview,
+              }
+            : state.currentQuestion,
       };
 
     case "HEARTBEAT":

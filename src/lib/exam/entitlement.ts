@@ -91,12 +91,16 @@ export async function startAttempt(userId: string, paperId: string): Promise<{ a
       if (credit.count === 0) throw new NoEntitlementError();
     }
 
-    const questions = await tx.question.findMany({
-      where: { paperId, isActive: true },
-      include: { options: true },
-    });
+    const [questions, sections] = await Promise.all([
+      tx.question.findMany({
+        where: { paperId, isActive: true },
+        include: { options: true },
+      }),
+      tx.section.findMany({ select: { id: true, sortOrder: true } }),
+    ]);
+    const sectionSortOrder = Object.fromEntries(sections.map((s) => [s.id, s.sortOrder]));
 
-    const { questionOrder, optionOrder } = shuffleAttempt(questions);
+    const { questionOrder, optionOrder } = shuffleAttempt(questions, sectionSortOrder);
 
     const attempt = await tx.attempt.create({
       data: {

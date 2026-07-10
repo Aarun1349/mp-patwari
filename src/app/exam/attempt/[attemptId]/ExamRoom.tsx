@@ -251,6 +251,8 @@ export function ExamRoom({
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          flexWrap: "wrap",
+          rowGap: "8px",
           background: "#1a2a44",
           borderBottom: "3px solid #c9a227",
           padding: "14px 28px",
@@ -263,7 +265,7 @@ export function ExamRoom({
       <div style={{ padding: "24px", maxWidth: "1120px", margin: "0 auto" }}>
         {state.error && <p className="auth-error">{state.error}</p>}
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px", alignItems: "start" }}>
+        <div className="exam-room-grid">
           <div
             style={{
               background: "#fff",
@@ -333,16 +335,13 @@ export function ExamRoom({
           </div>
 
           <div
+            className="exam-room-sidebar"
             style={{
               background: "#fff",
               border: "1px solid rgba(26,42,68,0.15)",
               borderRadius: "6px",
               padding: "20px",
               boxShadow: "0 1px 3px rgba(26,42,68,0.08)",
-              maxHeight: "calc(100vh - 140px)",
-              overflowY: "auto",
-              position: "sticky",
-              top: "24px",
             }}
           >
             <Palette
