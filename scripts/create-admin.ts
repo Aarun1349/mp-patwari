@@ -1,7 +1,23 @@
 // One-off script: creates or updates an admin account.
 // Usage: ADMIN_EMAIL=you@example.com ADMIN_PASSWORD=... npx tsx scripts/create-admin.ts
-import { prisma } from "../src/lib/prisma";
-import { hashPassword } from "../src/lib/auth/password";
+//
+// Uses its own PrismaClient and scrypt hashing (matching src/lib/auth/password.ts's
+// format exactly) instead of importing src/lib/prisma.ts / src/lib/auth/password.ts —
+// both are guarded by `import "server-only"`, which throws when loaded outside
+// Next's server-component graph (e.g. via plain tsx/node).
+import { PrismaClient } from "@prisma/client";
+import { randomBytes, scrypt as scryptCb } from "node:crypto";
+import { promisify } from "node:util";
+
+const prisma = new PrismaClient();
+const scrypt = promisify(scryptCb);
+const KEY_LENGTH = 64;
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const derived = (await scrypt(password, salt, KEY_LENGTH)) as Buffer;
+  return `${salt}:${derived.toString("hex")}`;
+}
 
 async function main() {
   const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
