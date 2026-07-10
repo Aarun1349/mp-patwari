@@ -156,7 +156,7 @@ model Attempt {
 
   answers Answer[]
 
-  @@unique([userId, paperId])
+  @@index([userId, paperId])
   @@index([userId])
   @@index([paperId])
   @@map("attempts")

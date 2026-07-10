@@ -55,6 +55,27 @@ export default async function ExamResultPage({
     ? formatDuration(attempt.submittedAt.getTime() - attempt.startedAt.getTime())
     : "—";
 
+  const previousAttempt = await prisma.attempt.findFirst({
+    where: {
+      userId,
+      paperId: attempt.paperId,
+      id: { not: attempt.id },
+      status: { in: ["submitted", "expired", "locked"] },
+      startedAt: { lt: attempt.startedAt },
+    },
+    orderBy: { startedAt: "desc" },
+    select: { totalScore: true, accuracyPct: true, startedAt: true },
+  });
+
+  const scoreDelta =
+    previousAttempt?.totalScore != null && attempt.totalScore != null
+      ? attempt.totalScore - previousAttempt.totalScore
+      : null;
+  const accuracyDelta =
+    previousAttempt?.accuracyPct != null && attempt.accuracyPct != null
+      ? attempt.accuracyPct - previousAttempt.accuracyPct
+      : null;
+
   return (
     <main className="auth-page">
       <div className="auth-card auth-card-wide">
@@ -98,6 +119,30 @@ export default async function ExamResultPage({
             </tbody>
           </table>
         </section>
+
+        {previousAttempt && (
+          <section className="dashboard-section">
+            <h2>Compared to your last attempt</h2>
+            <p>
+              Score: {attempt.totalScore ?? 0} vs {previousAttempt.totalScore ?? 0}{" "}
+              {scoreDelta !== null && (
+                <strong style={{ color: scoreDelta >= 0 ? "#2a7a2a" : "#a3242a" }}>
+                  ({scoreDelta >= 0 ? "+" : ""}
+                  {scoreDelta})
+                </strong>
+              )}
+            </p>
+            <p>
+              Accuracy: {attempt.accuracyPct?.toFixed(1) ?? 0}% vs {previousAttempt.accuracyPct?.toFixed(1) ?? 0}%{" "}
+              {accuracyDelta !== null && (
+                <strong style={{ color: accuracyDelta >= 0 ? "#2a7a2a" : "#a3242a" }}>
+                  ({accuracyDelta >= 0 ? "+" : ""}
+                  {accuracyDelta.toFixed(1)}%)
+                </strong>
+              )}
+            </p>
+          </section>
+        )}
 
         <p className="muted">Comparison with other users&apos; performance is coming in a future update.</p>
 

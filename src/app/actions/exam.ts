@@ -4,7 +4,7 @@ import { verifySession } from "@/lib/auth/session";
 import {
   startAttempt,
   NoEntitlementError,
-  AlreadyAttemptedError,
+  MaxAttemptsReachedError,
   PaperUnavailableError,
 } from "@/lib/exam/entitlement";
 
@@ -19,7 +19,7 @@ export async function startAttemptAction(paperId: string): Promise<StartAttemptR
   } catch (err) {
     if (
       err instanceof NoEntitlementError ||
-      err instanceof AlreadyAttemptedError ||
+      err instanceof MaxAttemptsReachedError ||
       err instanceof PaperUnavailableError
     ) {
       return { error: err.message };

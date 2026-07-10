@@ -2,6 +2,7 @@ import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/app/AppShell";
+import { getPaperAttemptSummary } from "@/lib/exam/entitlement";
 
 export default async function DashboardPage() {
   const { userId, user } = await verifySession();
@@ -13,7 +14,7 @@ export default async function DashboardPage() {
   ]);
 
   const attemptedSet = new Set(attemptedPaperIds.map((a) => a.paperId));
-  const freeAttemptTaken = freePaper ? attemptedSet.has(freePaper.id) : false;
+  const freeSummary = freePaper ? await getPaperAttemptSummary(userId, freePaper.id) : null;
 
   const nextPaidPaper =
     credit && credit.testsRemaining > 0
@@ -32,8 +33,28 @@ export default async function DashboardPage() {
         <div className="dashboard-highlight">
           <h2>Free Mock Test</h2>
           {!freePaper && <p>Coming soon — the exam engine is being built next.</p>}
-          {freePaper && freeAttemptTaken && <p>You have already used your free mock test.</p>}
-          {freePaper && !freeAttemptTaken && <Link href={`/exam/${freePaper.id}`}>Start Free Mock Test →</Link>}
+          {freePaper && freeSummary && (
+            <>
+              {freeSummary.resumableAttemptId && (
+                <Link href={`/exam/attempt/${freeSummary.resumableAttemptId}`}>Resume Free Mock Test →</Link>
+              )}
+              {!freeSummary.resumableAttemptId && freeSummary.terminalAttemptCount >= freeSummary.maxAttempts && (
+                <p>
+                  You&apos;ve used all {freeSummary.maxAttempts} attempts for the free test.{" "}
+                  {freeSummary.latestTerminalAttemptId && (
+                    <Link href={`/exam/result/${freeSummary.latestTerminalAttemptId}`}>View last result</Link>
+                  )}
+                </p>
+              )}
+              {!freeSummary.resumableAttemptId && freeSummary.terminalAttemptCount < freeSummary.maxAttempts && (
+                <Link href={`/exam/${freePaper.id}`}>
+                  {freeSummary.terminalAttemptCount === 0
+                    ? "Start Free Mock Test →"
+                    : `Retake Free Mock Test (${freeSummary.terminalAttemptCount}/${freeSummary.maxAttempts} used) →`}
+                </Link>
+              )}
+            </>
+          )}
         </div>
 
         <div className="dashboard-highlight">
