@@ -36,6 +36,8 @@ export default async function AdminPaperDetailPage({
         <p className="muted">
           <Link href={`/admin/papers/${paper.id}/questions/new`}>+ Add a question manually</Link>
           {" · "}
+          <Link href={`/admin/papers/${paper.id}/ai-generate`}>+ Generate with AI</Link>
+          {" · "}
           <Link href="/admin/upload">Bulk-upload via spreadsheet</Link>
         </p>
 

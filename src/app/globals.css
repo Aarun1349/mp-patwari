@@ -195,7 +195,10 @@ input[type="checkbox"] {
   margin-top: 10px;
 }
 .auth-form input,
-.auth-form select {
+.auth-form select,
+.auth-form textarea {
+  display: block;
+  width: 100%;
   padding: 10px 12px;
   border: 1px solid rgba(26, 42, 68, 0.3);
   border-radius: 4px;
@@ -205,8 +208,12 @@ input[type="checkbox"] {
   background: #fff;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.auth-form textarea {
+  resize: vertical;
+}
 .auth-form input:focus,
-.auth-form select:focus {
+.auth-form select:focus,
+.auth-form textarea:focus {
   outline: none;
   border-color: #1a2a44;
   box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
