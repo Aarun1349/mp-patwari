@@ -466,7 +466,78 @@ input[type="checkbox"] {
 }
 
 .auth-card-wide {
-  max-width: 720px;
+  max-width: 1100px;
+}
+
+/* Small colored pill for attempt/order status — reused across Practice
+   History, Purchase History, and admin tables. */
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+.status-badge.status-good {
+  background: rgba(42, 122, 42, 0.12);
+  color: #1e5c1e;
+}
+.status-badge.status-bad {
+  background: rgba(163, 36, 42, 0.1);
+  color: #a3242a;
+}
+.status-badge.status-pending {
+  background: rgba(201, 162, 39, 0.15);
+  color: #8a6d10;
+}
+.status-badge.status-neutral {
+  background: rgba(26, 42, 68, 0.08);
+  color: #5c5c5c;
+}
+
+/* Small summary tiles at the top of history/purchases/profile pages —
+   lighter-weight than .dashboard-highlight (which is for the two big
+   navy CTA boxes), for at-a-glance numbers alongside a data table. */
+.stat-tile-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin: 18px 0 24px;
+}
+.stat-tile {
+  background: #fff;
+  border: 1px solid rgba(26, 42, 68, 0.12);
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.stat-tile .stat-label {
+  font-family: var(--font-space-mono, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5c5c5c;
+  margin-bottom: 6px;
+}
+.stat-tile .stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a2a44;
+}
+.profile-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 480px) 1fr;
+  gap: 36px;
+  align-items: start;
+}
+.profile-grid .stat-tile-row {
+  grid-template-columns: 1fr;
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .static-content h2 {
   margin-top: 20px;

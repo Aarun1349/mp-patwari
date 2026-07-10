@@ -11,6 +11,9 @@ export default async function PurchasesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const totalSpent = orders.reduce((sum, o) => sum + o.amountPaise, 0);
+  const totalTests = orders.reduce((sum, o) => sum + o.package.testCount, 0);
+
   return (
     <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
@@ -24,26 +27,47 @@ export default async function PurchasesPage() {
         )}
 
         {orders.length > 0 && (
-          <table className="report-table">
-            <thead>
-              <tr>
-                <th>Package</th>
-                <th>Tests</th>
-                <th>Amount</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order.package.name}</td>
-                  <td>{order.package.testCount}</td>
-                  <td>₹{(order.amountPaise / 100).toFixed(2)}</td>
-                  <td>{order.paidAt?.toLocaleDateString() ?? "—"}</td>
+          <>
+            <div className="stat-tile-row">
+              <div className="stat-tile">
+                <div className="stat-label">Total Purchases</div>
+                <div className="stat-value">{orders.length}</div>
+              </div>
+              <div className="stat-tile">
+                <div className="stat-label">Total Tests Bought</div>
+                <div className="stat-value">{totalTests}</div>
+              </div>
+              <div className="stat-tile">
+                <div className="stat-label">Total Spent</div>
+                <div className="stat-value">₹{(totalSpent / 100).toFixed(0)}</div>
+              </div>
+            </div>
+
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>Package</th>
+                  <th>Tests</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orders.map((order) => (
+                  <tr key={order.id}>
+                    <td>{order.package.name}</td>
+                    <td>{order.package.testCount}</td>
+                    <td>₹{(order.amountPaise / 100).toFixed(2)}</td>
+                    <td>{order.paidAt?.toLocaleDateString() ?? "—"}</td>
+                    <td>
+                      <span className="status-badge status-good">Paid</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
     </AppShell>
