@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createInitialState, examReducer, type QuestionPayload } from "./examReducer";
+import { createInitialState, examReducer, langKey, type DisplayLang, type QuestionPayload } from "./examReducer";
 import { QuestionPanel } from "./QuestionPanel";
 import { Palette, type PaletteSection } from "./Palette";
 import { TimerBar } from "./TimerBar";
@@ -10,6 +10,44 @@ import { ViolationModal } from "./ViolationModal";
 
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const VIOLATION_DEBOUNCE_MS = 1_000;
+
+/** One question from the bulk /paper load — carries both languages. */
+interface PaperItem {
+  index: number;
+  questionId: string;
+  section: { code: string; nameEn: string; nameHi: string };
+  translatable: boolean;
+  text: string;
+  textAlt: string | null;
+  options: { id: string; label: string; text: string; textAlt: string | null }[];
+  selectedOptionId: string | null;
+  markedForReview: boolean;
+}
+
+/** The alt language is only usable if the question AND all its options are translated. */
+function altAvailable(item: PaperItem): boolean {
+  return item.textAlt != null && item.options.every((o) => o.textAlt != null);
+}
+
+/** Build the client QuestionPayload for a given language from a preloaded item. */
+function buildPayload(item: PaperItem, lang: DisplayLang, total: number): QuestionPayload {
+  const useAlt = lang === "alt";
+  return {
+    index: item.index,
+    total,
+    questionId: item.questionId,
+    section: item.section,
+    text: useAlt && item.textAlt != null ? item.textAlt : item.text,
+    options: item.options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      text: useAlt && o.textAlt != null ? o.textAlt : o.text,
+    })),
+    translatable: item.translatable,
+    selectedOptionId: item.selectedOptionId,
+    markedForReview: item.markedForReview,
+  };
+}
 
 export function ExamRoom({
   attemptId,
@@ -30,39 +68,147 @@ export function ExamRoom({
     createInitialState(totalQuestions, initialRemainingSeconds)
   );
   const lastViolationAt = useRef(0);
+  // Whole-paper preload cache, keyed `${index}:${lang}` — populated once on
+  // mount from /paper so navigation and language toggles never hit the network.
+  const preloadRef = useRef<Map<string, QuestionPayload>>(new Map());
 
-  const loadQuestion = useCallback(
-    async (index: number, lang: "original" | "alt" = state.displayLang) => {
-      dispatch({ type: "QUESTION_LOADING" });
+  // Raw fetch of one question variant — served instantly from the preload cache
+  // when present, otherwise a network request. `report` controls whether
+  // transport errors surface in the UI (background prefetches pass false).
+  const fetchQuestion = useCallback(
+    async (index: number, lang: DisplayLang, report = true): Promise<QuestionPayload | null> => {
+      const cached = preloadRef.current.get(`${index}:${lang}`);
+      if (cached) return cached;
       try {
-        const res = await fetch(`/api/exam/${attemptId}/question/${index}?lang=${lang}`);
+        const res = await fetch(`/api/exam/${attemptId}/question/${index}?lang=${lang === "alt" ? "alt" : "original"}`);
         if (res.status === 409) {
           const body = await res.json();
           dispatch({ type: "HEARTBEAT", status: body.status, remainingSeconds: 0 });
-          return;
+          return null;
         }
         if (!res.ok) {
-          dispatch({ type: "ERROR", message: "Could not load question." });
-          return;
+          if (report) dispatch({ type: "ERROR", message: "Could not load question." });
+          return null;
         }
-        const payload: QuestionPayload = await res.json();
-        dispatch({ type: "QUESTION_LOADED", payload });
+        return (await res.json()) as QuestionPayload;
       } catch {
-        dispatch({ type: "ERROR", message: "Network error loading question." });
+        if (report) dispatch({ type: "ERROR", message: "Network error loading question." });
+        return null;
       }
     },
-    [attemptId, state.displayLang]
+    [attemptId]
   );
 
-  function toggleLang() {
-    const next = state.displayLang === "original" ? "alt" : "original";
-    dispatch({ type: "SET_DISPLAY_LANG", lang: next });
-    loadQuestion(state.currentIndex, next);
+  const loadQuestion = useCallback(
+    async (index: number, lang: DisplayLang = state.displayLang) => {
+      dispatch({ type: "QUESTION_LOADING" });
+      const payload = await fetchQuestion(index, lang);
+      if (!payload) return;
+      dispatch({ type: "QUESTION_LOADED", payload, lang });
+
+      // Warm the other language in the background so the toggle is instant.
+      if (payload.translatable) {
+        const other: DisplayLang = lang === "original" ? "alt" : "original";
+        const key = langKey(index, other);
+        void (async () => {
+          const alt = await fetchQuestion(index, other, false);
+          if (alt) dispatch({ type: "CACHE_LANG", key, variant: { text: alt.text, options: alt.options } });
+        })();
+      }
+    },
+    [fetchQuestion, state.displayLang]
+  );
+
+  async function toggleLang() {
+    if (!state.currentQuestion || state.translating) return;
+    const next: DisplayLang = state.displayLang === "original" ? "alt" : "original";
+    const key = langKey(state.currentIndex, next);
+
+    // Instant path: variant already cached (initial load, prefetch, or a prior
+    // toggle) — swap client-side with no server round-trip.
+    const cached = state.langCache[key];
+    if (cached) {
+      dispatch({ type: "SET_LANG_VARIANT", lang: next, variant: cached });
+      return;
+    }
+
+    // First time for this variant (may involve a one-off server-side
+    // translation); fetch once, then it's cached for the rest of the exam.
+    dispatch({ type: "TRANSLATING", on: true });
+    const payload = await fetchQuestion(state.currentIndex, next);
+    if (payload) {
+      const variant = { text: payload.text, options: payload.options };
+      dispatch({ type: "CACHE_LANG", key, variant });
+      dispatch({ type: "SET_LANG_VARIANT", lang: next, variant });
+    } else {
+      dispatch({ type: "TRANSLATING", on: false });
+    }
   }
 
-  // Initial question load.
+  // "Save & Next"-style advance: walk within the current section, and when the
+  // section is finished jump to the next section's first unanswered question.
+  const goNext = useCallback(() => {
+    const idx = state.currentIndex;
+    const secOrder = sections.findIndex((s) => s.indices.includes(idx));
+    const section = sections[secOrder];
+    if (!section) {
+      if (idx < totalQuestions - 1) loadQuestion(idx + 1);
+      return;
+    }
+    const pos = section.indices.indexOf(idx);
+    if (pos < section.indices.length - 1) {
+      loadQuestion(section.indices[pos + 1]);
+      return;
+    }
+    const nextSection = sections[secOrder + 1];
+    if (nextSection) {
+      const target =
+        nextSection.indices.find((i) => !state.answered[i]?.selectedOptionId) ?? nextSection.indices[0];
+      loadQuestion(target);
+    }
+  }, [state.currentIndex, state.answered, sections, totalQuestions, loadQuestion]);
+
+  // Whether a "next" target exists — false only on the last question of the
+  // last section.
+  const currentSectionOrder = sections.findIndex((s) => s.indices.includes(state.currentIndex));
+  const currentSection = sections[currentSectionOrder];
+  const isLastInSection =
+    !!currentSection && currentSection.indices[currentSection.indices.length - 1] === state.currentIndex;
+  const isLastSection = currentSectionOrder === sections.length - 1;
+  const hasNext = !(isLastInSection && isLastSection);
+
+  // Preload the whole paper once (both languages + saved answers), then show Q1
+  // from cache. Falls back to per-question fetching if the bulk load fails, so
+  // the exam always starts even if /paper errors.
   useEffect(() => {
-    loadQuestion(0);
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/exam/${attemptId}/paper`);
+        if (res.status === 409) {
+          const body = await res.json();
+          if (!cancelled) dispatch({ type: "HEARTBEAT", status: body.status, remainingSeconds: 0 });
+          return;
+        }
+        if (res.ok) {
+          const data: { total: number; questions: PaperItem[] } = await res.json();
+          if (!cancelled) {
+            for (const item of data.questions) {
+              preloadRef.current.set(`${item.index}:original`, buildPayload(item, "original", totalQuestions));
+              if (altAvailable(item)) {
+                preloadRef.current.set(`${item.index}:alt`, buildPayload(item, "alt", totalQuestions));
+              }
+            }
+          }
+        }
+      } catch {
+        // fall through to per-question loading
+      }
+      if (!cancelled) loadQuestion(0);
+    })();
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -197,6 +343,12 @@ export function ExamRoom({
     if (!state.currentQuestion) return;
     const { questionId, index } = state.currentQuestion;
     dispatch({ type: "ANSWER_RECORDED", index, selectedOptionId, markedForReview });
+    // Keep the preload cache in sync so navigating back shows this selection.
+    for (const lang of ["original", "alt"] as const) {
+      const key = `${index}:${lang}`;
+      const cached = preloadRef.current.get(key);
+      if (cached) preloadRef.current.set(key, { ...cached, selectedOptionId, markedForReview });
+    }
     try {
       await fetch(`/api/exam/${attemptId}/answer`, {
         method: "POST",
@@ -244,7 +396,6 @@ export function ExamRoom({
     );
   }
 
-  const isLastQuestion = state.currentIndex >= totalQuestions - 1;
   const canTranslate = state.currentQuestion?.translatable ?? false;
 
   return (
@@ -271,7 +422,7 @@ export function ExamRoom({
           <button
             type="button"
             onClick={toggleLang}
-            disabled={!canTranslate}
+            disabled={!canTranslate || state.translating}
             title={canTranslate ? "Switch question language" : "Not available for this section"}
             style={{
               background: "transparent",
@@ -280,9 +431,14 @@ export function ExamRoom({
               padding: "6px 12px",
               fontSize: "12.5px",
               fontWeight: 700,
+              cursor: canTranslate && !state.translating ? "pointer" : "default",
             }}
           >
-            {state.displayLang === "original" ? "हिंदी / English" : "English / हिंदी"}
+            {state.translating
+              ? "Translating…"
+              : state.displayLang === "original"
+                ? "हिंदी / English"
+                : "English / हिंदी"}
           </button>
           <TimerBar remainingSeconds={state.remainingSeconds} />
         </div>
@@ -345,7 +501,7 @@ export function ExamRoom({
                   type="button"
                   onClick={() => {
                     saveAnswer(state.currentQuestion!.selectedOptionId, true);
-                    if (!isLastQuestion) loadQuestion(state.currentIndex + 1);
+                    if (hasNext) goNext();
                   }}
                   disabled={!state.currentQuestion}
                   style={{ background: "#c9a227", color: "#101a2c", borderColor: "#c9a227", fontWeight: 700 }}
@@ -355,9 +511,9 @@ export function ExamRoom({
                 <button
                   type="button"
                   onClick={() => {
-                    if (!isLastQuestion) loadQuestion(state.currentIndex + 1);
+                    if (hasNext) goNext();
                   }}
-                  disabled={!state.currentQuestion || isLastQuestion}
+                  disabled={!state.currentQuestion || !hasNext}
                   style={{ background: "#2a7a2a", color: "#fff", borderColor: "#2a7a2a", fontWeight: 700 }}
                 >
                   Save &amp; Next

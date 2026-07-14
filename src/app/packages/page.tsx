@@ -2,14 +2,18 @@ import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
+import { getDefaultExamId } from "@/lib/exam/defaultExam";
 import { BuyButton } from "./BuyButton";
 
 export default async function PackagesPage() {
   const { userId, user } = await verifySession();
 
+  // Single-exam phase: the active exam. Becomes the selected exam in Phase 3.
+  const examId = await getDefaultExamId();
+
   const [credit, packages] = await Promise.all([
-    prisma.userCredit.findUnique({ where: { userId } }),
-    prisma.package.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } }),
+    prisma.userCredit.findUnique({ where: { userId_examId: { userId, examId } } }),
+    prisma.package.findMany({ where: { isActive: true, examId }, orderBy: { sortOrder: "asc" } }),
   ]);
 
   const isRepeatBuyer = (credit?.testsTotalPurchased ?? 0) > 0;
@@ -21,8 +25,8 @@ export default async function PackagesPage() {
     <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Test Packages</h1>
-        <p className="muted">One-time purchase. Tests are added to your account immediately.</p>
-        <p className="muted">
+        <p className="page-subtitle">One-time purchase. Tests are added to your account immediately.</p>
+        <p className="muted" style={{ marginTop: "-12px", marginBottom: "20px" }}>
           {credit?.testsRemaining ?? 0} paid test(s) remaining on your account.
         </p>
 

@@ -39,18 +39,43 @@ export default async function HistoryPage() {
     if (TERMINAL_STATUSES.has(attempt.status)) entry.terminalCount++;
   }
 
+  const completedCount = attempts.filter((a) => TERMINAL_STATUSES.has(a.status)).length;
   const scored = attempts.filter((a) => TERMINAL_STATUSES.has(a.status) && a.totalScore != null);
-  const bestScore = scored.length ? Math.max(...scored.map((a) => a.totalScore!)) : null;
+  const bestAttempt = scored.length
+    ? scored.reduce((best, a) => (a.totalScore! > best.totalScore! ? a : best))
+    : null;
+  const bestScore = bestAttempt?.totalScore ?? null;
   const avgAccuracy = scored.length
     ? scored.reduce((sum, a) => sum + (a.accuracyPct ?? 0), 0) / scored.length
     : null;
+  const lastAttemptDate = attempts.length ? attempts[0].startedAt : null;
+
+  const accColor = (pct: number) => (pct >= 60 ? "#1f7a3d" : pct >= 33 ? "#c9a227" : "#b3261e");
 
   return (
     <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Practice History</h1>
+        <p className="page-subtitle">Your attempts, scores and accuracy across every mock test.</p>
 
-        {attempts.length === 0 && <p className="muted">You haven&apos;t attempted any test yet.</p>}
+        {attempts.length === 0 && (
+          <div className="empty-state">
+            <span className="empty-icon" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3v18h18" />
+                <path d="m7 14 4-4 3 3 5-6" />
+              </svg>
+            </span>
+            <h2>No attempts yet</h2>
+            <p>
+              You haven&apos;t taken a mock test yet. Start your free full-length test to see your score,
+              accuracy and section-wise analysis here.
+            </p>
+            <Link href="/dashboard" className="empty-cta">
+              Start a Mock Test
+            </Link>
+          </div>
+        )}
 
         {attempts.length > 0 && (
           <>
@@ -58,14 +83,31 @@ export default async function HistoryPage() {
               <div className="stat-tile">
                 <div className="stat-label">Total Attempts</div>
                 <div className="stat-value">{attempts.length}</div>
+                <div className="stat-sub">{completedCount} completed</div>
               </div>
               <div className="stat-tile">
                 <div className="stat-label">Best Score</div>
-                <div className="stat-value">{bestScore != null ? bestScore : "—"}</div>
+                <div className="stat-value">
+                  {bestScore != null ? bestScore : "—"}
+                  {bestAttempt && <small> / {bestAttempt.paper.totalMarks}</small>}
+                </div>
+                <div className="stat-sub">{bestScore != null ? "highest so far" : "no scored tests yet"}</div>
               </div>
               <div className="stat-tile">
                 <div className="stat-label">Average Accuracy</div>
                 <div className="stat-value">{avgAccuracy != null ? `${avgAccuracy.toFixed(1)}%` : "—"}</div>
+                {avgAccuracy != null && (
+                  <div className="mini-acc">
+                    <span style={{ width: `${Math.min(100, avgAccuracy)}%`, background: accColor(avgAccuracy) }} />
+                  </div>
+                )}
+              </div>
+              <div className="stat-tile">
+                <div className="stat-label">Last Attempt</div>
+                <div className="stat-value" style={{ fontSize: "20px" }}>
+                  {lastAttemptDate ? lastAttemptDate.toLocaleDateString() : "—"}
+                </div>
+                <div className="stat-sub">most recent</div>
               </div>
             </div>
 
@@ -101,7 +143,23 @@ export default async function HistoryPage() {
                         </span>
                       </td>
                       <td>{isTerminal ? `${attempt.totalScore ?? 0}/${attempt.paper.totalMarks}` : "—"}</td>
-                      <td>{isTerminal ? `${attempt.accuracyPct?.toFixed(1) ?? 0}%` : "—"}</td>
+                      <td>
+                        {isTerminal ? (
+                          <>
+                            {attempt.accuracyPct?.toFixed(1) ?? 0}%
+                            <div className="mini-acc">
+                              <span
+                                style={{
+                                  width: `${Math.min(100, attempt.accuracyPct ?? 0)}%`,
+                                  background: accColor(attempt.accuracyPct ?? 0),
+                                }}
+                              />
+                            </div>
+                          </>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td>
                         {isTerminal ? (
                           <div className="table-actions">

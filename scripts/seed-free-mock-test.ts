@@ -168,6 +168,12 @@ async function main() {
     throw new Error("No admin rows exist yet to attribute this upload to. Run scripts/create-admin.ts first, or set SEED_UPLOADER_EMAIL.");
   }
 
+  const exam = await prisma.exam.upsert({
+    where: { slug: "mp-patwari" },
+    update: {},
+    create: { name: "MP Patwari", slug: "mp-patwari", board: "MPESB", shortName: "Patwari", sortOrder: 0 },
+  });
+
   let paper = await prisma.paper.findFirst({ where: { isFree: true } });
   if (!paper) {
     const maxSequence = await prisma.paper.aggregate({ _max: { sequenceNo: true } });
@@ -181,6 +187,7 @@ async function main() {
         durationMinutes: 180,
         negativeMarkingRatio: 0.25,
         isActive: true,
+        examId: exam.id,
       },
     });
     console.log("Created paper:", paper.id, paper.title);

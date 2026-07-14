@@ -28,7 +28,14 @@ export async function GET(req: Request) {
     const redirectUri = `${origin}/api/auth/google/callback`;
     const accessToken = await exchangeGoogleCode(code, redirectUri);
     const profile = await fetchGoogleProfile(accessToken);
-    const userId = await resolveGoogleUser(profile);
+
+    // First-touch acquisition (QR / pamphlet / ad) captured by proxy.ts — stamped
+    // on the account only when resolveGoogleUser creates a brand-new user.
+    const userId = await resolveGoogleUser(profile, {
+      source: cookieStore.get("acq_source")?.value,
+      medium: cookieStore.get("acq_medium")?.value,
+      campaign: cookieStore.get("acq_campaign")?.value,
+    });
 
     const headersList = await headers();
     await createSession(userId, {
@@ -43,5 +50,11 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL("/login?error=google_failed", origin));
   }
 
-  return NextResponse.redirect(new URL("/dashboard", origin));
+  // Attribution is stamped (if new) — clear the first-touch cookies so they
+  // can't be reused for a later signup on the same device.
+  const res = NextResponse.redirect(new URL("/dashboard", origin));
+  res.cookies.delete("acq_source");
+  res.cookies.delete("acq_medium");
+  res.cookies.delete("acq_campaign");
+  return res;
 }

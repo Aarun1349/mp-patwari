@@ -1,204 +1,29 @@
-"use client";
+import { prisma } from "@/lib/prisma";
+import { LandingClient } from "./LandingClient";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import "./landing.css";
-import content, { type Lang } from "./landing-content";
-import SiteHeader from "./SiteHeader";
-import SiteFooter from "./SiteFooter";
+// Pricing + exam list are DB-driven so the landing can never drift from the
+// configured exams/packages; revalidate periodically rather than fully dynamic.
+export const revalidate = 300;
 
-export default function LandingPage() {
-  const [lang, setLang] = useState<Lang>("hi");
-  const t = content[lang];
+export default async function LandingPage() {
+  const [packages, exams, livePaperExamIds] = await Promise.all([
+    prisma.package.findMany({
+      where: { isActive: true, kind: "standard" },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, name: true, pricePaise: true, testCount: true, validityDays: true },
+    }),
+    prisma.exam.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, name: true, slug: true, board: true },
+    }),
+    prisma.paper.findMany({ where: { isActive: true }, select: { examId: true }, distinct: ["examId"] }),
+  ]);
 
-  useEffect(() => {
-    document.documentElement.lang = lang;
-  }, [lang]);
+  // An exam is "live" once it has at least one active paper; the rest show as
+  // coming soon so the landing conveys the full platform scope.
+  const liveExamIds = new Set(livePaperExamIds.map((p) => p.examId));
+  const examCards = exams.map((e) => ({ ...e, live: liveExamIds.has(e.id) }));
 
-  return (
-    <div className="landing">
-      <SiteHeader lang={lang} onToggleLang={() => setLang(lang === "hi" ? "en" : "hi")} />
-
-      <section className="hero">
-        <div className="wrap hero-grid">
-          <div>
-            <div className="eyebrow">{t.eyebrow}</div>
-            <h1>
-              {t.heroTitlePre}
-              <span className="accent">{t.heroTitleAccent}</span>
-              {t.heroTitlePost}
-            </h1>
-            <p className="lede">{t.heroLede}</p>
-            <div className="hero-ctas">
-              <Link href="/login" className="btn-primary">
-                {t.ctaPrimary}
-              </Link>
-              <a href="#pattern" className="btn-ghost">
-                {t.ctaGhost}
-              </a>
-            </div>
-            <div className="hero-stats">
-              {t.stats.map((s) => (
-                <div key={s.label}>
-                  {s.value}
-                  <span>{s.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="admit-card">
-            <div className="ac-head">
-              <div>
-                <div className="t1">{t.admitCard.t1}</div>
-                <div className="t2">{t.admitCard.t2}</div>
-              </div>
-              <div className="mono" style={{ fontSize: "11px" }}>
-                #MP-PTW
-              </div>
-            </div>
-            <div className="ac-body">
-              <div className="ac-topline">
-                <div className="ac-photo" />
-                <div className="who">
-                  <div className="name">{t.admitCard.name}</div>
-                  <div className="role">{t.admitCard.role}</div>
-                </div>
-              </div>
-              {t.admitCard.rows.map((row) => (
-                <div className="ac-row" key={row.label}>
-                  <span className="label">{row.label}</span>
-                  <span className="value">{row.value}</span>
-                </div>
-              ))}
-            </div>
-            <div className="ac-stamp">{t.admitCard.stamp}</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="ledger-bg">
-        <div className="wrap">
-          <div className="section-head">
-            <span className="kicker">{t.stepsKicker}</span>
-            <h2>{t.stepsTitle}</h2>
-          </div>
-          <div className="steps">
-            {t.steps.map((step) => (
-              <div className="step" key={step.num}>
-                <div className="num">{step.num}</div>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="pattern">
-        <div className="wrap">
-          <div className="section-head">
-            <span className="kicker">{t.patternKicker}</span>
-            <h2>{t.patternTitle}</h2>
-          </div>
-          <div className="pattern-wrap">
-            <table className="pattern">
-              <thead>
-                <tr>
-                  <th>{t.patternSubjectHeader}</th>
-                  <th>{t.patternWeightHeader}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {t.patternRows.map((row) => (
-                  <tr key={row.subject}>
-                    <td>{row.subject}</td>
-                    <td>{row.weight}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="pattern-note">
-              <div className="big">{t.patternBig}</div>
-              <p>{t.patternNote}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="ledger-bg">
-        <div className="wrap">
-          <div className="section-head">
-            <span className="kicker">{t.whyKicker}</span>
-            <h2>{t.whyTitle}</h2>
-          </div>
-          <div className="why-grid">
-            {t.whyCards.map((card) => (
-              <div className="why-card" key={card.title}>
-                <div className="icon">{card.icon}</div>
-                <h3>{card.title}</h3>
-                <p>{card.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="pricing-bg" id="pricing">
-        <div className="wrap">
-          <div className="section-head">
-            <span className="kicker">{t.pricingKicker}</span>
-            <h2>{t.pricingTitle}</h2>
-          </div>
-          <div className="price-grid">
-            {t.plans.map((plan) => (
-              <div className={`price-card${plan.tag ? " popular" : ""}`} key={plan.name}>
-                {plan.tag && <div className="tag">{plan.tag}</div>}
-                <div className="name">{plan.name}</div>
-                <div className="amount">{plan.amount}</div>
-                <div className="per">{plan.per}</div>
-                <ul>
-                  {plan.features.map((f) => (
-                    <li key={f}>{f}</li>
-                  ))}
-                </ul>
-                <Link href="/login" className="price-card-action">
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="wrap">
-          <div className="section-head">
-            <span className="kicker">{t.faqKicker}</span>
-            <h2>{t.faqTitle}</h2>
-          </div>
-          <div className="faq-list">
-            {t.faqs.map((faq, i) => (
-              <details className="faq-item" key={faq.q} open={i === 0}>
-                <summary>{faq.q}</summary>
-                <p>{faq.a}</p>
-              </details>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="final-cta">
-        <div className="wrap" style={{ padding: 0 }}>
-          <h2>{t.finalTitle}</h2>
-          <p>{t.finalDesc}</p>
-          <Link href="/login" className="final-cta-action">
-            {t.finalCta}
-          </Link>
-        </div>
-      </section>
-
-      <SiteFooter lang={lang} />
-    </div>
-  );
+  return <LandingClient packages={packages} exams={examCards} />;
 }

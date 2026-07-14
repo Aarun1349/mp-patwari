@@ -3,12 +3,16 @@ import { verifySession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/app/AppShell";
 import { getPaperAttemptSummary } from "@/lib/exam/entitlement";
+import { getDefaultExamId } from "@/lib/exam/defaultExam";
 
 export default async function DashboardPage() {
   const { userId, user } = await verifySession();
 
+  // Single-exam phase: scope to the active exam. Becomes the selected exam in Phase 3.
+  const examId = await getDefaultExamId();
+
   const [credit, freePaper, attemptedPaperIds] = await Promise.all([
-    prisma.userCredit.findUnique({ where: { userId } }),
+    prisma.userCredit.findUnique({ where: { userId_examId: { userId, examId } } }),
     prisma.paper.findFirst({ where: { isFree: true, isActive: true } }),
     prisma.attempt.findMany({ where: { userId }, select: { paperId: true } }),
   ]);

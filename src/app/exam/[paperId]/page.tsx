@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { StartButton } from "./StartButton";
+import { DisclaimerModal } from "./DisclaimerModal";
 
 export default async function ExamInstructionsPage({
   params,
@@ -47,11 +47,7 @@ export default async function ExamInstructionsPage({
             <li>The timer is server-controlled and cannot be paused by closing the tab.</li>
             <li>On mobile browsers that don&apos;t support fullscreen, the exam still proceeds, but tab-switch violations still count.</li>
             <li>
-              By starting this test you agree to our{" "}
-              <Link href="/disclaimer" style={{ color: "#a3242a", textDecoration: "underline" }}>
-                Disclaimer &amp; Policies
-              </Link>
-              .
+              By starting this test you agree to our <DisclaimerModal />.
             </li>
           </ul>
         </section>

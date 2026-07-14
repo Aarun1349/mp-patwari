@@ -7,7 +7,11 @@ export default async function ProfilePage() {
   const { userId, user } = await verifySession();
 
   const [credit, attemptCount] = await Promise.all([
-    prisma.userCredit.findUnique({ where: { userId } }),
+    // Overview across all exams the user has credits in.
+    prisma.userCredit.aggregate({
+      where: { userId },
+      _sum: { testsRemaining: true, testsTotalPurchased: true },
+    }),
     prisma.attempt.count({ where: { userId } }),
   ]);
 
@@ -40,7 +44,7 @@ export default async function ProfilePage() {
             </div>
             <div className="stat-tile">
               <div className="stat-label">Tests Remaining</div>
-              <div className="stat-value">{credit?.testsRemaining ?? 0}</div>
+              <div className="stat-value">{credit._sum.testsRemaining ?? 0}</div>
             </div>
             <div className="stat-tile">
               <div className="stat-label">Total Attempts</div>
@@ -48,7 +52,7 @@ export default async function ProfilePage() {
             </div>
             <div className="stat-tile">
               <div className="stat-label">Tests Purchased (lifetime)</div>
-              <div className="stat-value">{credit?.testsTotalPurchased ?? 0}</div>
+              <div className="stat-value">{credit._sum.testsTotalPurchased ?? 0}</div>
             </div>
           </div>
         </div>

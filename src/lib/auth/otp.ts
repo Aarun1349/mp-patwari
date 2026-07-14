@@ -49,9 +49,16 @@ export async function requestOtp(rawPhone: string): Promise<void> {
   await sendOtpSms(phone, code);
 }
 
+export interface SignupAttribution {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+}
+
 export async function verifyOtp(
   rawPhone: string,
-  code: string
+  code: string,
+  attribution?: SignupAttribution
 ): Promise<{ userId: string; isNewUser: boolean }> {
   const phone = normalizePhone(rawPhone);
 
@@ -86,7 +93,14 @@ export async function verifyOtp(
   const existingUser = await prisma.user.findUnique({ where: { phone } });
   const user =
     existingUser ??
-    (await prisma.user.create({ data: { phone } }));
+    (await prisma.user.create({
+      data: {
+        phone,
+        signupSource: attribution?.source ?? null,
+        signupMedium: attribution?.medium ?? null,
+        signupCampaign: attribution?.campaign ?? null,
+      },
+    }));
 
   await prisma.user.update({
     where: { id: user.id },

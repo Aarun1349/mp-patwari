@@ -6,6 +6,7 @@ import type { PackageActionState } from "@/app/actions/adminPackages";
 export function PackageForm({
   action,
   defaults,
+  exams,
 }: {
   action: (state: PackageActionState, formData: FormData) => Promise<PackageActionState>;
   defaults?: {
@@ -18,12 +19,26 @@ export function PackageForm({
     sortOrder: number;
     isActive: boolean;
   };
+  exams?: { id: string; name: string }[];
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
     <form action={formAction} className="auth-form">
       {defaults?.id && <input type="hidden" name="id" value={defaults.id} />}
+
+      {exams && (
+        <>
+          <label htmlFor="examId">Exam</label>
+          <select id="examId" name="examId" required defaultValue={exams[0]?.id}>
+            {exams.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name}
+              </option>
+            ))}
+          </select>
+        </>
+      )}
 
       <label htmlFor="name">Name</label>
       <input id="name" name="name" type="text" defaultValue={defaults?.name} required />

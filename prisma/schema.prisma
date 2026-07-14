@@ -36,6 +36,13 @@ model User {
   createdAt   DateTime @default(now())
   lastLoginAt DateTime?
 
+  // First-touch acquisition attribution (utm_source/medium/campaign), captured
+  // from the entry link in proxy.ts and stamped on the account at signup. Lets
+  // admin see which channel/QR/pamphlet/ad drove each signup and its revenue.
+  signupSource   String?
+  signupMedium   String?
+  signupCampaign String?
+
   // Additional profile info — all optional, filled in anytime via /profile
   // (matches this platform's low-friction phone-OTP-only signup; nothing
   // here gates access to anything). contactPhone is deliberately separate
@@ -54,7 +61,7 @@ model User {
   otpChallenges OtpChallenge[]
   attempts      Attempt[]
   orders        Order[]
-  credit        UserCredit?
+  credits       UserCredit[]
 
   @@map("users")
 }
@@ -93,15 +100,41 @@ model Session {
 }
 
 // Fixed 6 rows, seeded once — not a user-configurable/generalized taxonomy.
+/// A configurable exam (MP Patwari, SSC CGL, …). Everything content- and
+/// pricing-wise hangs off an Exam so new state exams are onboarded by config,
+/// not code. See examsexpress-certu-vision.
+model Exam {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  board       String? // e.g. MPESB, UPSSSC, RSMSSB
+  shortName   String?
+  description String?
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  papers   Paper[]
+  sections Section[]
+  packages Package[]
+  credits  UserCredit[]
+
+  @@map("exams")
+}
+
 model Section {
   id      String @id @default(cuid())
-  code    String @unique
+  code    String
   nameEn  String
   nameHi  String
   sortOrder Int  @default(0)
+  examId  String
+  exam    Exam  @relation(fields: [examId], references: [id])
 
   questions Question[]
 
+  // Section codes are unique per-exam (two exams can both have a "GK" section).
+  @@unique([examId, code])
   @@map("sections")
 }
 
@@ -116,6 +149,8 @@ model Paper {
   negativeMarkingRatio  Float    @default(0)
   isActive              Boolean  @default(true)
   createdAt             DateTime @default(now())
+  examId                String
+  exam                  Exam     @relation(fields: [examId], references: [id])
 
   questions      Question[]
   attempts       Attempt[]
@@ -227,6 +262,8 @@ model Package {
   validityDays  Int
   sortOrder     Int         @default(0)
   isActive      Boolean     @default(true)
+  examId        String
+  exam          Exam        @relation(fields: [examId], references: [id])
 
   orders Order[]
 
@@ -264,6 +301,11 @@ enum CouponDiscountType {
   flat
 }
 
+enum CouponCommissionType {
+  percent
+  flat
+}
+
 model Coupon {
   id              String             @id @default(cuid())
   code            String             @unique
@@ -277,18 +319,30 @@ model Coupon {
   isActive        Boolean            @default(true)
   createdAt       DateTime           @default(now())
 
+  // Attribution + payout for influencer/partner codes. commission is paid per
+  // PAID order that used this code: percent = % of amount paid, flat = paise
+  // per redemption. Null commissionType = no payout (a plain discount code).
+  ownerName       String?
+  commissionType  CouponCommissionType?
+  commissionValue Int                   @default(0)
+
   orders Order[]
 
   @@map("coupons")
 }
 
 model UserCredit {
-  userId             String   @id
-  user               User     @relation(fields: [userId], references: [id])
-  testsRemaining     Int      @default(0)
-  testsTotalPurchased Int     @default(0)
-  updatedAt          DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  user                User     @relation(fields: [userId], references: [id])
+  userId              String
+  exam                Exam     @relation(fields: [examId], references: [id])
+  examId              String
+  testsRemaining      Int      @default(0)
+  testsTotalPurchased Int      @default(0)
+  updatedAt           DateTime @updatedAt
 
+  // Credits are per-exam: buying a Patwari pack never funds an MP Constable test.
+  @@unique([userId, examId])
   @@map("user_credits")
 }
 

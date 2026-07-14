@@ -26,10 +26,27 @@ const CouponSchema = z
     validFrom: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.date().optional()),
     validUntil: z.preprocess((v) => (v === "" ? undefined : v), z.coerce.date().optional()),
     isActive: z.boolean(),
+    // Influencer/partner attribution + payout (optional).
+    ownerName: z.preprocess(
+      (v) => (v === "" ? undefined : v),
+      z.string().trim().max(80).optional()
+    ),
+    commissionType: z.preprocess(
+      (v) => (v === "" || v === "none" ? undefined : v),
+      z.enum(["percent", "flat"]).optional()
+    ),
+    commissionValue: z.preprocess(
+      (v) => (v === "" || v == null ? 0 : v),
+      z.coerce.number().int().nonnegative()
+    ),
   })
   .refine((v) => v.discountType !== "percent" || v.discountValue <= 100, {
     message: "percent discount must be 100 or less",
     path: ["discountValue"],
+  })
+  .refine((v) => v.commissionType !== "percent" || v.commissionValue <= 100, {
+    message: "percent commission must be 100 or less",
+    path: ["commissionValue"],
   });
 
 export async function createCouponAction(
@@ -47,6 +64,9 @@ export async function createCouponAction(
     validFrom: formData.get("validFrom"),
     validUntil: formData.get("validUntil"),
     isActive: formData.get("isActive") === "on",
+    ownerName: formData.get("ownerName"),
+    commissionType: formData.get("commissionType"),
+    commissionValue: formData.get("commissionValue"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
 import { requestOtp, verifyOtp, RateLimitedError, InvalidOtpError } from "@/lib/auth/otp";
 import { createSession, destroySession, SessionConflictError } from "@/lib/auth/session";
 
@@ -32,10 +32,19 @@ export async function verifyOtpAction(
   const phone = String(formData.get("phone") ?? "");
   const code = String(formData.get("code") ?? "");
 
+  const cookieStore = await cookies();
+  const attribution = {
+    source: cookieStore.get("acq_source")?.value,
+    medium: cookieStore.get("acq_medium")?.value,
+    campaign: cookieStore.get("acq_campaign")?.value,
+  };
+
   let userId: string;
+  let isNewUser = false;
   try {
-    const result = await verifyOtp(phone, code);
+    const result = await verifyOtp(phone, code, attribution);
     userId = result.userId;
+    isNewUser = result.isNewUser;
   } catch (err) {
     if (err instanceof RateLimitedError || err instanceof InvalidOtpError) {
       return { error: err.message };
@@ -59,6 +68,14 @@ export async function verifyOtpAction(
     }
     console.error("createSession failed", err);
     return { error: "Something went wrong. Please try again." };
+  }
+
+  // Attribution is now stamped on the account — clear the first-touch cookies so
+  // they can't be reused for a later signup on the same device.
+  if (isNewUser) {
+    cookieStore.delete("acq_source");
+    cookieStore.delete("acq_medium");
+    cookieStore.delete("acq_campaign");
   }
 
   redirect("/dashboard");

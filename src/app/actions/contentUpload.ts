@@ -3,11 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/adminSession";
-import { parseAndImportQuestions } from "@/lib/exam/importQuestions";
+import { parseAndImportQuestions, type RowError } from "@/lib/exam/importQuestions";
+import { getDefaultExamId } from "@/lib/exam/defaultExam";
 import { prisma } from "@/lib/prisma";
 
 export type UploadActionState =
-  | { success: true; rowCount: number; successCount: number; errorCount: number; paperId: string }
+  | {
+      success: true;
+      rowCount: number;
+      successCount: number;
+      errorCount: number;
+      errors: RowError[];
+      paperTitle: string;
+      paperId: string;
+    }
   | { error: string }
   | undefined;
 
@@ -38,11 +47,15 @@ export async function uploadQuestionsAction(
 
   const paperMode = formData.get("paperMode");
   let paperId: string;
+  let paperTitle: string;
 
   if (paperMode === "existing") {
     const existingPaperId = String(formData.get("existingPaperId") ?? "");
     if (!existingPaperId) return { error: "Choose an existing paper." };
-    paperId = existingPaperId;
+    const paper = await prisma.paper.findUnique({ where: { id: existingPaperId }, select: { id: true, title: true } });
+    if (!paper) return { error: "That paper no longer exists." };
+    paperId = paper.id;
+    paperTitle = paper.title;
   } else {
     const parsed = NewPaperSchema.safeParse({
       title: formData.get("title"),
@@ -56,14 +69,18 @@ export async function uploadQuestionsAction(
       return { error: parsed.error.issues[0]?.message ?? "Invalid paper details." };
     }
 
+    // The exam the new paper belongs to — chosen in the form, else the active exam.
+    const examId = String(formData.get("examId") ?? "") || (await getDefaultExamId());
     const maxSequence = await prisma.paper.aggregate({ _max: { sequenceNo: true } });
     const paper = await prisma.paper.create({
       data: {
         ...parsed.data,
         sequenceNo: (maxSequence._max.sequenceNo ?? 0) + 1,
+        examId,
       },
     });
     paperId = paper.id;
+    paperTitle = paper.title;
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -75,5 +92,5 @@ export async function uploadQuestionsAction(
   }
 
   revalidatePath("/admin/upload");
-  return { success: true, paperId, ...result };
+  return { success: true, paperId, paperTitle, ...result };
 }

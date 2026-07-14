@@ -28,7 +28,7 @@ export default async function AdminUserDetailPage({
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      credit: true,
+      credits: true,
       attempts: {
         include: { paper: { select: { title: true, totalMarks: true } } },
         orderBy: { startedAt: "desc" },
@@ -97,11 +97,11 @@ export default async function AdminUserDetailPage({
             </tr>
             <tr>
               <td>Tests remaining</td>
-              <td>{user.credit?.testsRemaining ?? 0}</td>
+              <td>{user.credits.reduce((s, c) => s + c.testsRemaining, 0)}</td>
             </tr>
             <tr>
               <td>Tests purchased (lifetime)</td>
-              <td>{user.credit?.testsTotalPurchased ?? 0}</td>
+              <td>{user.credits.reduce((s, c) => s + c.testsTotalPurchased, 0)}</td>
             </tr>
           </tbody>
         </table>

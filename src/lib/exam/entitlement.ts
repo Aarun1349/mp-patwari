@@ -86,8 +86,10 @@ export async function startAttempt(userId: string, paperId: string): Promise<{ a
 
   return await prisma.$transaction(async (tx) => {
     if (!paper.isFree) {
+      // Decrement credit for THIS paper's exam only — a Patwari credit can't
+      // fund an MP Constable test.
       const credit = await tx.userCredit.updateMany({
-        where: { userId, testsRemaining: { gt: 0 } },
+        where: { userId, examId: paper.examId, testsRemaining: { gt: 0 } },
         data: { testsRemaining: { decrement: 1 } },
       });
       if (credit.count === 0) throw new NoEntitlementError();
@@ -98,7 +100,7 @@ export async function startAttempt(userId: string, paperId: string): Promise<{ a
         where: { paperId, isActive: true },
         include: { options: true },
       }),
-      tx.section.findMany({ select: { id: true, sortOrder: true } }),
+      tx.section.findMany({ where: { examId: paper.examId }, select: { id: true, sortOrder: true } }),
     ]);
     const sectionSortOrder = Object.fromEntries(sections.map((s) => [s.id, s.sortOrder]));
 

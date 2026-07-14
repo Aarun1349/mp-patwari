@@ -47,9 +47,10 @@ export async function creditOrderForPayment(
     });
 
     await tx.userCredit.upsert({
-      where: { userId: order.userId },
+      where: { userId_examId: { userId: order.userId, examId: order.package.examId } },
       create: {
         userId: order.userId,
+        examId: order.package.examId,
         testsRemaining: order.package.testCount,
         testsTotalPurchased: order.package.testCount,
       },
@@ -123,9 +124,10 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
     });
 
     await tx.userCredit.upsert({
-      where: { userId: order.userId },
+      where: { userId_examId: { userId: order.userId, examId: order.package.examId } },
       create: {
         userId: order.userId,
+        examId: order.package.examId,
         testsRemaining: order.package.testCount,
         testsTotalPurchased: order.package.testCount,
       },

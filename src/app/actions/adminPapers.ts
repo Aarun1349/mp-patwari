@@ -5,6 +5,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
+import { translateQuestion, NON_TRANSLATABLE_SECTION_CODES } from "@/lib/ai/translate";
+
+/** How many questions to translate per click — bounded so the action stays well
+ * under serverless timeouts; the admin clicks again until 0 remain. */
+const TRANSLATE_BATCH = 20;
 
 export type PaperActionState = { error?: string } | undefined;
 export type QuestionActionState = { error?: string } | undefined;
@@ -40,6 +45,59 @@ export async function updatePaperAction(
   revalidatePath(`/admin/papers/${id}`);
   revalidatePath("/admin/papers");
   return undefined;
+}
+
+/**
+ * Pre-translates a batch of the paper's questions to the alt language (Hindi)
+ * and caches the result on `textAlt`, so the exam room can serve the language
+ * toggle instantly from the bulk /paper load instead of doing a live Groq
+ * translation mid-exam. Processes up to TRANSLATE_BATCH per call; skips language
+ * sections (Hindi/English) where translation would defeat the point.
+ */
+export async function pretranslatePaperAction(formData: FormData): Promise<void> {
+  const admin = await getAdminSession();
+  if (!admin) return;
+
+  const paperId = String(formData.get("paperId") ?? "");
+  if (!paperId) return;
+
+  const questions = await prisma.question.findMany({
+    where: { paperId, isActive: true },
+    select: {
+      id: true,
+      text: true,
+      textAlt: true,
+      section: { select: { code: true } },
+      options: { select: { id: true, text: true, textAlt: true }, orderBy: { sortOrder: "asc" } },
+    },
+  });
+
+  const pending = questions
+    .filter(
+      (q) =>
+        !NON_TRANSLATABLE_SECTION_CODES.has(q.section.code) &&
+        (q.textAlt == null || q.options.some((o) => o.textAlt == null))
+    )
+    .slice(0, TRANSLATE_BATCH);
+
+  for (const q of pending) {
+    try {
+      const translated = await translateQuestion(
+        q.text,
+        q.options.map((o) => o.text)
+      );
+      await prisma.$transaction([
+        prisma.question.update({ where: { id: q.id }, data: { textAlt: translated.text } }),
+        ...q.options.map((o, i) =>
+          prisma.questionOption.update({ where: { id: o.id }, data: { textAlt: translated.options[i] ?? o.text } })
+        ),
+      ]);
+    } catch {
+      // Skip failures — the next click retries whatever is still pending.
+    }
+  }
+
+  revalidatePath(`/admin/papers/${paperId}`);
 }
 
 export async function togglePaperActiveAction(formData: FormData): Promise<void> {

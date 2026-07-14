@@ -87,7 +87,16 @@ export async function fetchGoogleProfile(accessToken: string): Promise<GooglePro
  * it here would let an attacker pre-plant a victim's email on their own
  * account and hijack the victim's first Google sign-in.
  */
-export async function resolveGoogleUser(profile: GoogleProfile): Promise<string> {
+export interface SignupAttribution {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+}
+
+export async function resolveGoogleUser(
+  profile: GoogleProfile,
+  attribution?: SignupAttribution
+): Promise<string> {
   if (!profile.sub) throw new GoogleAuthError("Google profile missing subject id.");
 
   const byGoogleId = await prisma.user.findUnique({ where: { googleId: profile.sub } });
@@ -109,6 +118,9 @@ export async function resolveGoogleUser(profile: GoogleProfile): Promise<string>
       email: profile.email,
       emailVerified: Boolean(profile.email && profile.email_verified),
       name: profile.name,
+      signupSource: attribution?.source ?? null,
+      signupMedium: attribution?.medium ?? null,
+      signupCampaign: attribution?.campaign ?? null,
     },
   });
   return created.id;

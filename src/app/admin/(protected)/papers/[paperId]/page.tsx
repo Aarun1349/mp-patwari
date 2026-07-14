@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { togglePaperActiveAction, toggleQuestionActiveAction } from "@/app/actions/adminPapers";
+import {
+  togglePaperActiveAction,
+  toggleQuestionActiveAction,
+  pretranslatePaperAction,
+} from "@/app/actions/adminPapers";
+import { NON_TRANSLATABLE_SECTION_CODES } from "@/lib/ai/translate";
 import { PaperEditForm } from "./PaperEditForm";
 
 export default async function AdminPaperDetailPage({
@@ -16,9 +21,21 @@ export default async function AdminPaperDetailPage({
 
   const questions = await prisma.question.findMany({
     where: { paperId },
-    include: { section: { select: { nameEn: true } } },
+    include: {
+      section: { select: { nameEn: true, code: true } },
+      options: { select: { textAlt: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
+
+  // How many active, translatable questions still lack a cached Hindi (alt)
+  // translation — the exam toggle is only instant once this reaches 0.
+  const pendingTranslation = questions.filter(
+    (q) =>
+      q.isActive &&
+      !NON_TRANSLATABLE_SECTION_CODES.has(q.section.code) &&
+      (q.textAlt == null || q.options.some((o) => o.textAlt == null))
+  ).length;
 
   return (
     <>
@@ -40,6 +57,32 @@ export default async function AdminPaperDetailPage({
           {" · "}
           <Link href="/admin/upload">Bulk-upload via spreadsheet</Link>
         </p>
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            flexWrap: "wrap",
+            margin: "4px 0 18px",
+            padding: "12px 14px",
+            borderRadius: "10px",
+            background: pendingTranslation > 0 ? "rgba(201,162,39,0.1)" : "rgba(31,122,61,0.08)",
+            border: `1px solid ${pendingTranslation > 0 ? "rgba(201,162,39,0.3)" : "rgba(31,122,61,0.25)"}`,
+          }}
+        >
+          <span style={{ fontSize: "13px", color: "#1a2a44" }}>
+            {pendingTranslation > 0
+              ? `Hindi translation: ${pendingTranslation} question(s) pending — the exam language toggle is instant only once this is 0.`
+              : "Hindi translation: all questions cached ✓ — language toggle is instant."}
+          </span>
+          {pendingTranslation > 0 && (
+            <form action={pretranslatePaperAction} style={{ marginLeft: "auto" }}>
+              <input type="hidden" name="paperId" value={paper.id} />
+              <button type="submit">Pre-translate next batch (up to 20)</button>
+            </form>
+          )}
+        </div>
 
         <table className="report-table">
           <thead>

@@ -19,6 +19,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <a href="/admin" className="app-sidebar-link">
             Dashboard
           </a>
+          <a href="/admin/exams" className="app-sidebar-link">
+            Exams
+          </a>
           <a href="/admin/users" className="app-sidebar-link">
             Users
           </a>
@@ -33,6 +36,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </a>
           <a href="/admin/coupons" className="app-sidebar-link">
             Coupons
+          </a>
+          <a href="/admin/payouts" className="app-sidebar-link">
+            Payouts
+          </a>
+          <a href="/admin/acquisition" className="app-sidebar-link">
+            Acquisition
           </a>
           <a href="/admin/orders" className="app-sidebar-link">
             Orders &amp; Revenue
@@ -51,7 +60,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </button>
           </form>
         </div>
-        <main className="app-content">{children}</main>
+        <main className="app-content admin-content">{children}</main>
       </div>
     </div>
   );

@@ -38,15 +38,16 @@ const RowSchema = z
     { message: "the four options must be distinct" }
   );
 
+export interface RowError {
+  row: number;
+  message: string;
+}
+
 export interface ImportResult {
   rowCount: number;
   successCount: number;
   errorCount: number;
-}
-
-interface RowError {
-  row: number;
-  message: string;
+  errors: RowError[];
 }
 
 const OPTION_KEYS = ["a", "b", "c", "d"] as const;
@@ -69,9 +70,11 @@ export async function parseAndImportQuestions(
     throw new Error(`Spreadsheet has ${rows.length} rows, which exceeds the ${MAX_ROWS}-row limit per upload.`);
   }
 
-  const [sections, paper, existingQuestions] = await Promise.all([
-    prisma.section.findMany(),
-    prisma.paper.findUniqueOrThrow({ where: { id: paperId } }),
+  // Fetch the paper first so section codes are validated against THIS paper's
+  // exam only — a section code from another exam must not match.
+  const paper = await prisma.paper.findUniqueOrThrow({ where: { id: paperId } });
+  const [sections, existingQuestions] = await Promise.all([
+    prisma.section.findMany({ where: { examId: paper.examId } }),
     prisma.question.findMany({ where: { paperId }, select: { text: true } }),
   ]);
   const sectionIdByCode = new Map(sections.map((s) => [s.code, s.id]));
@@ -141,5 +144,5 @@ export async function parseAndImportQuestions(
     data: { successCount, errorCount: errors.length, errors: errors as unknown as Prisma.InputJsonValue },
   });
 
-  return { rowCount: rows.length, successCount, errorCount: errors.length };
+  return { rowCount: rows.length, successCount, errorCount: errors.length, errors };
 }

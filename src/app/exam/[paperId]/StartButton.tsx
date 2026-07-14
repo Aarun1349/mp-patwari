@@ -11,16 +11,23 @@ export function StartButton({ paperId }: { paperId: string }) {
 
   function handleStart() {
     setError(null);
-    startTransition(async () => {
-      // Fullscreen must be requested synchronously-ish within the click
-      // gesture. If unsupported (e.g. iOS Safari) or rejected, degrade
-      // gracefully rather than blocking the user from taking the exam.
-      try {
-        await document.documentElement.requestFullscreen?.();
-      } catch {
-        // ignored — exam proceeds without fullscreen
-      }
 
+    // Request fullscreen SYNCHRONOUSLY inside the click gesture. The Fullscreen
+    // API requires transient user activation, which is lost the moment we await
+    // anything (or defer into startTransition) — so this must run first, before
+    // any async work. Fire-and-forget: never await or block on it. Some
+    // environments reject or ignore fullscreen (backgrounded tab, iOS Safari,
+    // permissions policy), and the exam must still start regardless — tab-switch
+    // and visibility violations are enforced by ExamRoom independent of
+    // fullscreen.
+    try {
+      const fs = document.documentElement.requestFullscreen?.();
+      if (fs && typeof fs.catch === "function") fs.catch(() => {});
+    } catch {
+      // ignored — exam proceeds without fullscreen
+    }
+
+    startTransition(async () => {
       const result = await startAttemptAction(paperId);
       if ("error" in result) {
         setError(result.error);

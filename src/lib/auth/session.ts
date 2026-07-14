@@ -134,7 +134,11 @@ async function loadSession() {
  */
 export const verifySession = cache(async () => {
   const session = await loadSession();
-  if (!session) redirect("/login");
+  // Redirect through the cookie-clearing route (not /login directly): page
+  // render can't delete the stale cookie, and a bare /login redirect would let
+  // proxy.ts bounce it back here in an infinite 307 loop. See the route handler
+  // at /api/auth/session-expired.
+  if (!session) redirect("/api/auth/session-expired");
   return session;
 });
 

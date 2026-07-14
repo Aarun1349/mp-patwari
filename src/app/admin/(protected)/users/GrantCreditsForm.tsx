@@ -17,7 +17,7 @@ export function GrantCreditsForm({ userId }: { userId: string }) {
         defaultValue={5}
         style={{ width: "60px", padding: "4px" }}
       />
-      <button type="submit" disabled={pending} style={{ fontSize: "12px", padding: "4px 8px" }}>
+      <button type="submit" className="btn-sm" disabled={pending}>
         {pending ? "Granting…" : "Grant"}
       </button>
       {state?.error && <span style={{ color: "#a3242a", fontSize: "11px" }}>{state.error}</span>}

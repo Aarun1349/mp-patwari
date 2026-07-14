@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
+import { getDefaultExamId } from "@/lib/exam/defaultExam";
 
 export type GrantCreditsState = { success?: boolean; error?: string } | undefined;
 
@@ -33,9 +34,10 @@ export async function grantCreditsAction(
   const user = await prisma.user.findUnique({ where: { id: parsed.data.userId } });
   if (!user) return { error: "User not found." };
 
+  const examId = await getDefaultExamId();
   await prisma.userCredit.upsert({
-    where: { userId: parsed.data.userId },
-    create: { userId: parsed.data.userId, testsRemaining: parsed.data.testCount },
+    where: { userId_examId: { userId: parsed.data.userId, examId } },
+    create: { userId: parsed.data.userId, examId, testsRemaining: parsed.data.testCount },
     update: { testsRemaining: { increment: parsed.data.testCount } },
   });
 

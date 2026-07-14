@@ -25,6 +25,19 @@ export default function NewCouponPage() {
         <label htmlFor="maxRedemptions">Max redemptions (blank = unlimited)</label>
         <input id="maxRedemptions" name="maxRedemptions" type="number" />
 
+        <label htmlFor="ownerName">Influencer / partner name (optional)</label>
+        <input id="ownerName" name="ownerName" type="text" placeholder="e.g. Rahul (YouTube)" />
+
+        <label htmlFor="commissionType">Commission type (for payouts)</label>
+        <select id="commissionType" name="commissionType" defaultValue="none">
+          <option value="none">None (plain discount code)</option>
+          <option value="percent">Percent of amount paid</option>
+          <option value="flat">Flat amount per redemption (paise)</option>
+        </select>
+
+        <label htmlFor="commissionValue">Commission value</label>
+        <input id="commissionValue" name="commissionValue" type="number" placeholder="e.g. 30 (%) or 2500 (paise)" />
+
         <label htmlFor="validFrom">Valid from (optional)</label>
         <input id="validFrom" name="validFrom" type="date" />
 

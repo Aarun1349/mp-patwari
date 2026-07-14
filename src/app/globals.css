@@ -422,6 +422,203 @@ input[type="checkbox"] {
   flex: 1;
   padding: 40px 28px;
 }
+
+/* Admin screens fill the available width (no narrow floating login-card) and
+   use a cleaner white dashboard panel instead of the cream offset card. Scoped
+   to admin so the student app is untouched. */
+.admin-content {
+  padding: 26px 30px;
+}
+.admin-content .auth-card,
+.admin-content .auth-card-wide {
+  max-width: none;
+  width: 100%;
+  background: #ffffff;
+  border-color: rgba(26, 42, 68, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(26, 42, 68, 0.07);
+  padding: 24px 26px;
+}
+/* The dashboard supplies its own KPI/chart cards, so its wrapper is just a
+   transparent full-width container. */
+.admin-content .auth-card.dash {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+/* ---- Standard admin controls: buttons, links, search, filters ---- */
+/* Consistent button styling across every admin screen (the topbar logout sits
+   outside .admin-content and keeps its own style). */
+.admin-content button,
+.admin-content .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: #1a2a44;
+  color: #f4ecdb;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, opacity 0.15s ease;
+}
+.admin-content button:hover:not(:disabled),
+.admin-content .btn:hover {
+  background: #24374f;
+}
+.admin-content button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.admin-content .btn-secondary {
+  background: #fff;
+  color: #1a2a44;
+  border-color: rgba(26, 42, 68, 0.28);
+}
+.admin-content .btn-secondary:hover {
+  background: #f6f1e5;
+}
+.admin-content .btn-danger {
+  background: #b3261e;
+  color: #fff;
+}
+.admin-content .btn-danger:hover {
+  background: #98201a;
+}
+.admin-content .btn-sm {
+  padding: 5px 11px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+/* Standard admin links (the global a{} rule strips link affordance). */
+.admin-content a:not(.btn):not(.app-sidebar-link):not(.filter-pill) {
+  color: #a3242a;
+  font-weight: 600;
+  text-decoration: none;
+}
+.admin-content a:not(.btn):not(.app-sidebar-link):not(.filter-pill):hover {
+  text-decoration: underline;
+}
+
+/* Toolbar (search + filters) above a table. */
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 6px 0 18px;
+}
+.admin-search {
+  display: flex;
+  gap: 8px;
+}
+.admin-search input {
+  padding: 8px 12px;
+  border: 1px solid rgba(26, 42, 68, 0.25);
+  border-radius: 8px;
+  font-size: 13px;
+  min-width: 240px;
+  background: #fff;
+  color: #1a2a44;
+}
+.admin-toolbar .toolbar-note {
+  color: #8a8372;
+  font-size: 12.5px;
+}
+.admin-toolbar .toolbar-spacer {
+  margin-left: auto;
+}
+
+/* Question-upload result report. */
+.upload-report {
+  border: 1px solid rgba(26, 42, 68, 0.14);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 6px 0;
+  background: #fbf8f0;
+}
+.upload-report-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ur-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ur-pill.ok {
+  background: rgba(31, 122, 61, 0.14);
+  color: #1f7a3d;
+}
+.ur-pill.fail {
+  background: rgba(179, 38, 30, 0.14);
+  color: #b3261e;
+}
+.ur-note {
+  font-size: 12.5px;
+  color: #8a8372;
+}
+
+/* Pagination control below admin tables. */
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(26, 42, 68, 0.1);
+}
+.admin-pagination .pg-info {
+  font-size: 12.5px;
+  color: #8a8372;
+}
+.admin-pagination .pg-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.admin-pagination .pg-page {
+  font-size: 12.5px;
+  color: #1a2a44;
+  font-weight: 600;
+}
+.admin-content .btn.pg-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* Filter pills (e.g. All / Flagged). */
+.admin-content a.filter-pill {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(26, 42, 68, 0.25);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1a2a44;
+  background: #fff;
+  text-decoration: none;
+}
+.admin-content a.filter-pill.active {
+  background: #1a2a44;
+  color: #f4ecdb;
+  border-color: #1a2a44;
+}
 .app-footer {
   background: #101a2c;
   color: rgba(240, 233, 216, 0.6);
@@ -435,9 +632,20 @@ input[type="checkbox"] {
   justify-content: center;
   gap: 16px;
 }
-.app-footer .footer-links a {
+.app-footer .footer-links a,
+.app-footer .footer-links .footer-link-btn {
   color: rgba(240, 233, 216, 0.85);
   text-decoration: underline;
+}
+.app-footer .footer-links .footer-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.app-footer .footer-links .footer-link-btn:hover {
+  color: #f0e9d8;
 }
 @media (max-width: 760px) {
   .app-shell {
@@ -467,6 +675,61 @@ input[type="checkbox"] {
 
 .auth-card-wide {
   max-width: 1100px;
+}
+
+/* Subtitle under a page title (history / purchases / packages). */
+.page-subtitle {
+  color: #5c5c5c;
+  font-size: 14px;
+  margin: -6px 0 22px;
+}
+
+/* Premium empty state for pages with no data yet. */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 44px 24px 32px;
+}
+.empty-state .empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(201, 162, 39, 0.14);
+  color: #c9a227;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.empty-state h2 {
+  font-size: 18px;
+  color: #1a2a44;
+  margin: 0 0 6px;
+}
+.empty-state p {
+  color: #5c5c5c;
+  font-size: 14px;
+  max-width: 440px;
+  line-height: 1.55;
+  margin: 0 0 20px;
+}
+.empty-state .empty-cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 22px;
+  background: #1a2a44;
+  color: #f0e9d8;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(26, 42, 68, 0.22);
+  transition: background 0.15s ease;
+}
+.empty-state .empty-cta:hover {
+  background: #24374f;
 }
 
 /* Small colored pill for attempt/order status — reused across Practice
@@ -506,10 +769,26 @@ input[type="checkbox"] {
   margin: 18px 0 24px;
 }
 .stat-tile {
+  position: relative;
+  overflow: hidden;
   background: #fff;
   border: 1px solid rgba(26, 42, 68, 0.12);
-  border-radius: 8px;
-  padding: 16px 18px;
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  transition: box-shadow 0.15s ease;
+}
+.stat-tile::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #c9a227, #1a2a44);
+  opacity: 0.85;
+}
+.stat-tile:hover {
+  box-shadow: 0 6px 18px rgba(26, 42, 68, 0.1);
 }
 .stat-tile .stat-label {
   font-family: var(--font-space-mono, monospace);
@@ -520,9 +799,35 @@ input[type="checkbox"] {
   margin-bottom: 6px;
 }
 .stat-tile .stat-value {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #1a2a44;
+  line-height: 1;
+}
+.stat-tile .stat-value small {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8a8372;
+}
+.stat-tile .stat-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #8a8372;
+}
+
+/* Inline accuracy bar used in the Practice History table. */
+.mini-acc {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(26, 42, 68, 0.1);
+  overflow: hidden;
+  margin-top: 6px;
+  max-width: 120px;
+}
+.mini-acc > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
 }
 .profile-grid {
   display: grid;

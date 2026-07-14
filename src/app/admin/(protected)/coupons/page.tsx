@@ -2,6 +2,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { toggleCouponActiveAction } from "@/app/actions/adminCoupons";
 
+function formatCommission(c: { commissionType: string | null; commissionValue: number }): string {
+  if (!c.commissionType) return "—";
+  return c.commissionType === "percent" ? `${c.commissionValue}%` : `₹${(c.commissionValue / 100).toFixed(2)}`;
+}
+
 export default async function AdminCouponsPage() {
   const coupons = await prisma.coupon.findMany({ orderBy: { createdAt: "desc" } });
 
@@ -10,13 +15,17 @@ export default async function AdminCouponsPage() {
       <h1>Coupons</h1>
       <p className="muted">
         <Link href="/admin/coupons/new">+ Create new coupon</Link>
+        {"  ·  "}
+        <Link href="/admin/payouts">View influencer payouts →</Link>
       </p>
 
       <table className="report-table">
         <thead>
           <tr>
             <th>Code</th>
+            <th>Owner</th>
             <th>Discount</th>
+            <th>Commission</th>
             <th>Redemptions</th>
             <th>Valid window</th>
             <th>Active</th>
@@ -27,7 +36,9 @@ export default async function AdminCouponsPage() {
           {coupons.map((c) => (
             <tr key={c.id}>
               <td className="mono">{c.code}</td>
+              <td>{c.ownerName ?? "—"}</td>
               <td>{c.discountType === "percent" ? `${c.discountValue}%` : `₹${(c.discountValue / 100).toFixed(2)}`}</td>
+              <td>{formatCommission(c)}</td>
               <td>
                 {c.redemptionCount}
                 {c.maxRedemptions ? `/${c.maxRedemptions}` : " (unlimited)"}
@@ -40,7 +51,7 @@ export default async function AdminCouponsPage() {
               <td>
                 <form action={toggleCouponActiveAction} style={{ display: "inline" }}>
                   <input type="hidden" name="id" value={c.id} />
-                  <button type="submit" style={{ fontSize: "12px", padding: "2px 6px" }}>
+                  <button type="submit" className={`btn-sm ${c.isActive ? "btn-danger" : "btn-secondary"}`}>
                     {c.isActive ? "Deactivate" : "Activate"}
                   </button>
                 </form>

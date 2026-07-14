@@ -14,6 +14,13 @@ export interface QuestionPayload {
 
 export type DisplayLang = "original" | "alt";
 
+/** The language-dependent parts of a question — cached per (index, lang) so
+ * toggling the display language is instant instead of a server round-trip. */
+export interface LangVariant {
+  text: string;
+  options: QuestionPayload["options"];
+}
+
 export interface AnsweredEntry {
   selectedOptionId: string | null;
   markedForReview: boolean;
@@ -25,7 +32,9 @@ export interface ExamState {
   totalQuestions: number;
   currentQuestion: QuestionPayload | null;
   loadingQuestion: boolean;
+  translating: boolean;
   answered: Record<number, AnsweredEntry>;
+  langCache: Record<string, LangVariant>;
   remainingSeconds: number;
   fullscreenExitCount: number;
   fullscreenUnsupported: boolean;
@@ -35,15 +44,21 @@ export interface ExamState {
 
 export type ExamAction =
   | { type: "QUESTION_LOADING" }
-  | { type: "QUESTION_LOADED"; payload: QuestionPayload }
+  | { type: "QUESTION_LOADED"; payload: QuestionPayload; lang: DisplayLang }
   | { type: "ANSWER_RECORDED"; index: number; selectedOptionId: string | null; markedForReview: boolean }
   | { type: "HEARTBEAT"; status: ExamStatus; remainingSeconds: number; fullscreenExitCount?: number }
   | { type: "TICK" }
   | { type: "VIOLATION"; status: ExamStatus; fullscreenExitCount: number }
   | { type: "RESUMED" }
   | { type: "FULLSCREEN_UNSUPPORTED" }
-  | { type: "SET_DISPLAY_LANG"; lang: DisplayLang }
+  | { type: "TRANSLATING"; on: boolean }
+  | { type: "CACHE_LANG"; key: string; variant: LangVariant }
+  | { type: "SET_LANG_VARIANT"; lang: DisplayLang; variant: LangVariant }
   | { type: "ERROR"; message: string };
+
+export function langKey(index: number, lang: DisplayLang): string {
+  return `${index}:${lang}`;
+}
 
 export function createInitialState(totalQuestions: number, remainingSeconds: number): ExamState {
   return {
@@ -52,7 +67,9 @@ export function createInitialState(totalQuestions: number, remainingSeconds: num
     totalQuestions,
     currentQuestion: null,
     loadingQuestion: false,
+    translating: false,
     answered: {},
+    langCache: {},
     remainingSeconds,
     fullscreenExitCount: 0,
     fullscreenUnsupported: false,
@@ -70,6 +87,8 @@ export function examReducer(state: ExamState, action: ExamAction): ExamState {
       return {
         ...state,
         loadingQuestion: false,
+        translating: false,
+        displayLang: action.lang,
         currentIndex: action.payload.index,
         currentQuestion: action.payload,
         answered: {
@@ -77,6 +96,14 @@ export function examReducer(state: ExamState, action: ExamAction): ExamState {
           [action.payload.index]: {
             selectedOptionId: action.payload.selectedOptionId,
             markedForReview: action.payload.markedForReview,
+          },
+        },
+        // Cache the language variant we just loaded so toggling back is instant.
+        langCache: {
+          ...state.langCache,
+          [langKey(action.payload.index, action.lang)]: {
+            text: action.payload.text,
+            options: action.payload.options,
           },
         },
       };
@@ -127,11 +154,26 @@ export function examReducer(state: ExamState, action: ExamAction): ExamState {
     case "FULLSCREEN_UNSUPPORTED":
       return { ...state, fullscreenUnsupported: true };
 
-    case "SET_DISPLAY_LANG":
-      return { ...state, displayLang: action.lang };
+    case "TRANSLATING":
+      return { ...state, translating: action.on };
+
+    case "CACHE_LANG":
+      return { ...state, langCache: { ...state.langCache, [action.key]: action.variant } };
+
+    case "SET_LANG_VARIANT":
+      // Swap only the rendered text/options; preserve the user's current
+      // selection and index (the variant carries no answer state).
+      return {
+        ...state,
+        displayLang: action.lang,
+        translating: false,
+        currentQuestion: state.currentQuestion
+          ? { ...state.currentQuestion, text: action.variant.text, options: action.variant.options }
+          : state.currentQuestion,
+      };
 
     case "ERROR":
-      return { ...state, loadingQuestion: false, error: action.message };
+      return { ...state, loadingQuestion: false, translating: false, error: action.message };
 
     default:
       return state;

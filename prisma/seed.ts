@@ -13,11 +13,19 @@ const SECTIONS = [
 ];
 
 async function main() {
+  // The MP Patwari exam that all seeded content belongs to.
+  const exam = await prisma.exam.upsert({
+    where: { slug: "mp-patwari" },
+    update: {},
+    create: { name: "MP Patwari", slug: "mp-patwari", board: "MPESB", shortName: "Patwari", sortOrder: 0 },
+  });
+  const examId = exam.id;
+
   for (const section of SECTIONS) {
     await prisma.section.upsert({
-      where: { code: section.code },
+      where: { examId_code: { examId, code: section.code } },
       update: section,
-      create: section,
+      create: { ...section, examId },
     });
   }
   console.log(`Seeded ${SECTIONS.length} sections.`);
@@ -34,7 +42,7 @@ async function main() {
   for (const pkg of packages) {
     const existing = await prisma.package.findFirst({ where: { name: pkg.name } });
     if (!existing) {
-      await prisma.package.create({ data: pkg });
+      await prisma.package.create({ data: { ...pkg, examId } });
     }
   }
   console.log(`Seeded ${packages.length} packages (placeholder pricing).`);

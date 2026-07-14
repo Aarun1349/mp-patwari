@@ -3,7 +3,7 @@ export type Lang = "hi" | "en";
 const content = {
   hi: {
     brandEn: "ExamsExpress",
-    brandHi: "MP पटवारी टेस्ट सीरीज़",
+    brandHi: "MP राज्य स्तरीय परीक्षाएँ",
     navCta: "लॉगिन / रजिस्टर",
     eyebrow: "MPPEB पैटर्न पर आधारित · 2026",
     heroTitlePre: "परीक्षा हॉल में ",
@@ -86,7 +86,7 @@ const content = {
   },
   en: {
     brandEn: "ExamsExpress",
-    brandHi: "MP Patwari Test Series",
+    brandHi: "MP State-Level Exams",
     navCta: "Login / Register",
     eyebrow: "Based on the MPPEB pattern · 2026",
     heroTitlePre: "Don't take a computer-based test for the ",

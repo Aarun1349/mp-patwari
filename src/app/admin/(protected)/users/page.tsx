@@ -1,41 +1,63 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { verifyAdminSession } from "@/lib/auth/adminSession";
 import { GrantCreditsForm } from "./GrantCreditsForm";
+import { Pagination } from "../Pagination";
+
+const PAGE_SIZE = 25;
 
 export default async function AdminUsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 }) {
-  const { q } = await searchParams;
+  await verifyAdminSession();
+  const { q, page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
 
-  const users = await prisma.user.findMany({
-    where: q
-      ? {
-          OR: [
-            { phone: { contains: q } },
-            { email: { contains: q, mode: "insensitive" } },
-            { name: { contains: q, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
-    include: {
-      credit: true,
-      _count: { select: { attempts: true, orders: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  });
+  const where = q
+    ? {
+        OR: [
+          { phone: { contains: q } },
+          { email: { contains: q, mode: "insensitive" as const } },
+          { name: { contains: q, mode: "insensitive" as const } },
+        ],
+      }
+    : undefined;
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      include: {
+        credits: true,
+        _count: { select: { attempts: true, orders: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.user.count({ where }),
+  ]);
 
   return (
     <div className="auth-card auth-card-wide">
       <h1>Users</h1>
-      <form method="get" className="auth-form" style={{ maxWidth: "320px" }}>
-        <input type="text" name="q" placeholder="Search phone, email, or name" defaultValue={q ?? ""} />
-        <button type="submit">Search</button>
-      </form>
+      <p className="page-subtitle">Accounts, credits and activity.</p>
 
-      <p className="muted">{users.length} user(s){q ? " matching search" : " (showing latest 200)"}</p>
+      <div className="admin-toolbar">
+        <form method="get" className="admin-search">
+          <input type="text" name="q" placeholder="Search phone, email, or name" defaultValue={q ?? ""} />
+          <button type="submit">Search</button>
+          {q && (
+            <a className="btn btn-secondary" href="/admin/users">
+              Clear
+            </a>
+          )}
+        </form>
+        <span className="toolbar-note toolbar-spacer">
+          {total.toLocaleString("en-IN")} user(s){q ? " matching" : ""}
+        </span>
+      </div>
 
       <table className="report-table">
         <thead>
@@ -60,7 +82,7 @@ export default async function AdminUsersPage({
               <td>{user.createdAt.toLocaleDateString()}</td>
               <td>{user._count.attempts}</td>
               <td>{user._count.orders}</td>
-              <td>{user.credit?.testsRemaining ?? 0}</td>
+              <td>{user.credits.reduce((s, c) => s + c.testsRemaining, 0)}</td>
               <td>
                 <GrantCreditsForm userId={user.id} />
               </td>
@@ -71,6 +93,8 @@ export default async function AdminUsersPage({
           ))}
         </tbody>
       </table>
+
+      <Pagination basePath="/admin/users" query={{ q }} page={page} pageSize={PAGE_SIZE} total={total} />
     </div>
   );
 }

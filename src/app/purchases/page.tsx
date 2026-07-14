@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
@@ -18,12 +19,26 @@ export default async function PurchasesPage() {
     <AppShell userLabel={user.name ?? user.phone ?? user.email ?? ""}>
       <div className="auth-card auth-card-wide">
         <h1>Purchase History</h1>
+        <p className="page-subtitle">Every test package you&apos;ve bought, with amounts and dates.</p>
 
         {orders.length === 0 && (
-          <p className="muted">
-            You haven&apos;t purchased a test package yet. Purchases will appear here once you buy
-            one.
-          </p>
+          <div className="empty-state">
+            <span className="empty-icon" aria-hidden="true">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <path d="M3 6h18" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
+            </span>
+            <h2>No purchases yet</h2>
+            <p>
+              You haven&apos;t bought a test package yet. Browse our packages to unlock more full-length
+              mock tests with section-wise analysis.
+            </p>
+            <Link href="/packages" className="empty-cta">
+              Browse Test Packages
+            </Link>
+          </div>
         )}
 
         {orders.length > 0 && (
