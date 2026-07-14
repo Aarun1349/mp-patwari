@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { LandingClient } from "./LandingClient";
 
-// Pricing + exam list are DB-driven so the landing can never drift from the
-// configured exams/packages; revalidate periodically rather than fully dynamic.
-export const revalidate = 300;
+// Pricing + exam list are DB-driven. Render dynamically so the production build
+// never depends on the database schema/data being ready at build time.
+export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
   const [packages, exams, livePaperExamIds] = await Promise.all([
