@@ -108,14 +108,20 @@
 }
 .landing .lang-toggle {
   background: transparent;
-  border: 1px solid rgba(240, 233, 216, 0.4);
-  color: var(--cream);
+  border: 1px solid rgba(240, 233, 216, 0.45);
+  color: #f0e9d8;
   padding: 7px 14px;
-  border-radius: 2px;
-  font-weight: 700;
+  border-radius: 8px;
+  font-weight: 600;
   font-size: 12.5px;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   margin-right: 10px;
+  transition: background 0.15s ease;
+}
+.landing .lang-toggle:hover {
+  background: rgba(240, 233, 216, 0.12);
 }
 
 .landing .hero {
