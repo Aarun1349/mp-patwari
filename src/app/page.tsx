@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function LandingPage() {
   const [packages, exams, livePaperExamIds] = await Promise.all([
     prisma.package.findMany({
-      where: { isActive: true, kind: "standard" },
+      // Multi-test tiers only — the single (1-test) is an in-app upsell, not a
+      // landing headliner; the free test is already promised in the hero.
+      where: { isActive: true, kind: "standard", testCount: { gte: 2 } },
       orderBy: { sortOrder: "asc" },
       select: { id: true, name: true, pricePaise: true, testCount: true, validityDays: true },
     }),

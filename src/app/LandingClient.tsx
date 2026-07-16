@@ -105,7 +105,9 @@ function buildPricingCards(lang: Lang, packages: LandingPackage[], freeCta: stri
     };
   });
 
-  return [freeCard, ...paidCards];
+  // Free trial isn't shown as a pricing card (the hero already promises it).
+  void freeCard;
+  return paidCards;
 }
 
 export function LandingClient({ packages, exams }: { packages: LandingPackage[]; exams: LandingExam[] }) {
