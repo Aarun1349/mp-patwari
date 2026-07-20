@@ -16,48 +16,88 @@ export type SeoPage = {
   blocks: Block[];
 };
 
-// ---- Shared pattern facts (single source of truth, reused across pages) ----
-// Verified 2026-07 from MPESB-aligned prep sources. The subject-vs-pedagogy
-// split is reported differently by different portals, so every page attributes
-// the pattern and tells candidates to confirm with the official MPESB
-// notification — same honest framing the Patwari pages already use.
+// ---- Landing pillar page content ----
+// Mirrors the main landing's rich design vocabulary (hero + admit-card + exam
+// cards + pattern + why + FAQ) so the MP TET page matches the rest of the site.
+// Verified 2026-07 from MPESB-aligned prep sources; the subject-vs-pedagogy
+// split is reported differently across portals, so the page attributes the
+// pattern and points candidates to the official MPESB notification.
 
 export const mptetLanding: Record<Lang, {
   eyebrow: string;
-  h1: string;
+  heroTitlePre: string;
+  heroTitleAccent: string;
+  heroTitlePost: string;
   lede: string;
   ctaPrimary: string;
-  ctaPattern: string;
-  ctaSyllabus: string;
-  highlightsTitle: string;
-  highlights: { k: string; v: string }[];
+  ctaGhost: string;
+  stats: { value: string; label: string }[];
+  admitCard: {
+    t1: string;
+    t2: string;
+    name: string;
+    role: string;
+    rows: { label: string; value: string }[];
+    stamp: string;
+  };
+  subjectsKicker: string;
   subjectsTitle: string;
-  subjectsLede: string;
+  subjectsSub: string;
   subjects: { name: string; live: boolean }[];
   liveBadge: string;
   soonBadge: string;
+  startCta: string;
+  patternKicker: string;
+  patternTitle: string;
+  patternSubjectHeader: string;
+  patternWeightHeader: string;
+  patternRows: { subject: string; weight: string }[];
+  patternBig: string;
+  patternNote: string;
+  whyKicker: string;
+  whyTitle: string;
+  whyCards: { icon: string; title: string; desc: string }[];
+  faqKicker: string;
   faqTitle: string;
   faqs: { q: string; a: string }[];
+  finalTitle: string;
+  finalDesc: string;
+  finalCta: string;
   disclaimer: string;
 }> = {
   hi: {
-    eyebrow: "MP TET वर्ग 2 · 2026",
-    h1: "MP TET वर्ग 2 गणित मॉक टेस्ट 2026",
+    eyebrow: "MP TET वर्ग 2 · गणित · 2026",
+    heroTitlePre: "MP TET वर्ग 2 गणित की ",
+    heroTitleAccent: "असली परीक्षा जैसी",
+    heroTitlePost: " तैयारी यहीं करें",
     lede:
       "MPESB वर्ग 2 शिक्षक भर्ती परीक्षा जैसा ऑनलाइन मॉक टेस्ट — वही 100 प्रश्न, वही 2 घंटे, कोई नेगेटिव मार्किंग नहीं। पहला फुल टेस्ट बिल्कुल मुफ़्त, बिना कार्ड डिटेल के।",
     ctaPrimary: "फ्री मॉक टेस्ट शुरू करें →",
-    ctaPattern: "एग्ज़ाम पैटर्न देखें",
-    ctaSyllabus: "पूरा सिलेबस देखें",
-    highlightsTitle: "एक नज़र में परीक्षा",
-    highlights: [
-      { k: "कुल प्रश्न", v: "100" },
-      { k: "कुल अंक", v: "100" },
-      { k: "अवधि", v: "2 घंटे" },
-      { k: "नेगेटिव मार्किंग", v: "नहीं" },
+    ctaGhost: "एग्ज़ाम पैटर्न देखें",
+    stats: [
+      { value: "100", label: "कुल प्रश्न" },
+      { value: "100", label: "कुल अंक" },
+      { value: "2 घं.", label: "अवधि" },
+      { value: "₹0", label: "पहला टेस्ट" },
     ],
-    subjectsTitle: "विषय",
-    subjectsLede:
-      "वर्ग 2 में उम्मीदवार एक विषय चुनते हैं। हम गणित से शुरुआत कर रहे हैं — बाक़ी विषय जल्द जोड़े जा रहे हैं।",
+    admitCard: {
+      t1: "PRACTICE HALL TICKET",
+      t2: "अभ्यास प्रवेश पत्र",
+      name: "उम्मीदवार का नाम",
+      role: "MP TET वर्ग 2 · गणित",
+      rows: [
+        { label: "परीक्षा", value: "MOCK TEST 01" },
+        { label: "कुल प्रश्न", value: "100" },
+        { label: "कुल अंक", value: "100" },
+        { label: "अवधि", value: "120 MIN" },
+        { label: "नेगेटिव मार्किंग", value: "नहीं" },
+      ],
+      stamp: "फ्री टेस्ट",
+    },
+    subjectsKicker: "विषय",
+    subjectsTitle: "अपना विषय चुनें",
+    subjectsSub:
+      "वर्ग 2 में उम्मीदवार एक विषय चुनते हैं। हम गणित से शुरुआत कर रहे हैं — बाक़ी विषय जल्द आ रहे हैं।",
     subjects: [
       { name: "गणित (Mathematics)", live: true },
       { name: "विज्ञान (Science)", live: false },
@@ -67,7 +107,43 @@ export const mptetLanding: Record<Lang, {
       { name: "संस्कृत (Sanskrit)", live: false },
     ],
     liveBadge: "उपलब्ध",
-    soonBadge: "जल्द",
+    soonBadge: "जल्द आ रहा है",
+    startCta: "फ्री टेस्ट दें →",
+    patternKicker: "एग्ज़ाम पैटर्न",
+    patternTitle: "हर मॉक टेस्ट इसी पैटर्न पर बना है",
+    patternSubjectHeader: "भाग",
+    patternWeightHeader: "अंक",
+    patternRows: [
+      { subject: "सामान्य ज्ञान एवं समसामयिकी", weight: "20" },
+      { subject: "सामान्य हिंदी", weight: "20" },
+      { subject: "सामान्य अंग्रेज़ी", weight: "10" },
+      { subject: "सामान्य गणित एवं रीज़निंग", weight: "20" },
+      { subject: "सामान्य विज्ञान एवं पर्यावरण", weight: "10" },
+      { subject: "बाल विकास एवं शिक्षाशास्त्र", weight: "20" },
+    ],
+    patternBig: "100",
+    patternNote:
+      "कुल अंकों की ऑनलाइन (CBT) परीक्षा, 2 घंटे की अवधि, कोई नेगेटिव मार्किंग नहीं। पैटर्न MPESB की आधिकारिक अधिसूचना के अनुसार अपडेट किया जाता है — पुष्टि के लिए esb.mp.gov.in देखें।",
+    whyKicker: "क्यों ज़रूरी है",
+    whyTitle: "सिर्फ़ पढ़ाई काफ़ी नहीं — असली परीक्षा जैसा अभ्यास ज़रूरी है",
+    whyCards: [
+      {
+        icon: "क",
+        title: "कंप्यूटर स्क्रीन की आदत",
+        desc: "असली CBT परीक्षा में पहली बार माउस से आंसर सेलेक्ट न करें — यहाँ पहले से अभ्यास हो जाता है।",
+      },
+      {
+        icon: "स",
+        title: "समय का सही बँटवारा",
+        desc: "100 प्रश्न, 2 घंटे — असली टाइमर के साथ अभ्यास से पता चलता है कि किस भाग में कितना समय देना है।",
+      },
+      {
+        icon: "रि",
+        title: "कमज़ोर टॉपिक पकड़ें",
+        desc: "हर टेस्ट के बाद सेक्शन-वाइज़ स्कोर और कमज़ोर टॉपिक सामने आते हैं, अगली तैयारी उसी हिसाब से करें।",
+      },
+    ],
+    faqKicker: "सवाल-जवाब",
     faqTitle: "अक्सर पूछे जाने वाले सवाल",
     faqs: [
       {
@@ -84,30 +160,48 @@ export const mptetLanding: Record<Lang, {
       },
       {
         q: "क्या यह MPESB की आधिकारिक परीक्षा या वेबसाइट है?",
-        a: "नहीं। ExamsExpress एक स्वतंत्र प्रैक्टिस प्लेटफ़ॉर्म है और MPESB से संबद्ध नहीं है। हमारे टेस्ट सिर्फ़ आधिकारिक अधिसूचना में बताए गए पैटर्न व सिलेबस पर आधारित हैं। ताज़ा व सटीक जानकारी के लिए esb.mp.gov.in देखें।",
+        a: "नहीं। ExamsExpress एक स्वतंत्र प्रैक्टिस प्लेटफ़ॉर्म है और MPESB से संबद्ध नहीं है। हमारे टेस्ट सिर्फ़ आधिकारिक अधिसूचना में बताए गए पैटर्न व सिलेबस पर आधारित हैं। ताज़ा जानकारी के लिए esb.mp.gov.in देखें।",
       },
     ],
+    finalTitle: "आज ही अपना पहला MP TET गणित मॉक टेस्ट दें",
+    finalDesc: "बिल्कुल मुफ़्त, बिना कार्ड डिटेल के, सिर्फ़ 5 मिनट में शुरू करें।",
+    finalCta: "फ्री मॉक टेस्ट शुरू करें →",
     disclaimer:
       "ExamsExpress एक स्वतंत्र प्रैक्टिस प्लेटफ़ॉर्म है, MPESB से असंबद्ध। परीक्षा पैटर्न, तिथियाँ व पात्रता की पुष्टि के लिए आधिकारिक वेबसाइट esb.mp.gov.in अवश्य देखें।",
   },
   en: {
-    eyebrow: "MP TET Varg 2 · 2026",
-    h1: "MP TET Varg 2 Maths Mock Test 2026",
+    eyebrow: "MP TET Varg 2 · Maths · 2026",
+    heroTitlePre: "Prepare for MP TET Varg 2 Maths on the ",
+    heroTitleAccent: "real exam interface",
+    heroTitlePost: "",
     lede:
       "Online mock tests that replicate the MPESB Varg 2 teacher exam — the same 100 questions, the same 2 hours, no negative marking. Your first full test is completely free, no card required.",
     ctaPrimary: "Start Free Mock Test →",
-    ctaPattern: "View Exam Pattern",
-    ctaSyllabus: "View Full Syllabus",
-    highlightsTitle: "The exam at a glance",
-    highlights: [
-      { k: "Total Questions", v: "100" },
-      { k: "Total Marks", v: "100" },
-      { k: "Duration", v: "2 hours" },
-      { k: "Negative Marking", v: "None" },
+    ctaGhost: "View Exam Pattern",
+    stats: [
+      { value: "100", label: "Questions" },
+      { value: "100", label: "Marks" },
+      { value: "2 hr", label: "Duration" },
+      { value: "₹0", label: "First Test" },
     ],
-    subjectsTitle: "Subjects",
-    subjectsLede:
-      "Varg 2 candidates choose one subject. We're launching with Mathematics — the other subjects are being added shortly.",
+    admitCard: {
+      t1: "PRACTICE HALL TICKET",
+      t2: "Practice Admit Card",
+      name: "Candidate Name",
+      role: "MP TET Varg 2 · Mathematics",
+      rows: [
+        { label: "Exam", value: "MOCK TEST 01" },
+        { label: "Questions", value: "100" },
+        { label: "Total Marks", value: "100" },
+        { label: "Duration", value: "120 MIN" },
+        { label: "Negative Marking", value: "None" },
+      ],
+      stamp: "FREE TEST",
+    },
+    subjectsKicker: "SUBJECTS",
+    subjectsTitle: "Choose your subject",
+    subjectsSub:
+      "Varg 2 candidates choose one subject. We're launching with Mathematics — the other subjects are coming soon.",
     subjects: [
       { name: "Mathematics", live: true },
       { name: "Science", live: false },
@@ -117,7 +211,43 @@ export const mptetLanding: Record<Lang, {
       { name: "Sanskrit", live: false },
     ],
     liveBadge: "Available",
-    soonBadge: "Soon",
+    soonBadge: "Coming soon",
+    startCta: "Take free test →",
+    patternKicker: "EXAM PATTERN",
+    patternTitle: "Every mock test follows this exact pattern",
+    patternSubjectHeader: "Section",
+    patternWeightHeader: "Marks",
+    patternRows: [
+      { subject: "General Knowledge & Current Affairs", weight: "20" },
+      { subject: "General Hindi", weight: "20" },
+      { subject: "General English", weight: "10" },
+      { subject: "General Maths & Reasoning", weight: "20" },
+      { subject: "General Science & Environment", weight: "10" },
+      { subject: "Child Development & Pedagogy", weight: "20" },
+    ],
+    patternBig: "100",
+    patternNote:
+      "A 100-mark online (CBT) exam, 2 hours in duration, with no negative marking. The pattern is updated per MPESB's official notification — confirm at esb.mp.gov.in.",
+    whyKicker: "WHY IT MATTERS",
+    whyTitle: "Studying isn't enough — you need real exam-like practice",
+    whyCards: [
+      {
+        icon: "1",
+        title: "Get used to the screen",
+        desc: "Don't select answers with a mouse for the first time in the real CBT exam — practice it here beforehand.",
+      },
+      {
+        icon: "2",
+        title: "Manage your time",
+        desc: "100 questions, 2 hours — practicing with a real timer shows how much time each section really needs.",
+      },
+      {
+        icon: "3",
+        title: "Find weak topics",
+        desc: "Get section-wise scores and weak topics after every test, and plan your next round accordingly.",
+      },
+    ],
+    faqKicker: "FAQ",
     faqTitle: "Frequently Asked Questions",
     faqs: [
       {
@@ -134,9 +264,12 @@ export const mptetLanding: Record<Lang, {
       },
       {
         q: "Is this the official MPESB exam or website?",
-        a: "No. ExamsExpress is an independent practice platform and is not affiliated with MPESB. Our tests are based only on the pattern and syllabus described in the official notification. For the latest and accurate information, visit esb.mp.gov.in.",
+        a: "No. ExamsExpress is an independent practice platform and is not affiliated with MPESB. Our tests are based only on the pattern and syllabus described in the official notification. For the latest information, visit esb.mp.gov.in.",
       },
     ],
+    finalTitle: "Take your first MP TET Maths mock test today",
+    finalDesc: "Completely free, no card required, get started in just 5 minutes.",
+    finalCta: "Start Free Mock Test →",
     disclaimer:
       "ExamsExpress is an independent practice platform, not affiliated with MPESB. Always confirm the exam pattern, dates and eligibility on the official website esb.mp.gov.in.",
   },

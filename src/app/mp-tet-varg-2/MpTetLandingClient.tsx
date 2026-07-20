@@ -21,113 +21,183 @@ export default function MpTetLandingClient() {
       <SiteHeader lang={lang} onToggleLang={() => setLang(lang === "hi" ? "en" : "hi")} />
 
       {/* Hero */}
+      <section className="hero">
+        <div className="wrap hero-grid">
+          <div>
+            <div className="eyebrow">{t.eyebrow}</div>
+            <h1>
+              {t.heroTitlePre}
+              <span className="accent">{t.heroTitleAccent}</span>
+              {t.heroTitlePost}
+            </h1>
+            <p className="lede">{t.lede}</p>
+            <div className="hero-ctas">
+              <Link href="/login" className="btn-primary">
+                {t.ctaPrimary}
+              </Link>
+              <a href="#pattern" className="btn-ghost">
+                {t.ctaGhost}
+              </a>
+            </div>
+            <div className="hero-stats">
+              {t.stats.map((s) => (
+                <div key={s.label}>
+                  {s.value}
+                  <span>{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="admit-card">
+            <div className="ac-head">
+              <div>
+                <div className="t1">{t.admitCard.t1}</div>
+                <div className="t2">{t.admitCard.t2}</div>
+              </div>
+              <div className="mono" style={{ fontSize: "11px" }}>
+                #MP-TET2
+              </div>
+            </div>
+            <div className="ac-body">
+              <div className="ac-topline">
+                <div className="ac-photo" />
+                <div className="who">
+                  <div className="name">{t.admitCard.name}</div>
+                  <div className="role">{t.admitCard.role}</div>
+                </div>
+              </div>
+              {t.admitCard.rows.map((row) => (
+                <div className="ac-row" key={row.label}>
+                  <span className="label">{row.label}</span>
+                  <span className="value">{row.value}</span>
+                </div>
+              ))}
+            </div>
+            <div className="ac-stamp">{t.admitCard.stamp}</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subjects */}
+      <section className="exams-bg" id="subjects">
+        <div className="wrap">
+          <div className="section-head">
+            <span className="kicker">{t.subjectsKicker}</span>
+            <h2>{t.subjectsTitle}</h2>
+            <p className="section-sub">{t.subjectsSub}</p>
+          </div>
+          <div className="exam-grid">
+            {t.subjects.map((subject) => {
+              const card = (
+                <>
+                  <div className="exam-card-top">
+                    <span className="exam-board">MP TET वर्ग 2</span>
+                    <span className={`exam-status ${subject.live ? "live" : "soon"}`}>
+                      {subject.live ? t.liveBadge : t.soonBadge}
+                    </span>
+                  </div>
+                  <h3>{subject.name}</h3>
+                  <span className="exam-cta">{subject.live ? t.startCta : t.soonBadge}</span>
+                </>
+              );
+              return subject.live ? (
+                <Link key={subject.name} href="/login" className="exam-card is-live">
+                  {card}
+                </Link>
+              ) : (
+                <div key={subject.name} className="exam-card is-soon" aria-disabled>
+                  {card}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Exam pattern */}
+      <section id="pattern">
+        <div className="wrap">
+          <div className="section-head">
+            <span className="kicker">{t.patternKicker}</span>
+            <h2>{t.patternTitle}</h2>
+          </div>
+          <div className="pattern-wrap">
+            <table className="pattern">
+              <thead>
+                <tr>
+                  <th>{t.patternSubjectHeader}</th>
+                  <th>{t.patternWeightHeader}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {t.patternRows.map((row) => (
+                  <tr key={row.subject}>
+                    <td>{row.subject}</td>
+                    <td>{row.weight}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="pattern-note">
+              <div className="big">{t.patternBig}</div>
+              <p>{t.patternNote}</p>
+              <p style={{ marginTop: "0.75rem" }}>
+                <Link href="/mp-tet-varg-2/syllabus">{lang === "hi" ? "पूरा सिलेबस देखें →" : "View full syllabus →"}</Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why it matters */}
       <section className="ledger-bg">
         <div className="wrap">
           <div className="section-head">
-            <span className="kicker">{t.eyebrow}</span>
+            <span className="kicker">{t.whyKicker}</span>
+            <h2>{t.whyTitle}</h2>
           </div>
-          <div className="static-card">
-            <h1>{t.h1}</h1>
-            <p>{t.lede}</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", marginTop: "1.25rem" }}>
-              <Link href="/login" className="nav-cta">
-                {t.ctaPrimary}
-              </Link>
-              <Link href="/mp-tet-varg-2/exam-pattern" className="lang-toggle">
-                {t.ctaPattern}
-              </Link>
-              <Link href="/mp-tet-varg-2/syllabus" className="lang-toggle">
-                {t.ctaSyllabus}
-              </Link>
-            </div>
-          </div>
-
-          {/* Highlights */}
-          <div className="static-card" style={{ marginTop: "1.25rem" }}>
-            <h2>{t.highlightsTitle}</h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                gap: "0.75rem",
-                marginTop: "0.75rem",
-              }}
-            >
-              {t.highlights.map((h) => (
-                <div
-                  key={h.k}
-                  style={{
-                    border: "1px solid rgba(0,0,0,0.12)",
-                    borderRadius: "10px",
-                    padding: "0.9rem",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>{h.v}</div>
-                  <div className="muted" style={{ fontSize: "0.85rem" }}>
-                    {h.k}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Subjects */}
-          <div className="static-card" style={{ marginTop: "1.25rem" }}>
-            <h2>{t.subjectsTitle}</h2>
-            <p>{t.subjectsLede}</p>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-                gap: "0.6rem",
-                marginTop: "0.75rem",
-              }}
-            >
-              {t.subjects.map((s) => (
-                <div
-                  key={s.name}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    border: "1px solid rgba(0,0,0,0.12)",
-                    borderRadius: "10px",
-                    padding: "0.7rem 0.9rem",
-                    opacity: s.live ? 1 : 0.6,
-                  }}
-                >
-                  <span>{s.name}</span>
-                  <span
-                    style={{
-                      fontSize: "0.72rem",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      padding: "0.15rem 0.5rem",
-                      borderRadius: "999px",
-                      border: "1px solid currentColor",
-                    }}
-                  >
-                    {s.live ? t.liveBadge : t.soonBadge}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* FAQ */}
-          <div className="static-card" style={{ marginTop: "1.25rem" }}>
-            <h2>{t.faqTitle}</h2>
-            {t.faqs.map((f) => (
-              <div key={f.q} style={{ marginTop: "0.9rem" }}>
-                <h2 style={{ fontSize: "1.05rem" }}>{f.q}</h2>
-                <p>{f.a}</p>
+          <div className="why-grid">
+            {t.whyCards.map((card) => (
+              <div className="why-card" key={card.title}>
+                <div className="icon">{card.icon}</div>
+                <h3>{card.title}</h3>
+                <p>{card.desc}</p>
               </div>
             ))}
-            <p className="muted" style={{ marginTop: "1.25rem" }}>
-              {t.disclaimer}
-            </p>
           </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section>
+        <div className="wrap">
+          <div className="section-head">
+            <span className="kicker">{t.faqKicker}</span>
+            <h2>{t.faqTitle}</h2>
+          </div>
+          <div className="faq-list">
+            {t.faqs.map((faq, i) => (
+              <details className="faq-item" key={faq.q} open={i === 0}>
+                <summary>{faq.q}</summary>
+                <p>{faq.a}</p>
+              </details>
+            ))}
+          </div>
+          <p className="muted" style={{ maxWidth: "760px", margin: "1.5rem auto 0", textAlign: "center" }}>
+            {t.disclaimer}
+          </p>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="final-cta">
+        <div className="wrap" style={{ padding: 0 }}>
+          <h2>{t.finalTitle}</h2>
+          <p>{t.finalDesc}</p>
+          <Link href="/login" className="final-cta-action">
+            {t.finalCta}
+          </Link>
         </div>
       </section>
 
