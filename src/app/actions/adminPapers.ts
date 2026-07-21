@@ -3,13 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
 import { translateQuestion, NON_TRANSLATABLE_SECTION_CODES } from "@/lib/ai/translate";
+import { checkPermission, canActOnTenant, PERMISSIONS } from "@/lib/auth/permissions";
 
 /** How many questions to translate per click — bounded so the action stays well
  * under serverless timeouts; the admin clicks again until 0 remain. */
 const TRANSLATE_BATCH = 20;
+
+const NOT_YOURS = "That paper belongs to another tenant.";
 
 export type PaperActionState = { error?: string } | undefined;
 export type QuestionActionState = { error?: string } | undefined;
@@ -27,10 +29,14 @@ export async function updatePaperAction(
   _prevState: PaperActionState,
   formData: FormData
 ): Promise<PaperActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.PAPER_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const id = String(formData.get("id") ?? "");
+  const existing = await prisma.paper.findUnique({ where: { id }, select: { tenantId: true } });
+  if (!existing) return { error: "Paper not found." };
+  if (!canActOnTenant(gate, existing.tenantId)) return { error: NOT_YOURS };
+
   const parsed = PaperSchema.safeParse({
     title: formData.get("title"),
     isFree: formData.get("isFree") === "on",
@@ -55,11 +61,13 @@ export async function updatePaperAction(
  * sections (Hindi/English) where translation would defeat the point.
  */
 export async function pretranslatePaperAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.PAPER_MANAGE_OWN);
+  if ("error" in gate) return;
 
   const paperId = String(formData.get("paperId") ?? "");
   if (!paperId) return;
+  const owner = await prisma.paper.findUnique({ where: { id: paperId }, select: { tenantId: true } });
+  if (!owner || !canActOnTenant(gate, owner.tenantId)) return;
 
   const questions = await prisma.question.findMany({
     where: { paperId, isActive: true },
@@ -101,12 +109,12 @@ export async function pretranslatePaperAction(formData: FormData): Promise<void>
 }
 
 export async function togglePaperActiveAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.PAPER_MANAGE_OWN);
+  if ("error" in gate) return;
 
   const id = String(formData.get("id") ?? "");
   const paper = await prisma.paper.findUnique({ where: { id } });
-  if (!paper) return;
+  if (!paper || !canActOnTenant(gate, paper.tenantId)) return;
 
   await prisma.paper.update({ where: { id }, data: { isActive: !paper.isActive } });
   revalidatePath("/admin/papers");
@@ -134,10 +142,14 @@ export async function createQuestionAction(
   _prevState: QuestionActionState,
   formData: FormData
 ): Promise<QuestionActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.QUESTION_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const paperId = String(formData.get("paperId") ?? "");
+  const owner = await prisma.paper.findUnique({ where: { id: paperId }, select: { tenantId: true } });
+  if (!owner) return { error: "Paper not found." };
+  if (!canActOnTenant(gate, owner.tenantId)) return { error: NOT_YOURS };
+
   const parsed = QuestionSchema.safeParse({
     sectionId: formData.get("sectionId"),
     text: formData.get("text"),
@@ -184,11 +196,18 @@ export async function updateQuestionAction(
   _prevState: QuestionActionState,
   formData: FormData
 ): Promise<QuestionActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.QUESTION_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const questionId = String(formData.get("questionId") ?? "");
   const paperId = String(formData.get("paperId") ?? "");
+  const owner = await prisma.question.findUnique({
+    where: { id: questionId },
+    select: { paper: { select: { tenantId: true } } },
+  });
+  if (!owner) return { error: "Question not found." };
+  if (!canActOnTenant(gate, owner.paper.tenantId)) return { error: NOT_YOURS };
+
   const parsed = QuestionSchema.safeParse({
     sectionId: formData.get("sectionId"),
     text: formData.get("text"),
@@ -217,12 +236,15 @@ export async function updateQuestionAction(
         text: parsed.data.text,
         marks: parsed.data.marks,
         negativeMarks: parsed.data.negativeMarks,
+        // Edited text invalidates any cached machine translation — clear it so the
+        // pre-translate pass regenerates it (it only fills rows where textAlt is null).
+        textAlt: null,
       },
     }),
     ...existingOptions.map((opt, idx) =>
       prisma.questionOption.update({
         where: { id: opt.id },
-        data: { text: newTexts[idx], isCorrect: labels[idx] === parsed.data.correctOption },
+        data: { text: newTexts[idx], isCorrect: labels[idx] === parsed.data.correctOption, textAlt: null },
       })
     ),
   ]);
@@ -234,13 +256,16 @@ export async function updateQuestionAction(
 /** Soft-delete only — a question may already have real Answers against it,
  * and isActive is exactly the flag question-serving already respects. */
 export async function toggleQuestionActiveAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.QUESTION_MANAGE_OWN);
+  if ("error" in gate) return;
 
   const questionId = String(formData.get("questionId") ?? "");
   const paperId = String(formData.get("paperId") ?? "");
-  const question = await prisma.question.findUnique({ where: { id: questionId } });
-  if (!question) return;
+  const question = await prisma.question.findUnique({
+    where: { id: questionId },
+    select: { isActive: true, paper: { select: { tenantId: true } } },
+  });
+  if (!question || !canActOnTenant(gate, question.paper.tenantId)) return;
 
   await prisma.question.update({ where: { id: questionId }, data: { isActive: !question.isActive } });
   revalidatePath(`/admin/papers/${paperId}`);

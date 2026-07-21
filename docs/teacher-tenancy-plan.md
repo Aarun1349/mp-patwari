@@ -34,6 +34,25 @@ content bottleneck in one move.
 | Own students (via enrollment/link) | All money: collects, pays tenant share, keeps cut |
 | — | Who gets in (invite-only) + approve-before-live gate |
 
+## 3b. RBAC — data-driven (open scope)
+
+Roles are **rows, not an enum**, so future roles (sales, marketing, finance/GST,
+support) are added as data with zero schema change. `Role` has `permissions`
+(string keys from the code catalog `src/lib/auth/permissions.ts`) and `scope`
+(`platform` vs `tenant`). `AdminUser.roleId` points at a role; `tenantId` is null
+for platform roles, set for tenant roles.
+
+| Role | Scope | Permissions (bundle) |
+|---|---|---|
+| **admin** | platform | `*` — full authority |
+| **sub_admin** | platform | tenant.read, tenant.onboard, student.read, order.read, grievance.manage, notification.broadcast |
+| **partner** | tenant | paper.manage.own, package.manage.own, question.manage.own, student.read.own, revenue.read.own, notification.send.own |
+| **creator** | tenant | question.manage.own, blog.manage |
+
+New account default = `creator` (least privilege). Enforcement: a `requirePermission()`
+guard on every admin/tenant server action (to build). Adding a capability (new key)
+is code; adding a role that bundles existing capabilities is pure data.
+
 ## 4. Foundation data model (locked)
 
 New:

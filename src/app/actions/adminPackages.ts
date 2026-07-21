@@ -3,11 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
+import { checkPermission, canActOnTenant, actorTenantId, PERMISSIONS } from "@/lib/auth/permissions";
 
 export type PackageActionState = { error?: string } | undefined;
+
+const NOT_YOURS = "That package belongs to another tenant.";
 
 const PackageSchema = z.object({
   name: z.string().trim().min(1),
@@ -23,8 +25,8 @@ export async function createPackageAction(
   _prevState: PackageActionState,
   formData: FormData
 ): Promise<PackageActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.PACKAGE_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const parsed = PackageSchema.safeParse({
     name: formData.get("name"),
@@ -39,7 +41,7 @@ export async function createPackageAction(
 
   const formExamId = String(formData.get("examId") ?? "");
   const examId = formExamId || (await getDefaultExamId());
-  await prisma.package.create({ data: { ...parsed.data, examId } });
+  await prisma.package.create({ data: { ...parsed.data, examId, tenantId: actorTenantId(gate) } });
   revalidatePath("/admin/packages");
   redirect("/admin/packages");
 }
@@ -48,11 +50,15 @@ export async function updatePackageAction(
   _prevState: PackageActionState,
   formData: FormData
 ): Promise<PackageActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.PACKAGE_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const id = String(formData.get("id") ?? "");
   if (!id) return { error: "Missing package id." };
+
+  const existing = await prisma.package.findUnique({ where: { id }, select: { tenantId: true } });
+  if (!existing) return { error: "Package not found." };
+  if (!canActOnTenant(gate, existing.tenantId)) return { error: NOT_YOURS };
 
   const parsed = PackageSchema.safeParse({
     name: formData.get("name"),
@@ -71,27 +77,31 @@ export async function updatePackageAction(
 }
 
 export async function togglePackageActiveAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.PACKAGE_MANAGE_OWN);
+  if ("error" in gate) return;
 
   const id = String(formData.get("id") ?? "");
   const pkg = await prisma.package.findUnique({ where: { id } });
-  if (!pkg) return;
+  if (!pkg || !canActOnTenant(gate, pkg.tenantId)) return;
 
   await prisma.package.update({ where: { id }, data: { isActive: !pkg.isActive } });
   revalidatePath("/admin/packages");
 }
 
 /** Reorder a package one step up/down by swapping sortOrder with its neighbour
- * in the current display order (ties broken by name, same as the listing). */
+ * in the current display order (ties broken by name, same as the listing).
+ * Reordering happens within the actor's own tenant scope. */
 export async function movePackageAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.PACKAGE_MANAGE_OWN);
+  if ("error" in gate) return;
 
   const id = String(formData.get("id") ?? "");
   const dir = formData.get("dir") === "up" ? "up" : "down";
 
-  const list = await prisma.package.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
+  // Tenant-scoped actors reorder only within their own packages; platform actors
+  // see the full list.
+  const where = gate.adminUser.role?.scope === "platform" ? {} : { tenantId: actorTenantId(gate) };
+  const list = await prisma.package.findMany({ where, orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
   const idx = list.findIndex((p) => p.id === id);
   if (idx < 0) return;
   const swapIdx = dir === "up" ? idx - 1 : idx + 1;

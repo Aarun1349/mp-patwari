@@ -55,7 +55,7 @@ async function loadAdminSession() {
 
   const session = await prisma.adminSession.findUnique({
     where: { tokenHash: hashValue(token) },
-    include: { adminUser: true },
+    include: { adminUser: { include: { role: true } } },
   });
 
   if (!session || session.expiresAt < new Date()) {
