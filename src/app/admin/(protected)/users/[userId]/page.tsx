@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 const CATEGORY_LABELS: Record<string, string> = {
   GENERAL: "General",
@@ -24,6 +25,7 @@ export default async function AdminUserDetailPage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
+  await requirePagePermission(PERMISSIONS.STUDENT_READ);
 
   const user = await prisma.user.findUnique({
     where: { id: userId },

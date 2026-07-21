@@ -7,6 +7,7 @@ import {
   pretranslatePaperAction,
 } from "@/app/actions/adminPapers";
 import { NON_TRANSLATABLE_SECTION_CODES } from "@/lib/ai/translate";
+import { requirePagePermission, canActOnTenant, PERMISSIONS } from "@/lib/auth/permissions";
 import { PaperEditForm } from "./PaperEditForm";
 
 export default async function AdminPaperDetailPage({
@@ -15,9 +16,11 @@ export default async function AdminPaperDetailPage({
   params: Promise<{ paperId: string }>;
 }) {
   const { paperId } = await params;
+  const session = await requirePagePermission(PERMISSIONS.QUESTION_MANAGE_OWN);
 
   const paper = await prisma.paper.findUnique({ where: { id: paperId } });
-  if (!paper) notFound();
+  // notFound (not a redirect) for a cross-tenant paper — don't reveal it exists.
+  if (!paper || !canActOnTenant(session, paper.tenantId)) notFound();
 
   const questions = await prisma.question.findMany({
     where: { paperId },

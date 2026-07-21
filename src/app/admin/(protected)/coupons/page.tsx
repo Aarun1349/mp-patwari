@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { toggleCouponActiveAction } from "@/app/actions/adminCoupons";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 function formatCommission(c: { commissionType: string | null; commissionValue: number }): string {
   if (!c.commissionType) return "—";
@@ -8,6 +9,7 @@ function formatCommission(c: { commissionType: string | null; commissionValue: n
 }
 
 export default async function AdminCouponsPage() {
+  await requirePagePermission(PERMISSIONS.COUPON_MANAGE);
   const coupons = await prisma.coupon.findMany({ orderBy: { createdAt: "desc" } });
 
   return (
