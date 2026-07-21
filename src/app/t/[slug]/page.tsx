@@ -1,0 +1,71 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import TenantStorefront from "./TenantStorefront";
+
+// Dynamic: depends on DB + route param, must not be evaluated at build time.
+export const dynamic = "force-dynamic";
+
+async function loadTenant(slug: string) {
+  const tenant = await prisma.tenant.findFirst({
+    where: { slug, isActive: true, approved: true },
+  });
+  if (!tenant) return null;
+
+  const [papers, packages] = await Promise.all([
+    prisma.paper.findMany({
+      where: { tenantId: tenant.id, isActive: true },
+      orderBy: { sequenceNo: "asc" },
+      select: { id: true, title: true, isFree: true, totalQuestions: true, durationMinutes: true },
+    }),
+    prisma.package.findMany({
+      where: { tenantId: tenant.id, isActive: true },
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, name: true, testCount: true, pricePaise: true, validityDays: true },
+    }),
+  ]);
+  return { tenant, papers, packages };
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await loadTenant(slug);
+  if (!data) return { title: "Teacher not found — ExamsExpress" };
+  const { tenant } = data;
+  const title = `${tenant.name} — Mock Tests on ExamsExpress`;
+  const description =
+    tenant.tagline ?? tenant.bio ?? `Practice mock tests by ${tenant.ownerName ?? tenant.name} on ExamsExpress.`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `https://examsexpress.in/t/${tenant.slug}` },
+    openGraph: { title, description, url: `https://examsexpress.in/t/${tenant.slug}`, type: "website" },
+  };
+}
+
+export default async function TenantStorefrontPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const data = await loadTenant(slug);
+  if (!data) notFound();
+
+  return (
+    <TenantStorefront
+      tenant={{
+        name: data.tenant.name,
+        ownerName: data.tenant.ownerName,
+        tagline: data.tenant.tagline,
+        bio: data.tenant.bio,
+      }}
+      papers={data.papers}
+      packages={data.packages}
+    />
+  );
+}
