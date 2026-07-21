@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { sendReceiptEmail } from "@/lib/email/sendReceipt";
+import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 
 export interface CreditResult {
   credited: boolean;
@@ -66,6 +67,15 @@ export async function creditOrderForPayment(
         testsTotalPurchased: { increment: order.package.testCount },
       },
     });
+
+    // Buying a teacher's package auto-enrolls the student with that teacher.
+    if (order.tenantId !== PLATFORM_TENANT_ID) {
+      await tx.enrollment.upsert({
+        where: { userId_tenantId: { userId: order.userId, tenantId: order.tenantId } },
+        create: { userId: order.userId, tenantId: order.tenantId },
+        update: {},
+      });
+    }
 
     if (order.couponId) {
       await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
@@ -150,6 +160,15 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
         testsTotalPurchased: { increment: order.package.testCount },
       },
     });
+
+    // Buying a teacher's package auto-enrolls the student with that teacher.
+    if (order.tenantId !== PLATFORM_TENANT_ID) {
+      await tx.enrollment.upsert({
+        where: { userId_tenantId: { userId: order.userId, tenantId: order.tenantId } },
+        create: { userId: order.userId, tenantId: order.tenantId },
+        update: {},
+      });
+    }
 
     if (order.couponId) {
       await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });

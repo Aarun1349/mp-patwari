@@ -4,7 +4,7 @@ import { ADMIN_SESSION_COOKIE_NAME } from "@/lib/auth/adminSession";
 
 // Optimistic checks only (cookie presence, no DB call) — the real,
 // DB-backed verification happens in verifySession() on each protected page.
-const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/exam", "/history", "/purchases", "/packages"];
+const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/exam", "/history", "/purchases", "/packages", "/teachers"];
 const AUTH_ROUTES = ["/login"];
 
 const ACQ_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
