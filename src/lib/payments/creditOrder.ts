@@ -77,6 +77,21 @@ export async function creditOrderForPayment(
       });
     }
 
+    // Assign a gap-free sequential invoice number at payment time (merchant of
+    // record). The counter increment is atomic within this transaction.
+    const inv = await tx.sequenceCounter.upsert({
+      where: { key: "invoice" },
+      create: { key: "invoice", value: 1 },
+      update: { value: { increment: 1 } },
+    });
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        invoiceNo: `EE-${new Date().getFullYear()}-${String(inv.value).padStart(6, "0")}`,
+        invoiceDate: new Date(),
+      },
+    });
+
     if (order.couponId) {
       await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
     }
@@ -169,6 +184,21 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
         update: {},
       });
     }
+
+    // Assign a gap-free sequential invoice number at payment time (merchant of
+    // record). The counter increment is atomic within this transaction.
+    const inv = await tx.sequenceCounter.upsert({
+      where: { key: "invoice" },
+      create: { key: "invoice", value: 1 },
+      update: { value: { increment: 1 } },
+    });
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        invoiceNo: `EE-${new Date().getFullYear()}-${String(inv.value).padStart(6, "0")}`,
+        invoiceDate: new Date(),
+      },
+    });
 
     if (order.couponId) {
       await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder, verifyPaymentSignature, RazorpayApiError } from "@/lib/payments/razorpay";
 import { creditOrderForPayment, creditFreeOrder } from "@/lib/payments/creditOrder";
 import { validateAndPriceCoupon, InvalidCouponError } from "@/lib/payments/coupon";
+import { splitTax } from "@/lib/billing/tax";
 
 export type CreateOrderResult =
   | { orderId: string; amount: number; keyId: string; packageName: string }
@@ -52,6 +53,7 @@ export async function createOrderAction(packageId: string, couponCode?: string):
     }
   }
 
+  const tax = splitTax(finalAmountPaise);
   const order = await prisma.order.create({
     data: {
       userId,
@@ -61,6 +63,10 @@ export async function createOrderAction(packageId: string, couponCode?: string):
       discountPaise,
       couponId,
       status: "created",
+      taxableValuePaise: tax.taxableValuePaise,
+      taxPaise: tax.taxPaise,
+      gstRateBps: tax.gstRateBps,
+      sacCode: tax.sacCode,
     },
   });
 

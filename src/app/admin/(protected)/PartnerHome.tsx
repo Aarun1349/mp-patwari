@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/auth/adminSession";
+import { computeTenantEarnings } from "@/lib/billing/earnings";
+
+function rupees(paise: number): string {
+  return `₹${Math.round(paise / 100).toLocaleString("en-IN")}`;
+}
 
 /** The /admin home shown to tenant-scoped roles (partner/creator) instead of the
  * platform analytics dashboard — scoped entirely to their own tenant. */
@@ -8,10 +13,11 @@ export async function PartnerHome() {
   const session = await getAdminSession();
   const tenantId = session?.adminUser.tenantId ?? null;
 
-  const [tenant, paperCount, packageCount] = await Promise.all([
+  const [tenant, paperCount, packageCount, earnings] = await Promise.all([
     tenantId ? prisma.tenant.findUnique({ where: { id: tenantId } }) : Promise.resolve(null),
     tenantId ? prisma.paper.count({ where: { tenantId } }) : Promise.resolve(0),
     tenantId ? prisma.package.count({ where: { tenantId } }) : Promise.resolve(0),
+    tenantId ? computeTenantEarnings(tenantId) : Promise.resolve(null),
   ]);
 
   return (
@@ -30,6 +36,19 @@ export async function PartnerHome() {
         <div className="stat-tile">
           <div className="stat-label">Your packages</div>
           <div className="stat-value">{packageCount}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-label">Paid sales</div>
+          <div className="stat-value">{earnings?.paidOrders ?? 0}</div>
+        </div>
+        <div className="stat-tile">
+          <div className="stat-label">Your earnings (net)</div>
+          <div className="stat-value">{rupees(earnings?.netPaise ?? 0)}</div>
+          {earnings && (
+            <div className="stat-sub">
+              {rupees(earnings.grossPaise)} gross · {(earnings.revenueShareBps / 100).toFixed(0)}% share
+            </div>
+          )}
         </div>
       </div>
 
