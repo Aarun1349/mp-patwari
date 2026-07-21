@@ -26,7 +26,9 @@ export default async function DashboardPage() {
   const nextPaidPaper =
     credit && credit.testsRemaining > 0
       ? await prisma.paper.findFirst({
-          where: { isFree: false, isActive: true, id: { notIn: [...attemptedSet] } },
+          // Only suggest platform papers here — the credit checked above is the
+          // platform credit. A teacher's mocks are taken from their storefront.
+          where: { isFree: false, isActive: true, tenantId: PLATFORM_TENANT_ID, id: { notIn: [...attemptedSet] } },
           orderBy: { sequenceNo: "asc" },
         })
       : null;

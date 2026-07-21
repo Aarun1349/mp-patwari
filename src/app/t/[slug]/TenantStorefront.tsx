@@ -14,6 +14,7 @@ interface StorefrontPaper {
   isFree: boolean;
   totalQuestions: number;
   durationMinutes: number;
+  examId: string;
 }
 interface StorefrontPackage {
   id: string;
@@ -27,6 +28,7 @@ interface Props {
   papers: StorefrontPaper[];
   packages: StorefrontPackage[];
   isLoggedIn: boolean;
+  creditByExam: Record<string, number>;
 }
 
 const T = {
@@ -41,6 +43,7 @@ const T = {
     qs: "प्रश्न",
     min: "मिनट",
     take: "टेस्ट दें →",
+    buyToUnlock: "अनलॉक के लिए पैकेज लें ↓",
     packagesTitle: "पैकेज",
     packagesSub: "इस टीचर के टेस्ट पैकेज।",
     tests: "टेस्ट",
@@ -62,6 +65,7 @@ const T = {
     qs: "questions",
     min: "min",
     take: "Take test →",
+    buyToUnlock: "Get a package to unlock ↓",
     packagesTitle: "Packages",
     packagesSub: "This teacher's test packages.",
     tests: "tests",
@@ -74,10 +78,16 @@ const T = {
   },
 } as const;
 
-export default function TenantStorefront({ tenant, papers, packages, isLoggedIn }: Props) {
+export default function TenantStorefront({ tenant, papers, packages, isLoggedIn, creditByExam }: Props) {
   const [lang, setLang] = useState<Lang>("hi");
   const t = T[lang];
   const startHref = isLoggedIn ? "/dashboard" : "/login";
+
+  // A student can start a mock if it's free, or they hold credit for its exam
+  // under this tenant. Otherwise the card points them to this teacher's packages.
+  const canTake = (p: StorefrontPaper) => p.isFree || (creditByExam[p.examId] ?? 0) > 0;
+  const mockHref = (p: StorefrontPaper) =>
+    !isLoggedIn ? "/login" : canTake(p) ? `/exam/${p.id}` : "#packages";
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -118,26 +128,29 @@ export default function TenantStorefront({ tenant, papers, packages, isLoggedIn 
             <p className="muted">{t.noMocks}</p>
           ) : (
             <div className="exam-grid">
-              {papers.map((p) => (
-                <Link key={p.id} href={startHref} className="exam-card is-live">
-                  <div className="exam-card-top">
-                    <span className="exam-board">{tenant.name}</span>
-                    <span className={`exam-status ${p.isFree ? "live" : "soon"}`}>
-                      {p.isFree ? t.free : t.paid}
+              {papers.map((p) => {
+                const locked = isLoggedIn && !canTake(p);
+                return (
+                  <Link key={p.id} href={mockHref(p)} className="exam-card is-live">
+                    <div className="exam-card-top">
+                      <span className="exam-board">{tenant.name}</span>
+                      <span className={`exam-status ${p.isFree ? "live" : "soon"}`}>
+                        {p.isFree ? t.free : t.paid}
+                      </span>
+                    </div>
+                    <h3>{p.title}</h3>
+                    <span className="exam-cta">
+                      {p.totalQuestions} {t.qs} · {p.durationMinutes} {t.min} · {locked ? t.buyToUnlock : t.take}
                     </span>
-                  </div>
-                  <h3>{p.title}</h3>
-                  <span className="exam-cta">
-                    {p.totalQuestions} {t.qs} · {p.durationMinutes} {t.min} · {t.take}
-                  </span>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
       </section>
 
-      <section className="pricing-bg">
+      <section className="pricing-bg" id="packages">
         <div className="wrap">
           <div className="section-head">
             <span className="kicker">{t.packagesTitle}</span>
