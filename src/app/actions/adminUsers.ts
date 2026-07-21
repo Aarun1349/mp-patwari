@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
 import { PLATFORM_TENANT_ID } from "@/lib/tenant";
+import { checkPermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 export type GrantCreditsState = { success?: boolean; error?: string } | undefined;
 
@@ -21,8 +21,8 @@ export async function grantCreditsAction(
   _prevState: GrantCreditsState,
   formData: FormData
 ): Promise<GrantCreditsState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized. Please sign in again." };
+  const gate = await checkPermission(PERMISSIONS.CREDIT_GRANT);
+  if ("error" in gate) return gate;
 
   const parsed = GrantSchema.safeParse({
     userId: formData.get("userId"),

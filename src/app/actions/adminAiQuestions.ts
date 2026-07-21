@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
 import { generateQuestions, GroqApiError, type GeneratedQuestion } from "@/lib/ai/groq";
+import { checkPermission, canActOnTenant, PERMISSIONS } from "@/lib/auth/permissions";
 
 const MAX_GENERATE_COUNT = 15;
 
@@ -25,8 +25,8 @@ export async function generateQuestionsAction(
   _prevState: GenerateState,
   formData: FormData
 ): Promise<GenerateState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.QUESTION_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const parsed = GenerateSchema.safeParse({
     paperId: formData.get("paperId"),
@@ -35,6 +35,10 @@ export async function generateQuestionsAction(
     topicHint: formData.get("topicHint") || undefined,
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+
+  const owner = await prisma.paper.findUnique({ where: { id: parsed.data.paperId }, select: { tenantId: true } });
+  if (!owner) return { error: "Paper not found." };
+  if (!canActOnTenant(gate, owner.tenantId)) return { error: "That paper belongs to another tenant." };
 
   const section = await prisma.section.findUnique({ where: { id: parsed.data.sectionId } });
   if (!section) return { error: "Section not found." };
@@ -55,13 +59,17 @@ export async function saveGeneratedQuestionsAction(
   _prevState: SaveGeneratedState,
   formData: FormData
 ): Promise<SaveGeneratedState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.QUESTION_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const paperId = String(formData.get("paperId") ?? "");
   const sectionId = String(formData.get("sectionId") ?? "");
   const count = Number(formData.get("count") ?? 0);
   if (!paperId || !sectionId || !count) return { error: "Missing data — please regenerate." };
+
+  const owner = await prisma.paper.findUnique({ where: { id: paperId }, select: { tenantId: true } });
+  if (!owner) return { error: "Paper not found." };
+  if (!canActOnTenant(gate, owner.tenantId)) return { error: "That paper belongs to another tenant." };
 
   const toCreate: {
     text: string;

@@ -2,10 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { parseAndImportQuestions, type RowError } from "@/lib/exam/importQuestions";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
 import { prisma } from "@/lib/prisma";
+import { checkPermission, canActOnTenant, actorTenantId, hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 export type UploadActionState =
   | {
@@ -33,8 +33,8 @@ export async function uploadQuestionsAction(
   _prevState: UploadActionState,
   formData: FormData
 ): Promise<UploadActionState> {
-  const adminSession = await getAdminSession();
-  if (!adminSession) return { error: "Not authorized. Please sign in again." };
+  const gate = await checkPermission(PERMISSIONS.QUESTION_MANAGE_OWN);
+  if ("error" in gate) return gate;
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
@@ -52,11 +52,19 @@ export async function uploadQuestionsAction(
   if (paperMode === "existing") {
     const existingPaperId = String(formData.get("existingPaperId") ?? "");
     if (!existingPaperId) return { error: "Choose an existing paper." };
-    const paper = await prisma.paper.findUnique({ where: { id: existingPaperId }, select: { id: true, title: true } });
+    const paper = await prisma.paper.findUnique({
+      where: { id: existingPaperId },
+      select: { id: true, title: true, tenantId: true },
+    });
     if (!paper) return { error: "That paper no longer exists." };
+    if (!canActOnTenant(gate, paper.tenantId)) return { error: "That paper belongs to another tenant." };
     paperId = paper.id;
     paperTitle = paper.title;
   } else {
+    // Creating a NEW paper (not just adding questions to one) needs paper mgmt.
+    if (!hasPermission(gate.adminUser, PERMISSIONS.PAPER_MANAGE_OWN)) {
+      return { error: "You don't have permission to create a new paper." };
+    }
     const parsed = NewPaperSchema.safeParse({
       title: formData.get("title"),
       isFree: formData.get("isFree") === "on",
@@ -77,6 +85,7 @@ export async function uploadQuestionsAction(
         ...parsed.data,
         sequenceNo: (maxSequence._max.sequenceNo ?? 0) + 1,
         examId,
+        tenantId: actorTenantId(gate),
       },
     });
     paperId = paper.id;
@@ -86,7 +95,7 @@ export async function uploadQuestionsAction(
   const buffer = Buffer.from(await file.arrayBuffer());
   let result;
   try {
-    result = await parseAndImportQuestions(buffer, paperId, adminSession.adminUserId, file.name);
+    result = await parseAndImportQuestions(buffer, paperId, gate.adminUserId, file.name);
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Import failed." };
   }

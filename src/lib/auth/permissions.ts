@@ -22,6 +22,7 @@ export const PERMISSIONS = {
   ROLE_MANAGE: "role.manage",
   BILLING_MANAGE: "billing.manage",
   COUPON_MANAGE: "coupon.manage",
+  CREDIT_GRANT: "credit.grant",
   PAYOUT_READ: "payout.read",
   STUDENT_READ: "student.read",
   ORDER_READ: "order.read",

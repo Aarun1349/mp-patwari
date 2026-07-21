@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
+import { checkPermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 export type ExamActionState = { error?: string } | undefined;
 
@@ -43,8 +43,9 @@ export async function createExamAction(
   _prev: ExamActionState,
   formData: FormData
 ): Promise<ExamActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  // Exam catalog is platform-owned: only EXAM_MANAGE (admin) can create exams.
+  const gate = await checkPermission(PERMISSIONS.EXAM_MANAGE);
+  if ("error" in gate) return gate;
 
   const parsed = parseExam(formData);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
@@ -72,8 +73,8 @@ export async function updateExamAction(
   _prev: ExamActionState,
   formData: FormData
 ): Promise<ExamActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.EXAM_MANAGE);
+  if ("error" in gate) return gate;
 
   const id = String(formData.get("id") ?? "");
   if (!id) return { error: "Missing exam id." };
@@ -103,8 +104,8 @@ export async function updateExamAction(
 }
 
 export async function toggleExamActiveAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.EXAM_MANAGE);
+  if ("error" in gate) return;
   const id = String(formData.get("id") ?? "");
   const exam = await prisma.exam.findUnique({ where: { id } });
   if (!exam) return;
@@ -134,8 +135,8 @@ export async function createSectionAction(
   _prev: SectionActionState,
   formData: FormData
 ): Promise<SectionActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.EXAM_MANAGE);
+  if ("error" in gate) return gate;
 
   const parsed = SectionSchema.safeParse({
     examId: formData.get("examId"),
@@ -157,8 +158,8 @@ export async function createSectionAction(
 }
 
 export async function deleteSectionAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.EXAM_MANAGE);
+  if ("error" in gate) return;
   const id = String(formData.get("id") ?? "");
   const section = await prisma.section.findUnique({
     where: { id },

@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
+import { checkPermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 export type CouponActionState = { error?: string } | undefined;
 
@@ -53,8 +53,8 @@ export async function createCouponAction(
   _prevState: CouponActionState,
   formData: FormData
 ): Promise<CouponActionState> {
-  const admin = await getAdminSession();
-  if (!admin) return { error: "Not authorized." };
+  const gate = await checkPermission(PERMISSIONS.COUPON_MANAGE);
+  if ("error" in gate) return gate;
 
   const parsed = CouponSchema.safeParse({
     code: formData.get("code"),
@@ -79,8 +79,8 @@ export async function createCouponAction(
 }
 
 export async function toggleCouponActiveAction(formData: FormData): Promise<void> {
-  const admin = await getAdminSession();
-  if (!admin) return;
+  const gate = await checkPermission(PERMISSIONS.COUPON_MANAGE);
+  if ("error" in gate) return;
 
   const id = String(formData.get("id") ?? "");
   const coupon = await prisma.coupon.findUnique({ where: { id } });
