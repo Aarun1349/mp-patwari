@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { requirePagePermission, tenantScopeWhere, PERMISSIONS } from "@/lib/auth/permissions";
 
 export default async function AdminPapersPage() {
+  const session = await requirePagePermission(PERMISSIONS.QUESTION_MANAGE_OWN);
   const papers = await prisma.paper.findMany({
+    where: tenantScopeWhere(session),
     orderBy: { sequenceNo: "asc" },
     include: { _count: { select: { questions: true, attempts: true } } },
   });

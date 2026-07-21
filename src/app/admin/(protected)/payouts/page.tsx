@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 function rupees(paise: number): string {
   return `₹${(paise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -13,7 +13,7 @@ function rupees(paise: number): string {
  * Order.couponId, which is already recorded at checkout.
  */
 export default async function AdminPayoutsPage() {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.PAYOUT_READ);
   const coupons = await prisma.coupon.findMany({
     where: { commissionType: { not: null } },
     orderBy: { createdAt: "desc" },

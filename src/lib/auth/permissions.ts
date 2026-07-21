@@ -1,4 +1,5 @@
 import "server-only";
+import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth/adminSession";
 import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 
@@ -105,4 +106,27 @@ export function actorTenantId(session: AdminSessionResult): string {
 export function canActOnTenant(session: AdminSessionResult, resourceTenantId: string): boolean {
   if (session.adminUser.role?.scope === "platform") return true;
   return session.adminUser.tenantId === resourceTenantId;
+}
+
+/**
+ * Page-level guard for /admin Server Components. Redirects to /admin/login if not
+ * signed in, or to the /admin home (which renders a role-appropriate view) if the
+ * role lacks `permission` — so a tenant-scoped partner can't URL-hack to a
+ * platform page (users, payouts, orders, …). Returns the session on success.
+ */
+export async function requirePagePermission(permission: Permission | string): Promise<AdminSessionResult> {
+  const session = await getAdminSession();
+  if (!session) redirect("/admin/login");
+  if (!hasPermission(session.adminUser, permission)) redirect("/admin");
+  return session;
+}
+
+/**
+ * A Prisma `where` fragment that scopes a listing to what this actor may see: an
+ * empty object for platform roles (all rows), or `{ tenantId }` for a tenant-
+ * scoped role so a partner's lists show only their own content.
+ */
+export function tenantScopeWhere(session: AdminSessionResult): { tenantId?: string } {
+  if (session.adminUser.role?.scope === "platform") return {};
+  return { tenantId: session.adminUser.tenantId ?? PLATFORM_TENANT_ID };
 }

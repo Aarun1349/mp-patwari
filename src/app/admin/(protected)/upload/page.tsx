@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { UploadForm } from "./UploadForm";
 
 export default async function AdminUploadPage() {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.QUESTION_MANAGE_OWN);
 
   const [exams, papers] = await Promise.all([
     prisma.exam.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" }, select: { id: true, name: true } }),

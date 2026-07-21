@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { toggleExamActiveAction } from "@/app/actions/adminExams";
 
 export default async function AdminExamsPage() {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.EXAM_MANAGE);
 
   const exams = await prisma.exam.findMany({
     orderBy: { sortOrder: "asc" },

@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { createPackageAction } from "@/app/actions/adminPackages";
 import { PackageForm } from "../PackageForm";
 
 export default async function NewPackagePage() {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.PACKAGE_MANAGE_OWN);
   const exams = await prisma.exam.findMany({
     where: { isActive: true },
     orderBy: { sortOrder: "asc" },

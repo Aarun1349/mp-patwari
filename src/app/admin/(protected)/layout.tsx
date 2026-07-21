@@ -1,9 +1,27 @@
 import type { ReactNode } from "react";
 import { verifyAdminSession } from "@/lib/auth/adminSession";
 import { adminLogoutAction } from "@/app/actions/adminAuth";
+import { hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
+
+// Each link declares the permission that reveals it. `perm: null` = always shown.
+const NAV: { href: string; label: string; perm: string | null }[] = [
+  { href: "/admin", label: "Dashboard", perm: null },
+  { href: "/admin/exams", label: "Exams", perm: PERMISSIONS.EXAM_MANAGE },
+  { href: "/admin/users", label: "Users", perm: PERMISSIONS.STUDENT_READ },
+  { href: "/admin/papers", label: "Papers & Questions", perm: PERMISSIONS.QUESTION_MANAGE_OWN },
+  { href: "/admin/upload", label: "Upload Questions", perm: PERMISSIONS.QUESTION_MANAGE_OWN },
+  { href: "/admin/packages", label: "Packages", perm: PERMISSIONS.PACKAGE_MANAGE_OWN },
+  { href: "/admin/coupons", label: "Coupons", perm: PERMISSIONS.COUPON_MANAGE },
+  { href: "/admin/payouts", label: "Payouts", perm: PERMISSIONS.PAYOUT_READ },
+  { href: "/admin/acquisition", label: "Acquisition", perm: PERMISSIONS.STUDENT_READ },
+  { href: "/admin/orders", label: "Orders & Revenue", perm: PERMISSIONS.ORDER_READ },
+  { href: "/admin/attempts", label: "Attempts", perm: PERMISSIONS.ORDER_READ },
+];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const { adminUser } = await verifyAdminSession();
+  const links = NAV.filter((n) => n.perm === null || hasPermission(adminUser, n.perm));
+  const roleLabel = adminUser.role?.name ?? "";
 
   return (
     <div className="app-shell">
@@ -12,48 +30,23 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div className="seal-mark">ऐ</div>
           <div className="brand-text">
             <div className="en">ExamsExpress</div>
-            <div className="hi">एडमिन कंट्रोलर</div>
+            <div className="hi">{roleLabel || "एडमिन कंट्रोलर"}</div>
           </div>
         </div>
         <nav className="app-sidebar-nav">
-          <a href="/admin" className="app-sidebar-link">
-            Dashboard
-          </a>
-          <a href="/admin/exams" className="app-sidebar-link">
-            Exams
-          </a>
-          <a href="/admin/users" className="app-sidebar-link">
-            Users
-          </a>
-          <a href="/admin/papers" className="app-sidebar-link">
-            Papers &amp; Questions
-          </a>
-          <a href="/admin/upload" className="app-sidebar-link">
-            Upload Questions
-          </a>
-          <a href="/admin/packages" className="app-sidebar-link">
-            Packages
-          </a>
-          <a href="/admin/coupons" className="app-sidebar-link">
-            Coupons
-          </a>
-          <a href="/admin/payouts" className="app-sidebar-link">
-            Payouts
-          </a>
-          <a href="/admin/acquisition" className="app-sidebar-link">
-            Acquisition
-          </a>
-          <a href="/admin/orders" className="app-sidebar-link">
-            Orders &amp; Revenue
-          </a>
-          <a href="/admin/attempts" className="app-sidebar-link">
-            Attempts
-          </a>
+          {links.map((n) => (
+            <a key={n.href} href={n.href} className="app-sidebar-link">
+              {n.label}
+            </a>
+          ))}
         </nav>
       </aside>
       <div className="app-main">
         <div className="app-topbar">
-          <span>{adminUser.email}</span>
+          <span>
+            {adminUser.email}
+            {roleLabel ? ` · ${roleLabel}` : ""}
+          </span>
           <form action={adminLogoutAction}>
             <button type="submit" className="logout-btn">
               Log out

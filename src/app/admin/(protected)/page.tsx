@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
+import { PartnerHome } from "./PartnerHome";
 import { BarChart, HBars, Donut, type Point, type Segment } from "./DashCharts";
 import "./admin-dash.css";
 
@@ -34,7 +36,11 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default async function AdminDashboardPage() {
-  await verifyAdminSession();
+  const { adminUser } = await verifyAdminSession();
+  // Tenant-scoped roles (partner/creator) get a scoped home, not platform analytics.
+  if (!hasPermission(adminUser, PERMISSIONS.ORDER_READ)) {
+    return <PartnerHome />;
+  }
 
   const start = new Date();
   start.setHours(0, 0, 0, 0);

@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { updateExamAction, deleteSectionAction } from "@/app/actions/adminExams";
 import { ExamForm } from "../ExamForm";
 import { AddSectionForm } from "../AddSectionForm";
 
 export default async function EditExamPage({ params }: { params: Promise<{ examId: string }> }) {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.EXAM_MANAGE);
   const { examId } = await params;
 
   const exam = await prisma.exam.findUnique({ where: { id: examId } });

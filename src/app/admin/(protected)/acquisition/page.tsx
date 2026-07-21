@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 
 function rupees(paise: number): string {
   return `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
@@ -15,7 +15,7 @@ const DIRECT = "(direct / untagged)";
  * commissions; this shows channel performance overall.
  */
 export default async function AdminAcquisitionPage() {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.STUDENT_READ);
   const [signupGroups, paidOrders] = await Promise.all([
     prisma.user.groupBy({ by: ["signupSource"], _count: { _all: true } }),
     prisma.order.findMany({

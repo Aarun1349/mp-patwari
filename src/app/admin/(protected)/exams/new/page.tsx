@@ -1,9 +1,9 @@
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { createExamAction } from "@/app/actions/adminExams";
 import { ExamForm } from "../ExamForm";
 
 export default async function NewExamPage() {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.EXAM_MANAGE);
   return (
     <div className="auth-card" style={{ maxWidth: "520px" }}>
       <h1>Create Exam</h1>

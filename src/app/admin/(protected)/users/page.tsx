@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { GrantCreditsForm } from "./GrantCreditsForm";
 import { Pagination } from "../Pagination";
 
@@ -11,7 +11,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<{ q?: string; page?: string }>;
 }) {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.STUDENT_READ);
   const { q, page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
 

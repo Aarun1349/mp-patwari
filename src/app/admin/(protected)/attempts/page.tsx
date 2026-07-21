@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { Pagination } from "../Pagination";
 
 const PAGE_SIZE = 25;
@@ -17,7 +17,7 @@ export default async function AdminAttemptsPage({
 }: {
   searchParams: Promise<{ flagged?: string; q?: string; page?: string }>;
 }) {
-  await verifyAdminSession();
+  await requirePagePermission(PERMISSIONS.ORDER_READ);
   const { flagged, q, page: pageParam } = await searchParams;
   const onlyFlagged = flagged === "1";
   const query = (q ?? "").trim();

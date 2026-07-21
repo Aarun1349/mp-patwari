@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { verifyAdminSession } from "@/lib/auth/adminSession";
+import { requirePagePermission, tenantScopeWhere, PERMISSIONS } from "@/lib/auth/permissions";
 import { togglePackageActiveAction, movePackageAction } from "@/app/actions/adminPackages";
 
 export default async function AdminPackagesPage() {
-  await verifyAdminSession();
-  const packages = await prisma.package.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }] });
+  const session = await requirePagePermission(PERMISSIONS.PACKAGE_MANAGE_OWN);
+  const packages = await prisma.package.findMany({
+    where: tenantScopeWhere(session),
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+  });
 
   return (
     <div className="auth-card auth-card-wide">
