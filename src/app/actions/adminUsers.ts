@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getAdminSession } from "@/lib/auth/adminSession";
 import { prisma } from "@/lib/prisma";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
+import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 
 export type GrantCreditsState = { success?: boolean; error?: string } | undefined;
 
@@ -36,8 +37,15 @@ export async function grantCreditsAction(
 
   const examId = await getDefaultExamId();
   await prisma.userCredit.upsert({
-    where: { userId_examId: { userId: parsed.data.userId, examId } },
-    create: { userId: parsed.data.userId, examId, testsRemaining: parsed.data.testCount },
+    where: {
+      userId_examId_tenantId: { userId: parsed.data.userId, examId, tenantId: PLATFORM_TENANT_ID },
+    },
+    create: {
+      userId: parsed.data.userId,
+      examId,
+      tenantId: PLATFORM_TENANT_ID,
+      testsRemaining: parsed.data.testCount,
+    },
     update: { testsRemaining: { increment: parsed.data.testCount } },
   });
 

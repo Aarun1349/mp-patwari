@@ -27,14 +27,14 @@ enum Qualification {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  phone       String?  @unique
-  googleId    String?  @unique
-  name        String?
-  email       String?
-  emailVerified Boolean @default(false)
-  createdAt   DateTime @default(now())
-  lastLoginAt DateTime?
+  id            String    @id @default(cuid())
+  phone         String?   @unique
+  googleId      String?   @unique
+  name          String?
+  email         String?
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  lastLoginAt   DateTime?
 
   // First-touch acquisition attribution (utm_source/medium/campaign), captured
   // from the entry link in proxy.ts and stamped on the account at signup. Lets
@@ -62,6 +62,7 @@ model User {
   attempts      Attempt[]
   orders        Order[]
   credits       UserCredit[]
+  enrollments   Enrollment[]
 
   @@map("users")
 }
@@ -75,7 +76,7 @@ model OtpChallenge {
   consumedAt DateTime?
   createdAt  DateTime  @default(now())
 
-  user   User?  @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
   @@index([phone])
@@ -123,13 +124,13 @@ model Exam {
 }
 
 model Section {
-  id      String @id @default(cuid())
-  code    String
-  nameEn  String
-  nameHi  String
-  sortOrder Int  @default(0)
-  examId  String
-  exam    Exam  @relation(fields: [examId], references: [id])
+  id        String @id @default(cuid())
+  code      String
+  nameEn    String
+  nameHi    String
+  sortOrder Int    @default(0)
+  examId    String
+  exam      Exam   @relation(fields: [examId], references: [id])
 
   questions Question[]
 
@@ -139,23 +140,28 @@ model Section {
 }
 
 model Paper {
-  id                    String   @id @default(cuid())
-  title                 String
-  sequenceNo            Int
-  isFree                Boolean  @default(false)
-  totalQuestions        Int
-  totalMarks            Int
-  durationMinutes       Int
-  negativeMarkingRatio  Float    @default(0)
-  isActive              Boolean  @default(true)
-  createdAt             DateTime @default(now())
-  examId                String
-  exam                  Exam     @relation(fields: [examId], references: [id])
+  id                   String   @id @default(cuid())
+  title                String
+  sequenceNo           Int
+  isFree               Boolean  @default(false)
+  totalQuestions       Int
+  totalMarks           Int
+  durationMinutes      Int
+  negativeMarkingRatio Float    @default(0)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  examId               String
+  exam                 Exam     @relation(fields: [examId], references: [id])
+  // Owning tenant. Defaults to the platform tenant so existing rows and
+  // platform-authored papers need no backfill; tenant flows set it explicitly.
+  tenantId             String   @default("platform")
+  tenant               Tenant   @relation(fields: [tenantId], references: [id])
 
   questions      Question[]
   attempts       Attempt[]
   contentUploads ContentUpload[]
 
+  @@index([tenantId])
   @@map("papers")
 }
 
@@ -185,14 +191,14 @@ model Question {
 }
 
 model QuestionOption {
-  id         String  @id @default(cuid())
+  id         String   @id @default(cuid())
   question   Question @relation(fields: [questionId], references: [id])
   questionId String
   label      String
   text       String
   textAlt    String?
-  isCorrect  Boolean @default(false)
-  sortOrder  Int     @default(0)
+  isCorrect  Boolean  @default(false)
+  sortOrder  Int      @default(0)
 
   answers Answer[]
 
@@ -234,15 +240,15 @@ model Attempt {
 }
 
 model Answer {
-  id               String    @id @default(cuid())
-  attempt          Attempt   @relation(fields: [attemptId], references: [id])
+  id               String          @id @default(cuid())
+  attempt          Attempt         @relation(fields: [attemptId], references: [id])
   attemptId        String
-  question         Question  @relation(fields: [questionId], references: [id])
+  question         Question        @relation(fields: [questionId], references: [id])
   questionId       String
   selectedOption   QuestionOption? @relation(fields: [selectedOptionId], references: [id])
   selectedOptionId String?
-  markedForReview  Boolean   @default(false)
-  answeredAt       DateTime  @default(now())
+  markedForReview  Boolean         @default(false)
+  answeredAt       DateTime        @default(now())
 
   @@unique([attemptId, questionId])
   @@map("answers")
@@ -254,19 +260,22 @@ enum PackageKind {
 }
 
 model Package {
-  id            String      @id @default(cuid())
-  name          String
-  testCount     Int
-  pricePaise    Int
-  kind          PackageKind @default(standard)
-  validityDays  Int
-  sortOrder     Int         @default(0)
-  isActive      Boolean     @default(true)
-  examId        String
-  exam          Exam        @relation(fields: [examId], references: [id])
+  id           String      @id @default(cuid())
+  name         String
+  testCount    Int
+  pricePaise   Int
+  kind         PackageKind @default(standard)
+  validityDays Int
+  sortOrder    Int         @default(0)
+  isActive     Boolean     @default(true)
+  examId       String
+  exam         Exam        @relation(fields: [examId], references: [id])
+  tenantId     String      @default("platform")
+  tenant       Tenant      @relation(fields: [tenantId], references: [id])
 
   orders Order[]
 
+  @@index([tenantId])
   @@map("packages")
 }
 
@@ -291,8 +300,11 @@ model Order {
   status            OrderStatus @default(created)
   createdAt         DateTime    @default(now())
   paidAt            DateTime?
+  tenantId          String      @default("platform")
+  tenant            Tenant      @relation(fields: [tenantId], references: [id])
 
   @@index([userId])
+  @@index([tenantId])
   @@map("orders")
 }
 
@@ -340,9 +352,12 @@ model UserCredit {
   testsRemaining      Int      @default(0)
   testsTotalPurchased Int      @default(0)
   updatedAt           DateTime @updatedAt
+  // Credit is scoped to (exam, tenant): a student's credits for Ravi Sir's Maths
+  // mocks can't be spent on another tenant's or the platform's papers.
+  tenantId            String   @default("platform")
+  tenant              Tenant   @relation(fields: [tenantId], references: [id])
 
-  // Credits are per-exam: buying a Patwari pack never funds an MP Constable test.
-  @@unique([userId, examId])
+  @@unique([userId, examId, tenantId])
   @@map("user_credits")
 }
 
@@ -350,16 +365,85 @@ model ContentUpload {
   id           String    @id @default(cuid())
   uploadedBy   AdminUser @relation(fields: [uploadedById], references: [id])
   uploadedById String
-  paper        Paper    @relation(fields: [paperId], references: [id])
+  paper        Paper     @relation(fields: [paperId], references: [id])
   paperId      String
   filename     String
   rowCount     Int
   successCount Int
   errorCount   Int
   errors       Json?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 
   @@map("content_uploads")
+}
+
+enum RoleScope {
+  platform
+  tenant
+}
+
+// Roles are DATA, not a fixed enum, so new roles (sales, marketing, finance/GST,
+// support, …) can be added without a schema change. `permissions` holds keys
+// from the catalog in src/lib/auth/permissions.ts; "*" means full authority.
+// `scope` decides platform-wide vs tenant-scoped visibility. System roles
+// (admin / sub_admin / partner / creator) are seeded and cannot be deleted.
+model Role {
+  id          String    @id @default(cuid())
+  key         String    @unique
+  name        String
+  scope       RoleScope @default(platform)
+  permissions String[]
+  isSystem    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  adminUsers AdminUser[]
+
+  @@map("roles")
+}
+
+// A tenant is a teacher / coaching partner selling their own mocks under their
+// own name. The platform itself is a tenant with the fixed id "platform"
+// (PLATFORM_TENANT_ID) — so every Paper/Package/Order/UserCredit has a non-null
+// owner and credit/entitlement checks never special-case null. Tenants build
+// WITHIN a platform-owned Exam; they cannot create exams.
+model Tenant {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  ownerName       String?
+  logoUrl         String?
+  tagline         String?
+  bio             String?
+  accentColor     String?
+  revenueShareBps Int      @default(0)
+  onboardedBy     String?
+  approved        Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  papers      Paper[]
+  packages    Package[]
+  orders      Order[]
+  credits     UserCredit[]
+  enrollments Enrollment[]
+  adminUsers  AdminUser[]
+
+  @@map("tenants")
+}
+
+// A student "follows"/enrolls with a tenant. Many-to-many: a student can follow
+// several teachers.
+model Enrollment {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tenantId])
+  @@index([tenantId])
+  @@map("enrollments")
 }
 
 // Separate identity from User (students) — internal tool for the
@@ -370,12 +454,19 @@ model AdminUser {
   email        String    @unique
   passwordHash String
   name         String?
+  // Data-driven role (see Role model). tenantId is null for platform-scoped
+  // roles (admin/sub_admin) and set for tenant-scoped roles (partner/creator).
+  roleId       String
+  role         Role      @relation(fields: [roleId], references: [id])
+  tenantId     String?
+  tenant       Tenant?   @relation(fields: [tenantId], references: [id])
   createdAt    DateTime  @default(now())
   lastLoginAt  DateTime?
 
   sessions       AdminSession[]
   contentUploads ContentUpload[]
 
+  @@index([tenantId])
   @@map("admin_users")
 }
 

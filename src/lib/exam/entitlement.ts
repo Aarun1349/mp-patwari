@@ -87,7 +87,7 @@ export async function startAttempt(userId: string, paperId: string): Promise<{ a
       // Decrement credit for THIS paper's exam only — a Patwari credit can't
       // fund an MP Constable test.
       const credit = await tx.userCredit.updateMany({
-        where: { userId, examId: paper.examId, testsRemaining: { gt: 0 } },
+        where: { userId, examId: paper.examId, tenantId: paper.tenantId, testsRemaining: { gt: 0 } },
         data: { testsRemaining: { decrement: 1 } },
       });
       if (credit.count === 0) throw new NoEntitlementError();

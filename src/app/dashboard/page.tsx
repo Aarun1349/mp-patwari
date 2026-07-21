@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AppShell } from "@/app/AppShell";
 import { getPaperAttemptSummary } from "@/lib/exam/entitlement";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
+import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 
 export default async function DashboardPage() {
   const { userId, user } = await verifySession();
@@ -12,7 +13,9 @@ export default async function DashboardPage() {
   const examId = await getDefaultExamId();
 
   const [credit, freePaper, attemptedPaperIds] = await Promise.all([
-    prisma.userCredit.findUnique({ where: { userId_examId: { userId, examId } } }),
+    prisma.userCredit.findUnique({
+      where: { userId_examId_tenantId: { userId, examId, tenantId: PLATFORM_TENANT_ID } },
+    }),
     prisma.paper.findFirst({ where: { isFree: true, isActive: true } }),
     prisma.attempt.findMany({ where: { userId }, select: { paperId: true } }),
   ]);

@@ -30,7 +30,7 @@ export async function createOrderAction(packageId: string, couponCode?: string):
 
   if (pkg.kind === "topup") {
     const credit = await prisma.userCredit.findUnique({
-      where: { userId_examId: { userId, examId: pkg.examId } },
+      where: { userId_examId_tenantId: { userId, examId: pkg.examId, tenantId: pkg.tenantId } },
     });
     if (!credit || credit.testsTotalPurchased <= 0) {
       return { error: "Top-up packages are only available to existing customers of this exam." };
@@ -56,6 +56,7 @@ export async function createOrderAction(packageId: string, couponCode?: string):
     data: {
       userId,
       packageId: pkg.id,
+      tenantId: pkg.tenantId,
       amountPaise: finalAmountPaise,
       discountPaise,
       couponId,

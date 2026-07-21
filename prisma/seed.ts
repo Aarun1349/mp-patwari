@@ -1,6 +1,45 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, RoleScope } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+// System roles (data-driven RBAC). `admin` has the "*" wildcard = full
+// authority; the rest are explicitly limited. New roles (sales, marketing,
+// finance/GST, …) can be added later as plain rows — no schema change.
+const SYSTEM_ROLES = [
+  { key: "admin", name: "Admin", scope: RoleScope.platform, permissions: ["*"] },
+  {
+    key: "sub_admin",
+    name: "Sub-admin",
+    scope: RoleScope.platform,
+    permissions: [
+      "tenant.read",
+      "tenant.onboard",
+      "student.read",
+      "order.read",
+      "grievance.manage",
+      "notification.broadcast",
+    ],
+  },
+  {
+    key: "partner",
+    name: "Partner (Teacher)",
+    scope: RoleScope.tenant,
+    permissions: [
+      "paper.manage.own",
+      "package.manage.own",
+      "question.manage.own",
+      "student.read.own",
+      "revenue.read.own",
+      "notification.send.own",
+    ],
+  },
+  {
+    key: "creator",
+    name: "Creator",
+    scope: RoleScope.tenant,
+    permissions: ["question.manage.own", "blog.manage"],
+  },
+];
 
 // Fixed MP Patwari exam sections — hardcoded, not a configurable taxonomy.
 const SECTIONS = [
@@ -13,6 +52,33 @@ const SECTIONS = [
 ];
 
 async function main() {
+  // The platform is itself a tenant with a fixed id. Every Paper/Package/Order/
+  // UserCredit defaults its tenantId to "platform", so platform-owned content
+  // (and all pre-marketplace rows) has a real owner and credit/entitlement
+  // checks never special-case null. Teacher tenants are separate rows.
+  await prisma.tenant.upsert({
+    where: { id: "platform" },
+    update: {},
+    create: {
+      id: "platform",
+      slug: "platform",
+      name: "ExamsExpress",
+      ownerName: "ExamsExpress",
+      approved: true,
+      revenueShareBps: 0,
+    },
+  });
+  console.log("Seeded platform tenant.");
+
+  for (const r of SYSTEM_ROLES) {
+    await prisma.role.upsert({
+      where: { key: r.key },
+      update: { name: r.name, scope: r.scope, permissions: r.permissions, isSystem: true },
+      create: { key: r.key, name: r.name, scope: r.scope, permissions: r.permissions, isSystem: true },
+    });
+  }
+  console.log(`Seeded ${SYSTEM_ROLES.length} system roles.`);
+
   // The MP Patwari exam that all seeded content belongs to.
   const exam = await prisma.exam.upsert({
     where: { slug: "mp-patwari" },

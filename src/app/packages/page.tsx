@@ -3,6 +3,7 @@ import { verifySession } from "@/lib/auth/session";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
+import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 import { BuyButton } from "./BuyButton";
 
 export default async function PackagesPage() {
@@ -12,7 +13,9 @@ export default async function PackagesPage() {
   const examId = await getDefaultExamId();
 
   const [credit, packages] = await Promise.all([
-    prisma.userCredit.findUnique({ where: { userId_examId: { userId, examId } } }),
+    prisma.userCredit.findUnique({
+      where: { userId_examId_tenantId: { userId, examId, tenantId: PLATFORM_TENANT_ID } },
+    }),
     prisma.package.findMany({ where: { isActive: true, examId }, orderBy: { sortOrder: "asc" } }),
   ]);
 

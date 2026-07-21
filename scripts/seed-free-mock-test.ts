@@ -157,11 +157,17 @@ async function main() {
   XLSX.utils.book_append_sheet(workbook, worksheet, "Questions");
   const buffer: Buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
 
+  const uploaderRole = await prisma.role.findUnique({ where: { key: "admin" } });
   const uploader = process.env.SEED_UPLOADER_EMAIL
     ? await prisma.adminUser.upsert({
         where: { email: process.env.SEED_UPLOADER_EMAIL },
         update: {},
-        create: { email: process.env.SEED_UPLOADER_EMAIL, passwordHash: "seed-script-placeholder", name: "Content Team" },
+        create: {
+          email: process.env.SEED_UPLOADER_EMAIL,
+          passwordHash: "seed-script-placeholder",
+          name: "Content Team",
+          roleId: uploaderRole!.id,
+        },
       })
     : await prisma.adminUser.findFirst({ orderBy: { createdAt: "asc" } });
   if (!uploader) {

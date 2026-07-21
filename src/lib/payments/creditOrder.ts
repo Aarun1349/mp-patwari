@@ -47,10 +47,17 @@ export async function creditOrderForPayment(
     });
 
     await tx.userCredit.upsert({
-      where: { userId_examId: { userId: order.userId, examId: order.package.examId } },
+      where: {
+        userId_examId_tenantId: {
+          userId: order.userId,
+          examId: order.package.examId,
+          tenantId: order.tenantId,
+        },
+      },
       create: {
         userId: order.userId,
         examId: order.package.examId,
+        tenantId: order.tenantId,
         testsRemaining: order.package.testCount,
         testsTotalPurchased: order.package.testCount,
       },
@@ -124,10 +131,17 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
     });
 
     await tx.userCredit.upsert({
-      where: { userId_examId: { userId: order.userId, examId: order.package.examId } },
+      where: {
+        userId_examId_tenantId: {
+          userId: order.userId,
+          examId: order.package.examId,
+          tenantId: order.tenantId,
+        },
+      },
       create: {
         userId: order.userId,
         examId: order.package.examId,
+        tenantId: order.tenantId,
         testsRemaining: order.package.testCount,
         testsTotalPurchased: order.package.testCount,
       },

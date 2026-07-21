@@ -32,10 +32,14 @@ async function main() {
   }
 
   const passwordHash = await hashPassword(password);
+  const adminRole = await prisma.role.findUnique({ where: { key: "admin" } });
+  if (!adminRole) {
+    throw new Error("Seed the database first — 'admin' role not found (run: npm run db:seed).");
+  }
   const admin = await prisma.adminUser.upsert({
     where: { email },
     update: { passwordHash, name },
-    create: { email, passwordHash, name },
+    create: { email, passwordHash, name, roleId: adminRole.id },
   });
 
   console.log(`Admin ready: ${admin.email} (${admin.id})`);
