@@ -6,6 +6,7 @@ import "../../landing.css";
 import { type Lang } from "../../landing-content";
 import SiteHeader from "../../SiteHeader";
 import SiteFooter from "../../SiteFooter";
+import { BuyButton } from "@/app/packages/BuyButton";
 
 interface StorefrontPaper {
   id: string;
@@ -25,6 +26,7 @@ interface Props {
   tenant: { name: string; ownerName: string | null; tagline: string | null; bio: string | null };
   papers: StorefrontPaper[];
   packages: StorefrontPackage[];
+  isLoggedIn: boolean;
 }
 
 const T = {
@@ -72,9 +74,10 @@ const T = {
   },
 } as const;
 
-export default function TenantStorefront({ tenant, papers, packages }: Props) {
+export default function TenantStorefront({ tenant, papers, packages, isLoggedIn }: Props) {
   const [lang, setLang] = useState<Lang>("hi");
   const t = T[lang];
+  const startHref = isLoggedIn ? "/dashboard" : "/login";
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -98,7 +101,7 @@ export default function TenantStorefront({ tenant, papers, packages }: Props) {
           {tenant.tagline && <p className="lede">{tenant.tagline}</p>}
           {tenant.bio && <p className="section-sub" style={{ maxWidth: "640px" }}>{tenant.bio}</p>}
           <div className="hero-ctas">
-            <Link href="/login" className="btn-primary">
+            <Link href={startHref} className="btn-primary">
               {t.ctaPrimary}
             </Link>
           </div>
@@ -116,7 +119,7 @@ export default function TenantStorefront({ tenant, papers, packages }: Props) {
           ) : (
             <div className="exam-grid">
               {papers.map((p) => (
-                <Link key={p.id} href="/login" className="exam-card is-live">
+                <Link key={p.id} href={startHref} className="exam-card is-live">
                   <div className="exam-card-top">
                     <span className="exam-board">{tenant.name}</span>
                     <span className={`exam-status ${p.isFree ? "live" : "soon"}`}>
@@ -160,9 +163,13 @@ export default function TenantStorefront({ tenant, papers, packages }: Props) {
                       {t.validity}
                     </li>
                   </ul>
-                  <Link href="/login" className="price-card-action">
-                    {t.enroll}
-                  </Link>
+                  {isLoggedIn ? (
+                    <BuyButton packageId={pkg.id} />
+                  ) : (
+                    <Link href="/login" className="price-card-action">
+                      {t.enroll}
+                    </Link>
+                  )}
                 </div>
               ))}
             </div>

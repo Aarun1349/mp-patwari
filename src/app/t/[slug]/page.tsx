@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getApiSession } from "@/lib/auth/session";
 import TenantStorefront from "./TenantStorefront";
 
 // Dynamic: depends on DB + route param, must not be evaluated at build time.
@@ -56,6 +57,10 @@ export default async function TenantStorefrontPage({
   const data = await loadTenant(slug);
   if (!data) notFound();
 
+  // Non-redirecting session check — the storefront is public, but logged-in
+  // students get a live Buy button instead of a login prompt.
+  const session = await getApiSession();
+
   return (
     <TenantStorefront
       tenant={{
@@ -66,6 +71,7 @@ export default async function TenantStorefrontPage({
       }}
       papers={data.papers}
       packages={data.packages}
+      isLoggedIn={Boolean(session)}
     />
   );
 }
