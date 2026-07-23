@@ -7,6 +7,7 @@ import { hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
 const NAV: { href: string; label: string; perm: string | null }[] = [
   { href: "/admin", label: "Dashboard", perm: null },
   { href: "/admin/exams", label: "Exams", perm: PERMISSIONS.EXAM_MANAGE },
+  { href: "/admin/tenants", label: "Teachers", perm: PERMISSIONS.TENANT_ONBOARD },
   { href: "/admin/users", label: "Users", perm: PERMISSIONS.STUDENT_READ },
   { href: "/admin/papers", label: "Papers & Questions", perm: PERMISSIONS.QUESTION_MANAGE_OWN },
   { href: "/admin/upload", label: "Upload Questions", perm: PERMISSIONS.QUESTION_MANAGE_OWN },
