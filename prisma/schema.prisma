@@ -7,7 +7,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Runtime uses the POOLED connection (PgBouncer, ?pgbouncer=true) so many app
+  // instances share a small, bounded set of Postgres connections. Migrations /
+  // db push use the DIRECT connection (a pooler in transaction mode can't run
+  // them). In dev both point at localhost. See docs/scaling-foundation.md.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 enum UserCategory {
