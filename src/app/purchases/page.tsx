@@ -66,6 +66,7 @@ export default async function PurchasesPage() {
                   <th>Amount</th>
                   <th>Date</th>
                   <th>Status</th>
+                  <th>Invoice</th>
                 </tr>
               </thead>
               <tbody>
@@ -77,6 +78,13 @@ export default async function PurchasesPage() {
                     <td>{order.paidAt?.toLocaleDateString() ?? "—"}</td>
                     <td>
                       <span className="status-badge status-good">Paid</span>
+                    </td>
+                    <td>
+                      {order.invoiceNo ? (
+                        <Link href={`/invoice/${order.id}`}>{order.invoiceNo}</Link>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                   </tr>
                 ))}
