@@ -3,8 +3,7 @@ import { AppInfoLinks } from "./AppInfoLinks";
 export function AppFooter() {
   return (
     <footer className="app-footer">
-      ExamsExpress · MP Patwari Test Series — an independent practice platform, not affiliated with
-      MPPEB
+      ExamsExpress — an independent practice platform, not affiliated with any exam board.
       <AppInfoLinks />
     </footer>
   );

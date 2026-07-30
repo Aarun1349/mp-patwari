@@ -27,14 +27,14 @@ export default async function LoginPage({
           <div className="seal-mark">ऐ</div>
           <div>
             <div className="en">ExamsExpress</div>
-            <div className="hi">एमपी पटवारी टेस्ट सीरीज़</div>
+            <div className="hi">मॉक टेस्ट सीरीज़</div>
           </div>
         </div>
 
         <h1>
           परीक्षा हॉल में <span className="accent">पहली बार</span> कंप्यूटर पर टेस्ट मत दीजिए
         </h1>
-        <p>असली MP पटवारी परीक्षा जैसा टाइमर, सेक्शन और स्क्रीन — यहीं अभ्यास करें, तैयार होकर जाएँ।</p>
+        <p>असली परीक्षा जैसा टाइमर, सेक्शन और स्क्रीन — यहीं अभ्यास करें, तैयार होकर जाएँ।</p>
 
         <ul className="login-trust-points">
           {TRUST_POINTS.map((point) => (

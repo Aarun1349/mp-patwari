@@ -24,9 +24,9 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ExamsExpress — MP Patwari Test Series",
+  title: "ExamsExpress — Online Mock Test Platform",
   description:
-    "Real-time online mock exams for the MP Patwari recruitment exam.",
+    "Real exam-like online mock tests for Indian competitive exams — practice on the real interface, with instant scorecards.",
 };
 
 export default function RootLayout({

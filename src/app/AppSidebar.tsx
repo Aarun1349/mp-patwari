@@ -21,7 +21,7 @@ export function AppSidebar() {
         <div className="seal-mark">ऐ</div>
         <div className="brand-text">
           <div className="en">ExamsExpress</div>
-          <div className="hi">MP पटवारी टेस्ट सीरीज़</div>
+          <div className="hi">मॉक टेस्ट सीरीज़</div>
         </div>
       </Link>
 
