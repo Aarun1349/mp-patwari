@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# VPS deploy secrets + local backups
+deploy/app.env
+deploy/db.env
+deploy/backups/

@@ -1,0 +1,14 @@
+# Auto-HTTPS reverse proxy. Caddy fetches + renews Let's Encrypt certs for free.
+# Point examsexpress.in's DNS (A record) at the VPS IP, or proxy via Cloudflare
+# (in which case set Cloudflare SSL mode to "Full (strict)").
+
+examsexpress.in, www.examsexpress.in {
+	encode gzip zstd
+	reverse_proxy app:3000
+}
+
+# --- Add a second app (e.g. TutorOS/TOP) later like this: ---
+# app.tutoros.in {
+# 	encode gzip zstd
+# 	reverse_proxy tutoros:3000
+# }

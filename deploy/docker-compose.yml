@@ -1,0 +1,72 @@
+# Lean single-VPS stack for ExamsExpress. Fits a ~2GB Bangalore droplet (~₹1,000/mo).
+# Caddy terminates HTTPS (free auto-certs) and reverse-proxies to the app; Postgres
+# is internal-only (never exposed to the internet). Designed so a second app
+# (TutorOS/TOP) can be added as another service + Caddy site block later.
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    # No `ports:` — the DB is reachable only on the internal docker network.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./app.env
+    environment:
+      NODE_ENV: production
+      # App runtime uses DATABASE_URL. Both point at local Postgres for launch; when
+      # you add a PgBouncer pooler, repoint DATABASE_URL → pooler, keep DIRECT direct.
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DIRECT_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      - app
+
+  # --- Optional, add when you need them (uncomment) ---
+  # redis:           # caching + rate limits + BullMQ (for TutorOS)
+  #   image: redis:7
+  #   restart: always
+  #   volumes: [redisdata:/data]
+  #
+  # pgbouncer:       # connection pooler — add when concurrency grows
+  #   image: edoburu/pgbouncer
+  #   restart: always
+  #   environment:
+  #     DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  #     POOL_MODE: transaction
+  #   depends_on: [db]
+
+volumes:
+  dbdata:
+  caddydata:
+  caddyconfig:
+  # redisdata:
