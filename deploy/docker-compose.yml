@@ -68,7 +68,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["sh", "-c", "npx prisma db push && npx prisma db seed"]
+    command: ["sh", "-c", "npx prisma db push && npx tsx prisma/seed.ts"]
 
   # --- Optional, add when you need them (uncomment) ---
   # redis:           # caching + rate limits + BullMQ (for TutorOS)
