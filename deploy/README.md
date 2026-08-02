@@ -18,7 +18,7 @@ launch scale. Upgrade the droplet size only when metrics say so.
 1. Create the VPS (Ubuntu 24.04, Bangalore/Mumbai region). SSH in.
 2. Install Docker: `curl -fsSL https://get.docker.com | sh`
 3. `git clone` this repo to `/opt/examsexpress` and `cd /opt/examsexpress/deploy`
-4. `cp app.env.example app.env` and fill in real secrets (see that file).
+4. `cp app.env.example .env` and fill in real secrets (compose reads `deploy/.env`).
 5. DNS: point `examsexpress.in` A-record at the VPS IP (or via Cloudflare, SSL mode
    = Full (strict)).
 
@@ -30,16 +30,18 @@ cd deploy && docker compose up -d --build
 Caddy auto-issues HTTPS certs on first boot. Check: `docker compose logs -f app`.
 
 ## Apply the DB schema (first deploy + after schema changes)
-The app image is a lean runtime (no Prisma CLI), so run schema pushes with a one-off
-full-node container:
+The lean app image has no Prisma CLI, so use the `migrate` runner (full build image):
 ```bash
-docker compose run --rm --build --entrypoint \
-  "sh -c 'npx prisma db push && npx prisma db seed'" app
+docker compose --profile tools build           # build app + migrate (one build)
+docker compose up -d db                         # start Postgres
+docker compose --profile tools run --rm migrate # prisma db push + seed
 ```
 Then create your admin + seed the free Maths mock:
 ```bash
-docker compose run --rm --entrypoint \
-  "sh -c 'ADMIN_EMAIL=you@x.com ADMIN_PASSWORD=... npx tsx scripts/create-admin.ts && npx tsx scripts/seed-mptet-maths-mock.ts'" app
+docker compose --profile tools run --rm \
+  -e ADMIN_EMAIL=you@examsexpress.in -e ADMIN_PASSWORD=YourStrongPass \
+  migrate sh -c "npx tsx scripts/create-admin.ts && npx tsx scripts/seed-mptet-maths-mock.ts"
+docker compose up -d                            # start app + caddy
 ```
 > (First launch on a fresh DB = a clean `db push`; no reset/migration dance needed.)
 

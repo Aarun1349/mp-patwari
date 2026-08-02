@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     env_file:
-      - ./app.env
+      - .env
     environment:
       NODE_ENV: production
       # App runtime uses DATABASE_URL. Both point at local Postgres for launch; when
@@ -50,6 +50,25 @@ services:
       - caddyconfig:/config
     depends_on:
       - app
+
+  # One-off schema / seed / admin runner. Uses the full "build" image (has the
+  # Prisma CLI + tsx + source, which the lean app image doesn't). "tools" profile
+  # so it never starts with `up`. Run: docker compose --profile tools run --rm migrate
+  migrate:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: build
+    profiles: ["tools"]
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      DIRECT_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "npx prisma db push && npx prisma db seed"]
 
   # --- Optional, add when you need them (uncomment) ---
   # redis:           # caching + rate limits + BullMQ (for TutorOS)
