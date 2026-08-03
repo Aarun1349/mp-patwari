@@ -42,10 +42,12 @@ export async function sendOtpSms(phone: string, code: string): Promise<void> {
   const authKey = process.env.MSG91_AUTH_KEY;
   const templateId = process.env.MSG91_TEMPLATE_ID;
   if (authKey && templateId) {
+    // MSG91 needs the country code (e.g. 919xxxxxxxxx, no "+"). The app stores
+    // 10-digit numbers — the Twilio path above prefixes +91 the same way.
     const res = await fetch("https://control.msg91.com/api/v5/otp", {
       method: "POST",
       headers: { "Content-Type": "application/json", authkey: authKey },
-      body: JSON.stringify({ template_id: templateId, mobile: phone, otp: code }),
+      body: JSON.stringify({ template_id: templateId, mobile: `91${phone}`, otp: code }),
     });
     if (!res.ok) {
       const body = await res.text();
