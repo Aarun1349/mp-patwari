@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { parseAndImportQuestions, type RowError } from "@/lib/exam/importQuestions";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
@@ -101,5 +102,14 @@ export async function uploadQuestionsAction(
   }
 
   revalidatePath("/admin/upload");
+  revalidatePath(`/admin/papers/${paperId}`);
+
+  // Clean import (no bad rows) → take the admin straight to the paper's questions
+  // to review what imported. A partial import stays on the form so the per-row
+  // error report is visible for fixing + re-upload (valid rows already saved).
+  if (result.errorCount === 0) {
+    redirect(`/admin/papers/${paperId}?uploaded=${result.successCount}`);
+  }
+
   return { success: true, paperId, paperTitle, ...result };
 }

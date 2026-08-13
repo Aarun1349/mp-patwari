@@ -12,6 +12,9 @@ export default async function NewQuestionPage({
 
   return (
     <div className="auth-card" style={{ maxWidth: "560px" }}>
+      <a href={`/admin/papers/${paperId}`} style={{ fontSize: "13px", display: "inline-block", marginBottom: "10px" }}>
+        ← Back to paper
+      </a>
       <h1>Add Question</h1>
       <QuestionForm action={createQuestionAction} paperId={paperId} sections={sections} />
     </div>

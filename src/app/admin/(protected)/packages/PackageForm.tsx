@@ -46,8 +46,17 @@ export function PackageForm({
       <label htmlFor="testCount">Test count</label>
       <input id="testCount" name="testCount" type="number" defaultValue={defaults?.testCount ?? 5} required />
 
-      <label htmlFor="pricePaise">Price (paise, e.g. 39900 = ₹399)</label>
-      <input id="pricePaise" name="pricePaise" type="number" defaultValue={defaults?.pricePaise ?? 0} required />
+      <label htmlFor="priceRupees">Price (₹)</label>
+      <input
+        id="priceRupees"
+        name="priceRupees"
+        type="number"
+        step="0.01"
+        min="0"
+        placeholder="e.g. 399"
+        defaultValue={defaults ? defaults.pricePaise / 100 : ""}
+        required
+      />
 
       <label htmlFor="kind">Kind</label>
       <select id="kind" name="kind" defaultValue={defaults?.kind ?? "standard"}>

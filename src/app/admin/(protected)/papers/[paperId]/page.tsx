@@ -12,10 +12,13 @@ import { PaperEditForm } from "./PaperEditForm";
 
 export default async function AdminPaperDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ paperId: string }>;
+  searchParams: Promise<{ uploaded?: string }>;
 }) {
   const { paperId } = await params;
+  const { uploaded } = await searchParams;
   const session = await requirePagePermission(PERMISSIONS.QUESTION_MANAGE_OWN);
 
   const paper = await prisma.paper.findUnique({ where: { id: paperId } });
@@ -53,6 +56,11 @@ export default async function AdminPaperDetailPage({
 
       <div className="auth-card auth-card-wide" style={{ marginTop: "20px" }}>
         <h2>Questions ({questions.length})</h2>
+        {uploaded && (
+          <p className="auth-success" style={{ margin: "4px 0 10px" }}>
+            ✓ {uploaded} question(s) uploaded successfully.
+          </p>
+        )}
         <p className="muted">
           <Link href={`/admin/papers/${paper.id}/questions/new`}>+ Add a question manually</Link>
           {" · "}

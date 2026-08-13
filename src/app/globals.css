@@ -433,6 +433,9 @@ input[type="checkbox"] {
 .admin-content .auth-card-wide {
   max-width: none;
   width: 100%;
+  /* Centre any card that a page constrains with its own max-width (create/edit
+     forms), so narrow forms sit in the middle instead of shrunk to the left. */
+  margin-inline: auto;
   background: #ffffff;
   border-color: rgba(26, 42, 68, 0.12);
   border-radius: 12px;

@@ -44,3 +44,6 @@ next-env.d.ts
 deploy/app.env
 deploy/db.env
 deploy/backups/
+
+# Obsidian editor config
+.obsidian/

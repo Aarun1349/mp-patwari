@@ -8,6 +8,9 @@ export default function NewCouponPage() {
 
   return (
     <div className="auth-card" style={{ maxWidth: "480px" }}>
+      <a href="/admin/coupons" style={{ fontSize: "13px", display: "inline-block", marginBottom: "10px" }}>
+        ← Back to coupons
+      </a>
       <h1>Create Coupon</h1>
       <form action={action} className="auth-form">
         <label htmlFor="code">Code</label>

@@ -13,6 +13,9 @@ export default async function NewPackagePage() {
 
   return (
     <div className="auth-card" style={{ maxWidth: "480px" }}>
+      <a href="/admin/packages" style={{ fontSize: "13px", display: "inline-block", marginBottom: "10px" }}>
+        ← Back to packages
+      </a>
       <h1>Create Package</h1>
       <PackageForm action={createPackageAction} exams={exams} />
     </div>

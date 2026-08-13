@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { checkPermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { PLATFORM_TENANT_ID } from "@/lib/tenant";
+import { sendTeacherWelcomeEmail } from "@/lib/email/sendTeacherWelcome";
 
 export type TenantActionState = { error?: string } | undefined;
 
@@ -93,6 +95,26 @@ export async function createTenantAction(
         tenantId: tenant.id,
       },
     });
+
+    // Email the teacher their sign-in link + temporary password. Best-effort:
+    // the login is already created, so a mail failure must not roll it back
+    // (the admin also sees the password in the form to share it manually).
+    const h = await headers();
+    const host = h.get("host") ?? "examsexpress.in";
+    const proto = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+    const origin = `${proto}://${host}`;
+    try {
+      await sendTeacherWelcomeEmail({
+        to: d.loginEmail,
+        teacherName: d.ownerName ?? d.name,
+        loginEmail: d.loginEmail,
+        tempPassword: d.loginPassword!,
+        loginUrl: `${origin}/admin/login`,
+        storefrontUrl: `${origin}/t/${d.slug}`,
+      });
+    } catch (err) {
+      console.error("sendTeacherWelcomeEmail failed (teacher already created)", err);
+    }
   } else {
     await prisma.tenant.create({
       data: {

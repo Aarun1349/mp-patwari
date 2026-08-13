@@ -14,7 +14,10 @@ const NOT_YOURS = "That package belongs to another tenant.";
 const PackageSchema = z.object({
   name: z.string().trim().min(1),
   testCount: z.coerce.number().int().positive(),
-  pricePaise: z.coerce.number().int().nonnegative(),
+  // Admin enters the price in RUPEES (intuitive); we store paise. Two decimals
+  // are allowed (e.g. 399 → ₹399 → 39900 paise). Previously this field took raw
+  // paise, so "599" saved as ₹5.99 — the fix is to convert ×100 here.
+  priceRupees: z.coerce.number().nonnegative(),
   kind: z.enum(["standard", "topup"]),
   validityDays: z.coerce.number().int().positive(),
   sortOrder: z.coerce.number().int(),
@@ -31,7 +34,7 @@ export async function createPackageAction(
   const parsed = PackageSchema.safeParse({
     name: formData.get("name"),
     testCount: formData.get("testCount"),
-    pricePaise: formData.get("pricePaise"),
+    priceRupees: formData.get("priceRupees"),
     kind: formData.get("kind"),
     validityDays: formData.get("validityDays"),
     sortOrder: formData.get("sortOrder"),
@@ -39,9 +42,11 @@ export async function createPackageAction(
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
 
+  const { priceRupees, ...rest } = parsed.data;
+  const pricePaise = Math.round(priceRupees * 100);
   const formExamId = String(formData.get("examId") ?? "");
   const examId = formExamId || (await getDefaultExamId());
-  await prisma.package.create({ data: { ...parsed.data, examId, tenantId: actorTenantId(gate) } });
+  await prisma.package.create({ data: { ...rest, pricePaise, examId, tenantId: actorTenantId(gate) } });
   revalidatePath("/admin/packages");
   redirect("/admin/packages");
 }
@@ -63,7 +68,7 @@ export async function updatePackageAction(
   const parsed = PackageSchema.safeParse({
     name: formData.get("name"),
     testCount: formData.get("testCount"),
-    pricePaise: formData.get("pricePaise"),
+    priceRupees: formData.get("priceRupees"),
     kind: formData.get("kind"),
     validityDays: formData.get("validityDays"),
     sortOrder: formData.get("sortOrder"),
@@ -71,7 +76,9 @@ export async function updatePackageAction(
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
 
-  await prisma.package.update({ where: { id }, data: parsed.data });
+  const { priceRupees, ...rest } = parsed.data;
+  const pricePaise = Math.round(priceRupees * 100);
+  await prisma.package.update({ where: { id }, data: { ...rest, pricePaise } });
   revalidatePath("/admin/packages");
   redirect("/admin/packages");
 }
