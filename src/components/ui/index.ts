@@ -7,3 +7,6 @@ export { PasswordInput } from "./PasswordInput";
 export { Alert } from "./Alert";
 export type { AlertVariant } from "./Alert";
 export { Spinner, LoadingScreen } from "./Spinner";
+export { StorefrontLink } from "./StorefrontLink";
+export { Modal } from "./Modal";
+export { BrandIcon } from "./BrandIcon";

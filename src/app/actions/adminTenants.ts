@@ -7,7 +7,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/password";
 import { checkPermission, PERMISSIONS } from "@/lib/auth/permissions";
-import { PLATFORM_TENANT_ID } from "@/lib/tenant";
+import { PLATFORM_TENANT_ID, storefrontUrl } from "@/lib/tenant";
 import { sendTeacherWelcomeEmail } from "@/lib/email/sendTeacherWelcome";
 
 export type TenantActionState = { error?: string } | undefined;
@@ -28,7 +28,10 @@ const TenantSchema = z
     ownerName: optional(80),
     tagline: optional(160),
     bio: optional(600),
-    revenueSharePct: z.coerce.number().int().min(0).max(100),
+    // Hard cap: a teacher can never keep more than 70% (platform keeps >= 30%).
+    // Enforced server-side so a crafted/bad request can't exceed it, whatever the
+    // client sends. (Prisma parameterises all queries, so no SQL injection either.)
+    revenueSharePct: z.coerce.number().int().min(0).max(70),
     loginEmail: z.preprocess(
       (v) => (v === "" ? undefined : v),
       z.string().trim().toLowerCase().email().optional()
@@ -110,7 +113,7 @@ export async function createTenantAction(
         loginEmail: d.loginEmail,
         tempPassword: d.loginPassword!,
         loginUrl: `${origin}/admin/login`,
-        storefrontUrl: `${origin}/t/${d.slug}`,
+        storefrontUrl: storefrontUrl(d.slug),
       });
     } catch (err) {
       console.error("sendTeacherWelcomeEmail failed (teacher already created)", err);

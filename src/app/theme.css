@@ -107,6 +107,22 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
 }
 
+/* Two-column form grid (wide create/edit forms). */
+.ee-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 18px;
+}
+.ee-form-grid .ee-span-2 {
+  grid-column: 1 / -1;
+}
+@media (max-width: 640px) {
+  .ee-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .ee-input-wrap {
   position: relative;
 }
@@ -674,6 +690,185 @@
   cursor: inherit;
 }
 .upload-mode-card small {
+  color: var(--color-text-muted);
+}
+
+/* Storefront URL cell: link (open new tab) + copy button */
+.ee-storefront {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ee-storefront__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.ee-storefront__link:hover {
+  text-decoration: underline;
+}
+/* scoped to .admin-content so it beats the `.admin-content button` fill */
+.admin-content .ee-storefront__copy,
+.ee-storefront__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.admin-content .ee-storefront__copy:hover,
+.ee-storefront__copy:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-primary);
+  border-color: var(--color-accent);
+}
+.ee-storefront__toast {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+/* ==================== Reusable: Modal ==================== */
+.ee-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(30, 27, 52, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-y: auto;
+}
+.ee-modal {
+  width: 100%;
+  max-width: 640px;
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  animation: ee-modal-in 0.15s ease;
+}
+@keyframes ee-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ee-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--color-border);
+}
+.ee-modal__head h2 {
+  font-size: 18px;
+  color: var(--color-text);
+}
+.ee-modal .ee-modal__close {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--color-surface-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+.ee-modal .ee-modal__close:hover {
+  background: var(--color-surface-tint);
+  color: var(--color-text);
+}
+.ee-modal__body {
+  padding: 22px;
+}
+
+/* Paper detail: settings panel (left, sticky) + questions list (right, main). */
+.paper-detail {
+  display: grid;
+  grid-template-columns: minmax(330px, 370px) 1fr;
+  gap: 20px;
+  align-items: start;
+}
+.paper-detail__side {
+  position: sticky;
+  top: 20px;
+}
+/* The paper settings form goes single-column inside the narrow left panel. */
+.paper-detail__side .ee-form-grid {
+  grid-template-columns: 1fr;
+}
+.paper-detail__side .auth-card h1 {
+  font-size: 20px;
+}
+@media (max-width: 1024px) {
+  .paper-detail {
+    grid-template-columns: 1fr;
+  }
+  .paper-detail__side {
+    position: static;
+  }
+}
+
+/* Pagination controls */
+.ee-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 18px;
+}
+.ee-pagination .ee-page-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: #fff;
+  text-decoration: none !important;
+}
+.ee-pagination a.ee-page-btn:hover {
+  background: var(--color-surface-muted);
+  border-color: var(--color-accent);
+}
+.ee-pagination .ee-page-btn.disabled {
+  color: var(--color-text-muted);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.ee-pagination .ee-page-btn.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  pointer-events: none;
+}
+.ee-pagination .ee-page-ellipsis {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  padding: 0 2px;
+}
+.ee-pagination .ee-page-info {
+  font-size: 13px;
   color: var(--color-text-muted);
 }
 

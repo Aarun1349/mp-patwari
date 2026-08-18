@@ -7,6 +7,45 @@ record with rationale.
 
 ---
 
+## Batch 3 — Admin QA fixes + multi-language foundation · 2026-08-18 · branch `local-test-one`
+
+**Context.** Continued the screen-by-screen admin polish and, on the founder's
+call, laid the **data-model foundation for N-language content** (not just Hi/En) —
+because the schema is the hardest thing to change later. Full multi-language
+pipeline/UI is phase 2; see [[Decisions/0006-multi-language-content]].
+
+**Admin polish (this batch).**
+- **Package price money bug** already fixed in batch 1; **package + paper + question
+  + upload + teacher-onboard forms** migrated to the design system (2-column grids,
+  purple buttons, token controls).
+- **Paper limits** (front + backend Zod): duration ≤ 180, negative marking ≤ 0.50,
+  total questions ≤ 300. Teacher revenue share ≤ 70% (front + backend).
+- **Marks & negative are derived from the paper** (not per question) — in the
+  add/edit form AND the spreadsheet importer; fixes the "0.25 negative on a
+  no-negative paper" correctness bug. (Existing uploaded rows still hold their old
+  values — a one-time reconcile is offered.)
+- **Questions list pagination** — 10/page with numbered buttons (1 2 … 10, Prev/Next,
+  active highlighted).
+- **Paper detail redesigned** to a two-column layout (sticky settings panel + wide
+  questions list) — fixes the centred-float/empty-left alignment.
+- **Edit Question as a modal** via Next.js intercepting routes (`@modal` slot); direct
+  URL still renders the full page. New reusable `Modal` component.
+- **Teacher storefront URL → subdomain** `<slug>.examsexpress.in` (`storefrontUrl()`
+  helper, middleware rewrite, `StorefrontLink` with open-in-new-tab + copy button) +
+  `/api/verify-domain` ask-endpoint for Caddy on-demand TLS. Wildcard DNS added on
+  Netlify; Caddy TLS config + deploy pending. See [[Tasks/admin-panel-qa-batch]].
+
+**Multi-language foundation (schema + service + seed).**
+- Schema: **`Language`** (code/name/nativeName/isActive), **`QuestionTranslation`**
+  and **`OptionTranslation`** (`@@unique([*, lang])`), **`Paper.sourceLang`**,
+  relations on Question/QuestionOption. `db push` applied to the local DB.
+- Seed: `Language` rows **en + hi** (active). Adding a language = a row.
+- Service: **`src/lib/i18n/`** — `getActiveLanguages`, `resolveQuestion(q, lang,
+  sourceLang)` (source fallback so the exam never blocks), `upsert*Translation`,
+  `pendingTranslationCount`.
+- Approach recorded in [[Decisions/0006-multi-language-content]] — pre-translate
+  once at publish (cached), never at exam start.
+
 ## Batch 2 — Design system foundation + admin login reskin · 2026-08-18 · branch `local-test-one`
 
 **Context / why.** The founder judged the UI unprofessional (esp. admin login +

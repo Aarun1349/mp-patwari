@@ -104,8 +104,13 @@ visibility breadth. Guards: `requirePermission` (throws), `checkPermission` (ret
 - **Rate limiting**: DB-counter based (`lib/rateLimit.ts`) for OTP/login/question serving.
 - **Acquisition attribution**: `proxy.ts` captures `utm_*` on first touch → stamped
   on the `User` at signup (`signupSource/Medium/Campaign`).
-- **i18n**: `text`/`textAlt` on questions/options; lazy MT via `lib/ai/translate.ts`
-  (never for language-skill sections).
+- **i18n / multi-language**: **foundation for N languages** —
+  `Language` (data), `QuestionTranslation` / `OptionTranslation` (per-lang, keyed
+  `[*, lang]`), `Paper.sourceLang`; read via `lib/i18n/resolveQuestion()` with
+  source fallback. Pre-translate once at publish, cached (phase-2 pipeline).
+  See [[Decisions/0006-multi-language-content]]. (Legacy `text`/`textAlt` +
+  `lib/ai/translate.ts` bilingual path still present; migrates to the table.)
+  Language-skill sections (General Hindi/English) are never translated.
 
 ## Related
 [[Current-State]] · [[Business-Rules]] · [[Requirements]] · `Decisions/`

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { toggleTenantActiveAction } from "@/app/actions/adminTenants";
-import { PLATFORM_TENANT_ID } from "@/lib/tenant";
+import { PLATFORM_TENANT_ID, storefrontUrl } from "@/lib/tenant";
+import { StorefrontLink } from "@/components/ui/StorefrontLink";
 
 export default async function AdminTenantsPage() {
   await requirePagePermission(PERMISSIONS.TENANT_ONBOARD);
@@ -59,9 +60,7 @@ export default async function AdminTenantsPage() {
                   {t.ownerName && <div style={{ fontSize: "12px", color: "#8a8372" }}>{t.ownerName}</div>}
                 </td>
                 <td>
-                  <Link href={`/t/${t.slug}`} target="_blank">
-                    /t/{t.slug} ↗
-                  </Link>
+                  <StorefrontLink url={storefrontUrl(t.slug)} />
                 </td>
                 <td>{(t.revenueShareBps / 100).toFixed(0)}%</td>
                 <td>{t._count.papers}</td>

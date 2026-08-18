@@ -2,6 +2,10 @@
 
 import { useActionState } from "react";
 import type { QuestionActionState } from "@/app/actions/adminPapers";
+import { Field, Input, Textarea } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
+import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 export function QuestionForm({
   action,
@@ -21,64 +25,67 @@ export function QuestionForm({
     optionC: string;
     optionD: string;
     correctOption: "A" | "B" | "C" | "D";
-    marks: number;
-    negativeMarks: number;
   };
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
-    <form action={formAction} className="auth-form">
+    <form action={formAction} className="ee-form-grid">
       <input type="hidden" name="paperId" value={paperId} />
       {defaults?.questionId && <input type="hidden" name="questionId" value={defaults.questionId} />}
 
-      <label htmlFor="sectionId">Section</label>
-      <select id="sectionId" name="sectionId" defaultValue={defaults?.sectionId}>
-        {sections.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.nameEn}
-          </option>
-        ))}
-      </select>
+      <Field label="Section" htmlFor="sectionId" className="ee-span-2">
+        <Select id="sectionId" name="sectionId" defaultValue={defaults?.sectionId}>
+          {sections.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.nameEn}
+            </option>
+          ))}
+        </Select>
+      </Field>
 
-      <label htmlFor="text">Question text</label>
-      <textarea id="text" name="text" rows={3} defaultValue={defaults?.text} required />
+      <Field label="Question text" htmlFor="text" className="ee-span-2">
+        <Textarea id="text" name="text" rows={3} defaultValue={defaults?.text} required />
+      </Field>
 
-      <label htmlFor="optionA">Option A</label>
-      <input id="optionA" name="optionA" type="text" defaultValue={defaults?.optionA} required />
-      <label htmlFor="optionB">Option B</label>
-      <input id="optionB" name="optionB" type="text" defaultValue={defaults?.optionB} required />
-      <label htmlFor="optionC">Option C</label>
-      <input id="optionC" name="optionC" type="text" defaultValue={defaults?.optionC} required />
-      <label htmlFor="optionD">Option D</label>
-      <input id="optionD" name="optionD" type="text" defaultValue={defaults?.optionD} required />
+      <Field label="Option A" htmlFor="optionA">
+        <Input id="optionA" name="optionA" type="text" defaultValue={defaults?.optionA} required />
+      </Field>
+      <Field label="Option B" htmlFor="optionB">
+        <Input id="optionB" name="optionB" type="text" defaultValue={defaults?.optionB} required />
+      </Field>
+      <Field label="Option C" htmlFor="optionC">
+        <Input id="optionC" name="optionC" type="text" defaultValue={defaults?.optionC} required />
+      </Field>
+      <Field label="Option D" htmlFor="optionD">
+        <Input id="optionD" name="optionD" type="text" defaultValue={defaults?.optionD} required />
+      </Field>
 
-      <label htmlFor="correctOption">Correct option</label>
-      <select id="correctOption" name="correctOption" defaultValue={defaults?.correctOption ?? "A"}>
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-        <option value="D">D</option>
-      </select>
+      <Field
+        label="Correct option"
+        htmlFor="correctOption"
+        hint="Marks & negative marking are inherited from the paper — not set per question."
+        className="ee-span-2"
+      >
+        <Select id="correctOption" name="correctOption" defaultValue={defaults?.correctOption ?? "A"}>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+        </Select>
+      </Field>
 
-      <label htmlFor="marks">Marks</label>
-      <input id="marks" name="marks" type="number" step="0.5" defaultValue={defaults?.marks ?? 2} required />
+      {state?.error && (
+        <div className="ee-span-2">
+          <Alert variant="error">{state.error}</Alert>
+        </div>
+      )}
 
-      <label htmlFor="negativeMarks">Negative marks</label>
-      <input
-        id="negativeMarks"
-        name="negativeMarks"
-        type="number"
-        step="0.05"
-        defaultValue={defaults?.negativeMarks ?? 0.5}
-        required
-      />
-
-      {state?.error && <p className="auth-error">{state.error}</p>}
-
-      <button type="submit" disabled={pending}>
-        {pending ? "Saving…" : defaults?.questionId ? "Save changes" : "Add question"}
-      </button>
+      <div className="ee-span-2">
+        <Button type="submit" variant="primary" size="lg" block loading={pending}>
+          {pending ? "Saving…" : defaults?.questionId ? "Save changes" : "Add question"}
+        </Button>
+      </div>
     </form>
   );
 }

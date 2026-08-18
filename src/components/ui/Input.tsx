@@ -16,16 +16,18 @@ export function Field({
   htmlFor,
   hint,
   error,
+  className,
   children,
 }: {
   label?: ReactNode;
   htmlFor?: string;
   hint?: ReactNode;
   error?: ReactNode;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <div className="ee-field">
+    <div className={["ee-field", className].filter(Boolean).join(" ")}>
       {label && <label htmlFor={htmlFor}>{label}</label>}
       {children}
       {hint && !error && <span className="ee-hint">{hint}</span>}

@@ -27,7 +27,22 @@ function captureAcquisition(req: NextRequest, res: NextResponse) {
   if (campaign) res.cookies.set("acq_campaign", campaign.slice(0, 60), opts);
 }
 
+const STOREFRONT_APEX_SUFFIX = ".examsexpress.in";
+
 export default function proxy(req: NextRequest) {
+  // Tenant storefront subdomains: `<slug>.examsexpress.in` serves the storefront
+  // at /t/<slug>. Guarded so the apex, `www`, and localhost/dev are untouched —
+  // this only activates for real subdomains, i.e. once wildcard DNS + TLS exist.
+  const host = (req.headers.get("host") ?? "").split(":")[0].toLowerCase();
+  if (host.endsWith(STOREFRONT_APEX_SUFFIX)) {
+    const sub = host.slice(0, host.length - STOREFRONT_APEX_SUFFIX.length);
+    if (sub && sub !== "www" && req.nextUrl.pathname === "/") {
+      const url = req.nextUrl.clone();
+      url.pathname = `/t/${sub}`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
   const { pathname } = req.nextUrl;
   const hasSession = Boolean(req.cookies.get(SESSION_COOKIE_NAME)?.value);
 

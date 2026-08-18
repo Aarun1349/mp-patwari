@@ -12,7 +12,7 @@ export default async function NewPackagePage() {
   });
 
   return (
-    <div className="auth-card" style={{ maxWidth: "480px" }}>
+    <div className="auth-card" style={{ maxWidth: "760px", margin: "0 auto" }}>
       <a href="/admin/packages" style={{ fontSize: "13px", display: "inline-block", marginBottom: "10px" }}>
         ← Back to packages
       </a>

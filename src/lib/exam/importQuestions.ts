@@ -115,8 +115,11 @@ export async function parseAndImportQuestions(
     }
     seenQuestionTexts.add(normalizedText);
 
-    const marks = parsed.data.marks ?? 1;
-    const negativeMarks = parsed.data.negative_marks ?? paper.negativeMarkingRatio * marks;
+    // Marks & negative marks are DERIVED from the parent paper (uniform across
+    // the paper) — the sheet's marks/negative columns are ignored, matching the
+    // manual add/edit form, so a question can never contradict the paper's scheme.
+    const marks = paper.totalMarks / paper.totalQuestions;
+    const negativeMarks = paper.negativeMarkingRatio * marks;
 
     await prisma.question.create({
       data: {

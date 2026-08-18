@@ -24,10 +24,10 @@ export type UploadActionState =
 const NewPaperSchema = z.object({
   title: z.string().trim().min(1),
   isFree: z.boolean(),
-  durationMinutes: z.coerce.number().int().positive(),
-  totalQuestions: z.coerce.number().int().positive(),
+  durationMinutes: z.coerce.number().int().positive().max(180, "Duration can't exceed 180 minutes."),
+  totalQuestions: z.coerce.number().int().positive().max(300, "Total questions can't exceed 300."),
   totalMarks: z.coerce.number().int().positive(),
-  negativeMarkingRatio: z.coerce.number().min(0).max(1),
+  negativeMarkingRatio: z.coerce.number().min(0).max(0.5, "Negative marking ratio can't exceed 0.50."),
 });
 
 export async function uploadQuestionsAction(

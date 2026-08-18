@@ -153,6 +153,9 @@ model Paper {
   totalMarks           Int
   durationMinutes      Int
   negativeMarkingRatio Float    @default(0)
+  // Language the questions' source `text` is authored in; per-language copies
+  // live in QuestionTranslation / OptionTranslation. Defaults to English.
+  sourceLang           String   @default("en")
   isActive             Boolean  @default(true)
   createdAt            DateTime @default(now())
   examId               String
@@ -188,8 +191,9 @@ model Question {
   sourceUploadId String?
   createdAt      DateTime @default(now())
 
-  options QuestionOption[]
-  answers Answer[]
+  options      QuestionOption[]
+  answers      Answer[]
+  translations QuestionTranslation[]
 
   @@index([paperId])
   @@map("questions")
@@ -205,7 +209,8 @@ model QuestionOption {
   isCorrect  Boolean  @default(false)
   sortOrder  Int      @default(0)
 
-  answers Answer[]
+  answers      Answer[]
+  translations OptionTranslation[]
 
   @@index([questionId])
   @@map("question_options")
@@ -535,4 +540,52 @@ model RateLimitCounter {
   count       Int      @default(0)
 
   @@map("rate_limit_counters")
+}
+
+// ---- Multi-language content (foundation) ----
+
+// Supported languages are DATA, not an enum, so a new language is added by
+// inserting a row (no schema change). `code` is a BCP-47-ish short code used as
+// the key everywhere (Question/OptionTranslation.lang, the exam language picker).
+// See Decisions/0006-multi-language-content.
+model Language {
+  code       String  @id // "en", "hi", "mr", "ta"
+  name       String // English name, e.g. "Hindi"
+  nativeName String? // "हिन्दी"
+  isActive   Boolean @default(true)
+  sortOrder  Int     @default(0)
+
+  @@map("languages")
+}
+
+// A question's text in ONE language. The source text stays on Question.text (in
+// Paper.sourceLang); every other language is a row here, pre-translated once and
+// cached. Unique per (question, lang). Never created for language-skill sections.
+model QuestionTranslation {
+  id         String   @id @default(cuid())
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  questionId String
+  lang       String
+  text       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([questionId, lang])
+  @@index([lang])
+  @@map("question_translations")
+}
+
+// An option's text in one language (mirrors QuestionTranslation).
+model OptionTranslation {
+  id        String         @id @default(cuid())
+  option    QuestionOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  optionId  String
+  lang      String
+  text      String
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@unique([optionId, lang])
+  @@index([lang])
+  @@map("option_translations")
 }

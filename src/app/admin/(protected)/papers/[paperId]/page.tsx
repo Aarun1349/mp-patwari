@@ -10,15 +10,26 @@ import { NON_TRANSLATABLE_SECTION_CODES } from "@/lib/ai/translate";
 import { requirePagePermission, canActOnTenant, PERMISSIONS } from "@/lib/auth/permissions";
 import { PaperEditForm } from "./PaperEditForm";
 
+/** Page numbers to show, with ellipsis when there are many pages. */
+function pageNumbers(current: number, total: number): (number | "…")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const out: (number | "…")[] = [1];
+  if (current > 3) out.push("…");
+  for (let p = Math.max(2, current - 1); p <= Math.min(total - 1, current + 1); p++) out.push(p);
+  if (current < total - 2) out.push("…");
+  out.push(total);
+  return out;
+}
+
 export default async function AdminPaperDetailPage({
   params,
   searchParams,
 }: {
   params: Promise<{ paperId: string }>;
-  searchParams: Promise<{ uploaded?: string }>;
+  searchParams: Promise<{ uploaded?: string; page?: string }>;
 }) {
   const { paperId } = await params;
-  const { uploaded } = await searchParams;
+  const { uploaded, page: pageParam } = await searchParams;
   const session = await requirePagePermission(PERMISSIONS.QUESTION_MANAGE_OWN);
 
   const paper = await prisma.paper.findUnique({ where: { id: paperId } });
@@ -43,19 +54,30 @@ export default async function AdminPaperDetailPage({
       (q.textAlt == null || q.options.some((o) => o.textAlt == null))
   ).length;
 
-  return (
-    <>
-      <div className="auth-card" style={{ maxWidth: "480px" }}>
-        <h1>{paper.title}</h1>
-        <PaperEditForm paper={paper} />
-        <form action={togglePaperActiveAction} style={{ marginTop: "12px" }}>
-          <input type="hidden" name="id" value={paper.id} />
-          <button type="submit">{paper.isActive ? "Deactivate paper" : "Activate paper"}</button>
-        </form>
-      </div>
+  // Paginate the questions list — 10 per page.
+  const PAGE_SIZE = 10; // questions per page
+  const totalPages = Math.max(1, Math.ceil(questions.length / PAGE_SIZE));
+  const page = Math.min(totalPages, Math.max(1, Number(pageParam) || 1));
+  const pageQuestions = questions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-      <div className="auth-card auth-card-wide" style={{ marginTop: "20px" }}>
-        <h2>Questions ({questions.length})</h2>
+  return (
+    <div className="paper-detail">
+      <aside className="paper-detail__side">
+        <div className="auth-card">
+          <h1>{paper.title}</h1>
+          <PaperEditForm paper={paper} />
+          <form action={togglePaperActiveAction} style={{ marginTop: "12px" }}>
+            <input type="hidden" name="id" value={paper.id} />
+            <button type="submit" className={paper.isActive ? "btn-danger" : "btn-secondary"}>
+              {paper.isActive ? "Deactivate paper" : "Activate paper"}
+            </button>
+          </form>
+        </div>
+      </aside>
+
+      <div className="paper-detail__main">
+        <div className="auth-card">
+          <h2>Questions ({questions.length})</h2>
         {uploaded && (
           <p className="auth-success" style={{ margin: "4px 0 10px" }}>
             ✓ {uploaded} question(s) uploaded successfully.
@@ -106,7 +128,7 @@ export default async function AdminPaperDetailPage({
             </tr>
           </thead>
           <tbody>
-            {questions.map((q) => (
+            {pageQuestions.map((q) => (
               <tr key={q.id} style={!q.isActive ? { opacity: 0.5 } : undefined}>
                 <td>{q.section.nameEn}</td>
                 <td style={{ maxWidth: "420px" }}>{q.text}</td>
@@ -127,7 +149,42 @@ export default async function AdminPaperDetailPage({
             ))}
           </tbody>
         </table>
+
+        {totalPages > 1 && (
+          <div className="ee-pagination">
+            {page > 1 ? (
+              <Link href={`/admin/papers/${paper.id}?page=${page - 1}`} className="ee-page-btn">
+                ← Prev
+              </Link>
+            ) : (
+              <span className="ee-page-btn disabled">← Prev</span>
+            )}
+            {pageNumbers(page, totalPages).map((p, i) =>
+              p === "…" ? (
+                <span key={`e${i}`} className="ee-page-ellipsis">
+                  …
+                </span>
+              ) : p === page ? (
+                <span key={p} className="ee-page-btn active">
+                  {p}
+                </span>
+              ) : (
+                <Link key={p} href={`/admin/papers/${paper.id}?page=${p}`} className="ee-page-btn">
+                  {p}
+                </Link>
+              )
+            )}
+            {page < totalPages ? (
+              <Link href={`/admin/papers/${paper.id}?page=${page + 1}`} className="ee-page-btn">
+                Next →
+              </Link>
+            ) : (
+              <span className="ee-page-btn disabled">Next →</span>
+            )}
+          </div>
+        )}
+        </div>
       </div>
-    </>
+    </div>
   );
 }

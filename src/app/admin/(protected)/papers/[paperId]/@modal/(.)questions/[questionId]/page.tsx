@@ -1,9 +1,13 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { updateQuestionAction } from "@/app/actions/adminPapers";
-import { QuestionForm } from "../../QuestionForm";
+import { QuestionForm } from "../../../QuestionForm";
+import { Modal } from "@/components/ui/Modal";
 
-export default async function EditQuestionPage({
+// Intercepts a soft navigation to /admin/papers/[paperId]/questions/[questionId]
+// and shows the edit form in a modal over the paper page. On save,
+// updateQuestionAction redirects back to the paper page, which closes the modal.
+export default async function EditQuestionModal({
   params,
 }: {
   params: Promise<{ paperId: string; questionId: string }>;
@@ -23,11 +27,7 @@ export default async function EditQuestionPage({
   const correctOption = (["A", "B", "C", "D"] as const)[question.options.findIndex((o) => o.isCorrect)] ?? "A";
 
   return (
-    <div className="auth-card" style={{ maxWidth: "680px", margin: "0 auto" }}>
-      <a href={`/admin/papers/${paperId}`} style={{ fontSize: "13px", display: "inline-block", marginBottom: "10px" }}>
-        ← Back to paper
-      </a>
-      <h1>Edit Question</h1>
+    <Modal title="Edit Question">
       <QuestionForm
         action={updateQuestionAction}
         paperId={paperId}
@@ -43,6 +43,6 @@ export default async function EditQuestionPage({
           correctOption,
         }}
       />
-    </div>
+    </Modal>
   );
 }

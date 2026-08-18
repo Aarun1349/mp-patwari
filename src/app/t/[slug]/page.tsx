@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getApiSession } from "@/lib/auth/session";
+import { storefrontUrl } from "@/lib/tenant";
 import TenantStorefront from "./TenantStorefront";
 
 // Dynamic: depends on DB + route param, must not be evaluated at build time.
@@ -43,8 +44,8 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `https://examsexpress.in/t/${tenant.slug}` },
-    openGraph: { title, description, url: `https://examsexpress.in/t/${tenant.slug}`, type: "website" },
+    alternates: { canonical: storefrontUrl(tenant.slug) },
+    openGraph: { title, description, url: storefrontUrl(tenant.slug), type: "website" },
   };
 }
 

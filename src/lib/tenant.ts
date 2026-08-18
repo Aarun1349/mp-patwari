@@ -5,3 +5,17 @@
  * case null. Teacher/coaching tenants have their own generated ids.
  */
 export const PLATFORM_TENANT_ID = "platform";
+
+/** Apex domain the tenant storefront subdomains hang off. */
+export const STOREFRONT_APEX = "examsexpress.in";
+
+/**
+ * Public, branded storefront URL for a tenant: `https://<slug>.examsexpress.in`.
+ * NOTE: the subdomain only resolves once wildcard DNS (`*.examsexpress.in`) and
+ * wildcard/on-demand TLS are configured on the server; until then the path form
+ * `https://examsexpress.in/t/<slug>` still works (the middleware rewrites the
+ * subdomain to that route). Safe to import from client components (no secrets).
+ */
+export function storefrontUrl(slug: string): string {
+  return `https://${slug}.${STOREFRONT_APEX}`;
+}

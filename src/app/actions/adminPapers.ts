@@ -19,10 +19,10 @@ export type QuestionActionState = { error?: string } | undefined;
 const PaperSchema = z.object({
   title: z.string().trim().min(1),
   isFree: z.boolean(),
-  durationMinutes: z.coerce.number().int().positive(),
-  totalQuestions: z.coerce.number().int().positive(),
+  durationMinutes: z.coerce.number().int().positive().max(180, "Duration can't exceed 180 minutes."),
+  totalQuestions: z.coerce.number().int().positive().max(300, "Total questions can't exceed 300."),
   totalMarks: z.coerce.number().int().positive(),
-  negativeMarkingRatio: z.coerce.number().min(0).max(1),
+  negativeMarkingRatio: z.coerce.number().min(0).max(0.5, "Negative marking ratio can't exceed 0.50."),
 });
 
 export async function updatePaperAction(
@@ -130,8 +130,6 @@ const QuestionSchema = z
     optionC: z.string().trim().min(1),
     optionD: z.string().trim().min(1),
     correctOption: z.enum(["A", "B", "C", "D"]),
-    marks: z.coerce.number().min(0),
-    negativeMarks: z.coerce.number().min(0),
   })
   .refine(
     (v) => new Set([v.optionA, v.optionB, v.optionC, v.optionD].map((o) => o.trim().toLowerCase())).size === 4,
@@ -146,7 +144,10 @@ export async function createQuestionAction(
   if ("error" in gate) return gate;
 
   const paperId = String(formData.get("paperId") ?? "");
-  const owner = await prisma.paper.findUnique({ where: { id: paperId }, select: { tenantId: true } });
+  const owner = await prisma.paper.findUnique({
+    where: { id: paperId },
+    select: { tenantId: true, totalMarks: true, totalQuestions: true, negativeMarkingRatio: true },
+  });
   if (!owner) return { error: "Paper not found." };
   if (!canActOnTenant(gate, owner.tenantId)) return { error: NOT_YOURS };
 
@@ -158,10 +159,13 @@ export async function createQuestionAction(
     optionC: formData.get("optionC"),
     optionD: formData.get("optionD"),
     correctOption: formData.get("correctOption"),
-    marks: formData.get("marks"),
-    negativeMarks: formData.get("negativeMarks"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+
+  // Marks & negative marks are derived from the parent paper — never per question,
+  // so a question can't contradict the paper's marking scheme.
+  const marks = owner.totalMarks / owner.totalQuestions;
+  const negativeMarks = owner.negativeMarkingRatio * marks;
 
   const options = [
     { label: "A", text: parsed.data.optionA },
@@ -175,8 +179,8 @@ export async function createQuestionAction(
       paperId,
       sectionId: parsed.data.sectionId,
       text: parsed.data.text,
-      marks: parsed.data.marks,
-      negativeMarks: parsed.data.negativeMarks,
+      marks,
+      negativeMarks,
       options: {
         create: options.map((o, idx) => ({
           label: o.label,
@@ -203,7 +207,9 @@ export async function updateQuestionAction(
   const paperId = String(formData.get("paperId") ?? "");
   const owner = await prisma.question.findUnique({
     where: { id: questionId },
-    select: { paper: { select: { tenantId: true } } },
+    select: {
+      paper: { select: { tenantId: true, totalMarks: true, totalQuestions: true, negativeMarkingRatio: true } },
+    },
   });
   if (!owner) return { error: "Question not found." };
   if (!canActOnTenant(gate, owner.paper.tenantId)) return { error: NOT_YOURS };
@@ -216,10 +222,12 @@ export async function updateQuestionAction(
     optionC: formData.get("optionC"),
     optionD: formData.get("optionD"),
     correctOption: formData.get("correctOption"),
-    marks: formData.get("marks"),
-    negativeMarks: formData.get("negativeMarks"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+
+  // Derived from the parent paper (see createQuestionAction).
+  const marks = owner.paper.totalMarks / owner.paper.totalQuestions;
+  const negativeMarks = owner.paper.negativeMarkingRatio * marks;
 
   const existingOptions = await prisma.questionOption.findMany({
     where: { questionId },
@@ -234,8 +242,8 @@ export async function updateQuestionAction(
       data: {
         sectionId: parsed.data.sectionId,
         text: parsed.data.text,
-        marks: parsed.data.marks,
-        negativeMarks: parsed.data.negativeMarks,
+        marks,
+        negativeMarks,
         // Edited text invalidates any cached machine translation — clear it so the
         // pre-translate pass regenerates it (it only fills rows where textAlt is null).
         textAlt: null,

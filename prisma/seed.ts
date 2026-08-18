@@ -51,6 +51,13 @@ const SECTIONS = [
   { code: "RURAL_ECONOMY", nameEn: "Rural Economy & Panchayati Raj", nameHi: "ग्रामीण अर्थव्यवस्था एवं पंचायती राज", sortOrder: 6 },
 ];
 
+// Supported languages are data — enable a new one by adding a row (no schema or
+// code change). English + Hindi active now. See Decisions/0006-multi-language-content.
+const LANGUAGES = [
+  { code: "en", name: "English", nativeName: "English", sortOrder: 1 },
+  { code: "hi", name: "Hindi", nativeName: "हिन्दी", sortOrder: 2 },
+];
+
 async function main() {
   // The platform is itself a tenant with a fixed id. Every Paper/Package/Order/
   // UserCredit defaults its tenantId to "platform", so platform-owned content
@@ -78,6 +85,15 @@ async function main() {
     });
   }
   console.log(`Seeded ${SYSTEM_ROLES.length} system roles.`);
+
+  for (const lang of LANGUAGES) {
+    await prisma.language.upsert({
+      where: { code: lang.code },
+      update: { name: lang.name, nativeName: lang.nativeName, sortOrder: lang.sortOrder },
+      create: { ...lang, isActive: true },
+    });
+  }
+  console.log(`Seeded ${LANGUAGES.length} languages.`);
 
   // The MP Patwari exam that all seeded content belongs to.
   const exam = await prisma.exam.upsert({

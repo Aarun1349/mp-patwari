@@ -2,6 +2,10 @@
 
 import { useActionState } from "react";
 import { updatePaperAction } from "@/app/actions/adminPapers";
+import { Field, Input } from "@/components/ui/Input";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 
 export function PaperEditForm({
   paper,
@@ -19,40 +23,44 @@ export function PaperEditForm({
   const [state, action, pending] = useActionState(updatePaperAction, undefined);
 
   return (
-    <form action={action} className="auth-form">
+    <form action={action} className="ee-form-grid">
       <input type="hidden" name="id" value={paper.id} />
 
-      <label htmlFor="title">Title</label>
-      <input id="title" name="title" type="text" defaultValue={paper.title} required />
+      <Field label="Title" htmlFor="title" className="ee-span-2">
+        <Input id="title" name="title" type="text" defaultValue={paper.title} required />
+      </Field>
 
-      <label htmlFor="durationMinutes">Duration (minutes)</label>
-      <input id="durationMinutes" name="durationMinutes" type="number" defaultValue={paper.durationMinutes} required />
+      <Field label="Duration (minutes)" htmlFor="durationMinutes" hint="Max 180 minutes">
+        <Input id="durationMinutes" name="durationMinutes" type="number" min={1} max={180} defaultValue={paper.durationMinutes} required />
+      </Field>
 
-      <label htmlFor="totalQuestions">Total questions (label only — actual count is the active question rows below)</label>
-      <input id="totalQuestions" name="totalQuestions" type="number" defaultValue={paper.totalQuestions} required />
+      <Field label="Total questions" htmlFor="totalQuestions" hint="Label only (actual count = active rows below) · max 300">
+        <Input id="totalQuestions" name="totalQuestions" type="number" min={1} max={300} defaultValue={paper.totalQuestions} required />
+      </Field>
 
-      <label htmlFor="totalMarks">Total marks</label>
-      <input id="totalMarks" name="totalMarks" type="number" defaultValue={paper.totalMarks} required />
+      <Field label="Total marks" htmlFor="totalMarks">
+        <Input id="totalMarks" name="totalMarks" type="number" min={1} defaultValue={paper.totalMarks} required />
+      </Field>
 
-      <label htmlFor="negativeMarkingRatio">Negative marking ratio</label>
-      <input
-        id="negativeMarkingRatio"
-        name="negativeMarkingRatio"
-        type="number"
-        step="0.01"
-        defaultValue={paper.negativeMarkingRatio}
-        required
-      />
+      <Field label="Negative marking ratio" htmlFor="negativeMarkingRatio" hint="0 – 0.50">
+        <Input id="negativeMarkingRatio" name="negativeMarkingRatio" type="number" step="0.01" min={0} max={0.5} defaultValue={paper.negativeMarkingRatio} required />
+      </Field>
 
-      <label>
-        <input type="checkbox" name="isFree" defaultChecked={paper.isFree} /> Free paper
-      </label>
+      <div className="ee-span-2" style={{ paddingTop: "4px" }}>
+        <Checkbox name="isFree" defaultChecked={paper.isFree} label="Free paper (no credit needed to attempt)" />
+      </div>
 
-      {state?.error && <p className="auth-error">{state.error}</p>}
+      {state?.error && (
+        <div className="ee-span-2">
+          <Alert variant="error">{state.error}</Alert>
+        </div>
+      )}
 
-      <button type="submit" disabled={pending}>
-        {pending ? "Saving…" : "Save changes"}
-      </button>
+      <div className="ee-span-2">
+        <Button type="submit" variant="primary" size="lg" block loading={pending}>
+          {pending ? "Saving…" : "Save changes"}
+        </Button>
+      </div>
     </form>
   );
 }
