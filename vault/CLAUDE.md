@@ -19,6 +19,7 @@ of them, not to ignore it.
 | [[Architecture]] | How is it built? (stack, layers, data model, request flow) | Touching code; deciding where something goes |
 | [[Business-Rules]] | The exact rules that must never silently break | Editing exam/credit/payment/auth logic |
 | [[Roadmap]] | What's next and in what order? | Prioritising; planning a session |
+| [[Changelog]] | What changed, how, and why (per batch) | Reviewing recent work; understanding a change's rationale |
 | `Decisions/` | Why we chose X over Y (ADRs) | Before re-opening a settled decision |
 | `Features/` | One note per feature being designed/built | Planning or tracking a feature |
 | `Bugs/` | One note per tracked bug | Reporting or fixing a defect |

@@ -14,7 +14,7 @@ export default async function AdminUploadPage() {
   ]);
 
   return (
-    <div className="auth-card" style={{ maxWidth: "600px" }}>
+    <div className="auth-card" style={{ maxWidth: "680px" }}>
       <a href="/admin/papers" style={{ fontSize: "13px", display: "inline-block", marginBottom: "10px" }}>
         ← Back to papers
       </a>

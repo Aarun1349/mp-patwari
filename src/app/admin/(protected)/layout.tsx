@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { verifyAdminSession } from "@/lib/auth/adminSession";
 import { adminLogoutAction } from "@/app/actions/adminAuth";
 import { hasPermission, PERMISSIONS } from "@/lib/auth/permissions";
+import { AdminSidebar } from "./AdminSidebar";
 
 // Each link declares the permission that reveals it. `perm: null` = always shown.
 const NAV: { href: string; label: string; perm: string | null }[] = [
@@ -27,31 +28,24 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const roleLabel = adminUser.role?.name ?? "";
 
   return (
-    <div className="app-shell">
-      <aside className="app-sidebar">
-        <div className="app-sidebar-brand">
-          <div className="seal-mark">ऐ</div>
-          <div className="brand-text">
-            <div className="en">ExamsExpress</div>
-            <div className="hi">{roleLabel || "एडमिन कंट्रोलर"}</div>
-          </div>
-        </div>
-        <nav className="app-sidebar-nav">
-          {links.map((n) => (
-            <a key={n.href} href={n.href} className="app-sidebar-link">
-              {n.label}
-            </a>
-          ))}
-        </nav>
-      </aside>
+    <div className="app-shell admin-shell">
+      <AdminSidebar links={links} roleLabel={roleLabel} />
       <div className="app-main">
         <div className="app-topbar">
-          <span>
-            {adminUser.email}
-            {roleLabel ? ` · ${roleLabel}` : ""}
-          </span>
+          <div className="admin-user-chip">
+            <span className="admin-avatar">{(adminUser.name ?? adminUser.email ?? "A").charAt(0).toUpperCase()}</span>
+            <span className="admin-user-meta">
+              <span className="admin-user-email">{adminUser.email}</span>
+              {roleLabel && <span className="admin-user-role">{roleLabel}</span>}
+            </span>
+          </div>
           <form action={adminLogoutAction}>
             <button type="submit" className="logout-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
               Log out
             </button>
           </form>

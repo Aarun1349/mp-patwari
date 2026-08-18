@@ -1,0 +1,141 @@
+# Changelog
+
+A running record of **what** changed, **why** (which finding drove it), the
+**approach**, and the **files** touched. Newest batch on top. The raw list of
+findings lives in [[Tasks/admin-panel-qa-batch]]; this file is the *implementation*
+record with rationale.
+
+---
+
+## Batch 2 — Design system foundation + admin login reskin · 2026-08-18 · branch `local-test-one`
+
+**Context / why.** The founder judged the UI unprofessional (esp. admin login +
+storefront) and directed a proper design-system foundation so styling is
+**consistent and DRY (no per-screen redos)** — global theme + reusable components,
+theme applied to icons too. New brand direction: **purple / indigo "modern SaaS"**,
+rolled out **admin + teacher first, then students** (see [[Features/ui-design-overhaul]]).
+
+**Approach.** The project is **plain CSS (no Tailwind)**, so the "global theme" is a
+set of **CSS design tokens** (custom properties) in `src/app/theme.css` — change a
+token → updates everywhere. Reusable React components consume the tokens. Modern
+React → composable components/hooks (not classic HOCs) for the same DRY benefit.
+
+**What was built.**
+- **`src/app/theme.css`** — token system: brand ramp (`--ee-1..5` from the shared
+  palette), semantic tokens (primary `#6366F1`, primary-strong `#312E81`, surfaces,
+  border, text), **project status colours** (info `#0272EA`, error `#7D0018`,
+  warning `#FB2107`, detail/accent `#E99320`, success `#10B981` default), radius/
+  shadow, plus reusable classes (`.ee-btn*`, `.ee-input`, `.ee-field`,
+  `.ee-checkbox`, `.ee-select`, `.ee-alert*`, `.ee-spinner`, `.ee-login*`). Imported
+  in `layout.tsx`.
+- **`src/components/ui/`** — reusable, token-driven components: `Button`/`ButtonLink`
+  (variants + `loading`), `Input`/`Textarea`/`Field`, `Checkbox`, `Select`,
+  `PasswordInput` (**eye-icon** show/hide), `Alert` (error/warning/info/success),
+  `Spinner`/`LoadingScreen`. Barrel `index.ts`. Icons use `currentColor` → themed.
+- **Loading feature** — `Spinner` + button `loading` state + **route-level
+  `admin/(protected)/loading.tsx`** (Suspense fallback shown while a page's server
+  data fetches — aesthetic *and* covers real fetch latency).
+- **Admin login reskin** — modern **split-screen**: purple-gradient brand panel
+  (app "EE" icon + **ExamsExpress** + hero + trust points) | "Welcome back" form card
+  with themed Email/Password (eye icon) + loading Sign-in button.
+  Files: `admin/login/page.tsx`, `admin/login/AdminLoginForm.tsx`.
+
+**Verified** (dev server): login renders, no console errors, eye toggle + fields
+present. **Next:** roll tokens/components across the rest of admin (dashboard,
+forms, tables, sidebar) then teacher screens.
+
+---
+
+## Batch 1 — Admin QA fixes · 2026-08-18 · branch `local-test-one`
+
+**Context / why this batch existed.** The founder QA-ed the live `/admin` panel and
+the teacher storefront and reported a stream of issues (money bug, broken/awkward
+form UX, missing controls, marketplace gaps). They were all logged first in
+[[Tasks/admin-panel-qa-batch]], then we implemented the **safe, high-value, no-
+decision** subset here. Bigger items that need a **schema change or a design
+decision** were deliberately deferred (see "Deferred" below) so we don't rush
+correctness-sensitive or large changes.
+
+**Overall approach.**
+- **Log first, then batch-fix, then one deploy** — don't deploy issue-by-issue.
+- **Prefer systemic fixes over per-screen patches** where safe (one CSS rule beats
+  editing every page).
+- **No schema changes and no scoring-logic changes in this batch** — those need an
+  ADR (money/exam correctness is protected — see [[Business-Rules]]).
+- **Verify every step with `npm run build`**, then verify live on a local dev server
+  + admin login (prod deploy is a separate, later step).
+
+### Changes
+
+1. **🔴 Package price money bug — entered ₹599 saved as ₹5.99.**
+   - *Why:* `Package.pricePaise` stores paise, but the form fed the raw number in as
+     paise, so "599" became ₹5.99. Real money bug.
+   - *How:* the form field is now **"Price (₹)"** (rupees, `step=0.01`), and the
+     action converts **rupees → paise (`×100`, rounded)** on save and back to rupees
+     for the edit form's default.
+   - *Files:* `actions/adminPackages.ts`, `admin/(protected)/packages/PackageForm.tsx`.
+
+2. **Slug was manual & could exceed 50 chars ("too big" error).**
+   - *Why:* the exam/teacher create forms asked for the slug by hand; a long/blank/
+     bad slug errored (schema max 50).
+   - *How:* a client-side `slugify(name)` **auto-fills the slug from the name**,
+     lowercased, non-alphanumerics → hyphens, **capped at 50**; still hand-editable
+     (stops auto-syncing once edited).
+   - *Files:* `admin/(protected)/exams/ExamForm.tsx`, `admin/(protected)/tenants/new/page.tsx`.
+
+3. **Admin forms shrunk to the left (unprofessional).**
+   - *Why:* create/edit form cards sat left with wasted space.
+   - *How:* one global rule — `margin-inline:auto` on `.admin-content .auth-card` —
+     **centres every constrained admin form** at once (no per-page edits). (Full
+     2-column width redesign is deferred.)
+   - *Files:* `globals.css` (+ minor width bump on the exam card).
+
+4. **No show/hide password on admin login.**
+   - *How:* added a **Show/Hide toggle** button that flips the password input between
+     `password` and `text`.
+   - *Files:* `admin/login/AdminLoginForm.tsx`.
+
+5. **Teacher onboarding: create failed + no password help.**
+   - *Why:* creating a teacher *with* a login required a 10+ char password but gave no
+     easy way to make one, so submit errored (the founder was stuck here).
+   - *How:* a **🎲 Generate** button makes a strong CSPRNG password on the form; on
+     create we **email the teacher** their sign-in link + email + temp password
+     (best-effort — logs to console until Resend is configured).
+   - *Files:* `admin/(protected)/tenants/new/page.tsx`, `lib/email/sendTeacherWelcome.ts`,
+     `actions/adminTenants.ts`.
+
+6. **After upload: unclear result + no way to review imported questions.**
+   - *How:* a **clean import redirects to the paper's questions page** with a success
+     banner (`?uploaded=N`); a **partial import stays** on the form with the per-row
+     error report so bad rows can be fixed and re-uploaded (valid rows already saved).
+   - *Files:* `actions/contentUpload.ts`, `admin/(protected)/papers/[paperId]/page.tsx`.
+
+7. **No "Back to list" on create forms.**
+   - *How:* a consistent **"← Back to …" link** on each create form (exam, teacher,
+     package, coupon, question, upload).
+   - *Files:* the six `admin/(protected)/**/new` pages.
+
+### Deferred to a later batch (and why)
+Logged in [[Tasks/admin-panel-qa-batch]] but **not** done here:
+- **Marks/negative → paper-level** — touches scoring correctness (a question saved
+  0.25 negative on a no-negative paper). Needs an **ADR** + a data audit.
+- **Per-question answer review on the result page** — larger student-facing feature.
+- **`/packages` marketplace restructure** (separate platform vs teacher, filter by
+  exam/teacher) — needs a design/ADR.
+- **Forms 2-column width, view-question modal, questions pagination,
+  preserve-input-on-error** — form refactors best done together.
+- **UI/design overhaul + storefront + storefront URL scheme** — deferred by the
+  founder until bugs are cleared ([[Features/ui-design-overhaul]]).
+
+### Incident / gotcha (recorded so it doesn't bite again)
+While pushing this batch, a **loose git ref got corrupted on Windows**
+(`.git/refs/heads/multiexam-platform` filled with blank bytes → HEAD unresolvable).
+A push with the broken ref then **deleted remote `master`**. Recovered by rewriting
+the ref (`update-ref` after removing the broken file) and re-pushing to recreate
+`master` at the batch commit — no commits lost. Lesson: after a push oddity, verify
+`git ls-remote` before assuming success; never let a `src:dst` push run with an
+unresolvable source.
+
+### Verified (local dev server, 2026-08-18)
+Logged in to `/admin`; confirmed rendered live: Show/Hide password toggle, **Price
+(₹)** field, **← Back** link, centred forms. Build passes.

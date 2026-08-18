@@ -1,10 +1,10 @@
-/* Admin analytics dashboard. Navy/gold system, consistent with the app. */
+/* Admin analytics dashboard — themed from the design tokens (see theme.css). */
 
 .dash h1 {
   margin: 0 0 4px;
 }
 .dash-sub {
-  color: #6b6455;
+  color: var(--color-text-muted);
   font-size: 14px;
   margin: 0 0 22px;
 }
@@ -19,8 +19,8 @@
 .kpi {
   position: relative;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid rgba(26, 42, 68, 0.12);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 16px 18px;
 }
@@ -31,32 +31,32 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #c9a227, #1a2a44);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
 }
 .kpi .kpi-label {
   font-family: var(--font-space-mono, monospace);
   font-size: 10.5px;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #8a8372;
+  color: var(--color-text-muted);
   margin-bottom: 6px;
 }
 .kpi .kpi-value {
   font-size: 26px;
   font-weight: 800;
-  color: #1a2a44;
+  color: var(--color-primary-strong);
   line-height: 1;
 }
 .kpi .kpi-sub {
   font-size: 12px;
-  color: #8a8372;
+  color: var(--color-text-muted);
   margin-top: 6px;
 }
 .kpi .kpi-sub.up {
-  color: #1f7a3d;
+  color: var(--color-success);
 }
 .kpi .kpi-sub.down {
-  color: #b3261e;
+  color: var(--color-error);
 }
 
 /* Chart grid */
@@ -77,25 +77,25 @@
 }
 
 .dash-card {
-  background: #fff;
-  border: 1px solid rgba(26, 42, 68, 0.12);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 18px 20px;
-  box-shadow: 0 1px 3px rgba(26, 42, 68, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 .dash-card h2 {
   font-size: 14px;
   font-weight: 700;
-  color: #1a2a44;
+  color: var(--color-primary-strong);
   margin: 0 0 2px;
 }
 .dash-card .dash-card-sub {
   font-size: 12px;
-  color: #8a8372;
+  color: var(--color-text-muted);
   margin: 0 0 14px;
 }
 .dash-empty {
-  color: #8a8372;
+  color: var(--color-text-muted);
   font-size: 13px;
   padding: 24px 0;
   text-align: center;
@@ -115,7 +115,7 @@
   font-size: 13px;
 }
 .hbar-label {
-  color: #1a2a44;
+  color: var(--color-text);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -124,7 +124,7 @@
 .hbar-track {
   height: 8px;
   border-radius: 4px;
-  background: rgba(26, 42, 68, 0.08);
+  background: var(--color-surface-tint);
   overflow: hidden;
 }
 .hbar-fill {
@@ -134,7 +134,7 @@
   min-width: 2px;
 }
 .hbar-value {
-  color: #1a2a44;
+  color: var(--color-text);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -154,7 +154,7 @@
   flex-direction: column;
   gap: 8px;
   font-size: 13px;
-  color: #23303f;
+  color: var(--color-text);
 }
 .donut-legend li {
   display: flex;
@@ -169,7 +169,7 @@
 }
 .donut-legend b {
   margin-left: auto;
-  color: #1a2a44;
+  color: var(--color-primary-strong);
   font-variant-numeric: tabular-nums;
   padding-left: 14px;
 }
@@ -182,7 +182,8 @@
 }
 .dash-mini-table td {
   padding: 9px 6px;
-  border-bottom: 1px solid rgba(26, 42, 68, 0.07);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 .dash-mini-table tr:last-child td {
   border-bottom: none;
@@ -190,6 +191,6 @@
 .dash-mini-table .amt {
   text-align: right;
   font-weight: 700;
-  color: #1f7a3d;
+  color: var(--color-success);
   font-variant-numeric: tabular-nums;
 }

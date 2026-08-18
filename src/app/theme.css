@@ -1,0 +1,844 @@
+/* =====================================================================
+   ExamsExpress design system — global theme tokens + reusable UI classes.
+   Change a token here → it updates everywhere (no per-screen redos).
+   Palette: purple / indigo "modern SaaS". Applied admin + teacher first.
+   ===================================================================== */
+:root {
+  /* --- Brand ramp (from the shared palette) --- */
+  --ee-1: #f5f3ff;
+  --ee-2: #ddd6fe;
+  --ee-3: #a78bfa;
+  --ee-4: #6366f1;
+  --ee-5: #312e81;
+
+  /* --- Semantic --- */
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-strong: #312e81;
+  --color-accent: #a78bfa;
+
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f3ff;
+  --color-surface-tint: #ddd6fe;
+  --color-border: #e4e0f5;
+
+  --color-text: #1e1b34;
+  --color-text-muted: #6b6785;
+  --color-on-primary: #ffffff;
+
+  /* --- Status (project-chosen) --- */
+  --color-info: #0272ea;
+  --color-info-bg: #e7f1fe;
+  --color-error: #7d0018;
+  --color-error-bg: #f9e8ec;
+  --color-warning: #fb2107;
+  --color-warning-bg: #fdeae6;
+  --color-detail: #e99320; /* accents / highlights */
+  --color-detail-bg: #fdf3e4;
+  --color-success: #10b981; /* (no project value given; harmonised default) */
+  --color-success-bg: #e7f8f1;
+
+  /* --- Shape --- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --shadow-sm: 0 1px 3px rgba(49, 46, 129, 0.08);
+  --shadow-card: 0 12px 34px rgba(49, 46, 129, 0.14);
+}
+
+/* =========================== Reusable: Alert =========================== */
+.ee-alert {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  padding: 11px 13px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+.ee-alert--error {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border-color: rgba(125, 0, 24, 0.22);
+}
+.ee-alert--warning {
+  color: #c11a06;
+  background: var(--color-warning-bg);
+  border-color: rgba(251, 33, 7, 0.22);
+}
+.ee-alert--info {
+  color: var(--color-info);
+  background: var(--color-info-bg);
+  border-color: rgba(2, 114, 234, 0.22);
+}
+.ee-alert--success {
+  color: #0b7a54;
+  background: var(--color-success-bg);
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+/* ==================== Reusable: token-based form ==================== */
+.ee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ee-form label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 12px;
+}
+.ee-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ee-form input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+
+.ee-input-wrap {
+  position: relative;
+}
+.ee-input-wrap .ee-eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 6px;
+}
+.ee-input-wrap .ee-eye:hover {
+  color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+
+/* ==================== Reusable: Button ==================== */
+.ee-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  line-height: 1.2;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.ee-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.ee-btn:disabled,
+.ee-btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.ee-btn svg {
+  width: 16px;
+  height: 16px;
+} /* icons inherit currentColor → themed with the button */
+.ee-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.ee-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+.ee-btn--secondary {
+  background: #fff;
+  color: var(--color-primary-strong);
+  border-color: var(--color-border);
+}
+.ee-btn--secondary:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+  border-color: var(--color-accent);
+}
+.ee-btn--danger {
+  background: var(--color-error);
+  color: #fff;
+}
+.ee-btn--danger:hover:not(:disabled) {
+  background: #5f0012;
+}
+.ee-btn--ghost {
+  background: transparent;
+  color: var(--color-primary);
+}
+.ee-btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-muted);
+}
+.ee-btn--block {
+  width: 100%;
+}
+.ee-btn--sm {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+.ee-btn--lg {
+  padding: 13px 22px;
+  font-size: 15px;
+}
+
+/* ==================== Reusable: Input / Field ==================== */
+.ee-input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ee-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.7;
+}
+.ee-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+.ee-input:disabled {
+  background: var(--color-surface-muted);
+  cursor: not-allowed;
+}
+.ee-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ee-field > label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.ee-field .ee-hint {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+.ee-field .ee-err {
+  font-size: 12.5px;
+  color: var(--color-error);
+}
+
+/* ==================== Reusable: Checkbox ==================== */
+.ee-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text);
+  user-select: none;
+}
+.ee-checkbox input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1.5px solid var(--color-border);
+  border-radius: 5px;
+  background: #fff;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.ee-checkbox input::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  transform: scale(0);
+  transition: transform 0.12s ease;
+  background: #fff;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+.ee-checkbox input:checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.ee-checkbox input:checked::before {
+  transform: scale(1);
+}
+.ee-checkbox input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ==================== Reusable: Select / dropdown ==================== */
+.ee-select-wrap {
+  position: relative;
+}
+.ee-select {
+  width: 100%;
+  padding: 11px 38px 11px 13px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--color-text);
+  background: #fff;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ee-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22);
+}
+.ee-select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--color-text-muted);
+  border-bottom: 2px solid var(--color-text-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* Icons default to the theme's primary colour and inherit currentColor. */
+.ee-icon {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+.ee-icon svg {
+  width: 1em;
+  height: 1em;
+}
+
+/* ==================== Reusable: Loading ==================== */
+@keyframes ee-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ee-spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ee-spin 0.6s linear infinite;
+  vertical-align: -0.15em;
+}
+/* Full-area loader — used by route-level loading.tsx (shows while the server
+   fetches the page's data), and any in-page loading state. */
+.ee-loading {
+  min-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+.ee-loading .ee-spinner {
+  width: 34px;
+  height: 34px;
+  border-width: 3px;
+  color: var(--color-primary);
+}
+
+/* =====================================================================
+   Admin reskin — scoped to `.admin-shell` / `.admin-content` so the student
+   app (which shares .app-shell / .report-table / .status-badge) is untouched.
+   These override globals.css because theme.css is imported after it.
+   ===================================================================== */
+
+/* Sidebar */
+.admin-shell .app-sidebar {
+  background: var(--color-primary-strong);
+  color: rgba(255, 255, 255, 0.85);
+}
+.admin-shell .app-sidebar-brand {
+  border-bottom-color: rgba(255, 255, 255, 0.14);
+}
+.admin-shell .app-sidebar-brand .brand-text .en,
+.admin-shell .app-sidebar-brand .brand-text .hi {
+  color: #fff;
+}
+.admin-shell .app-sidebar-link {
+  color: rgba(255, 255, 255, 0.72);
+}
+.admin-shell .app-sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+.admin-shell .app-sidebar-link.active {
+  background: var(--color-accent);
+  color: var(--color-primary-strong);
+  font-weight: 700;
+}
+.admin-shell .app-sidebar-divider {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* Main + topbar */
+.admin-shell .app-main {
+  background: var(--color-surface-muted);
+}
+.admin-shell .app-topbar {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+.admin-shell .app-topbar .logout-btn {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: var(--color-primary-strong);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.admin-shell .app-topbar .logout-btn:hover {
+  background: var(--color-primary-strong);
+  border-color: var(--color-primary-strong);
+  color: #fff;
+}
+
+/* Buttons / links inside admin content */
+.admin-content button,
+.admin-content .btn {
+  background: var(--color-primary);
+}
+.admin-content button:hover:not(:disabled),
+.admin-content .btn:hover {
+  background: var(--color-primary-hover);
+}
+.admin-content .btn-secondary {
+  background: #fff;
+  color: var(--color-primary-strong);
+  border-color: var(--color-border);
+}
+.admin-content .btn-secondary:hover {
+  background: var(--color-surface-muted);
+}
+.admin-content .btn-danger {
+  background: var(--color-error);
+}
+.admin-content .btn-danger:hover {
+  background: #5f0012;
+}
+.admin-content a:not(.btn):not(.app-sidebar-link):not(.filter-pill) {
+  color: var(--color-primary);
+}
+.admin-content .auth-card {
+  border-color: var(--color-border);
+}
+
+/* Tables */
+.admin-content .report-table th,
+.admin-content .report-table td {
+  color: var(--color-text);
+  border-bottom-color: var(--color-border);
+}
+.admin-content .report-table th {
+  color: var(--color-text-muted);
+}
+.admin-content .report-table tbody tr:hover {
+  background: var(--color-surface-muted);
+}
+
+/* Status badges */
+.admin-content .status-badge.status-good {
+  background: var(--color-success-bg);
+  color: #0b7a54;
+}
+.admin-content .status-badge.status-bad {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+.admin-content .status-badge.status-pending {
+  background: var(--color-detail-bg);
+  color: #a06a10;
+}
+.admin-content .status-badge.status-neutral {
+  background: var(--color-surface-tint);
+  color: var(--color-text-muted);
+}
+
+/* Filter pills */
+.admin-content a.filter-pill.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Dashboard KPI stat tiles — retint the gold/navy top accent + shadow to purple. */
+.admin-content .stat-tile {
+  border-color: var(--color-border);
+}
+.admin-content .stat-tile::before {
+  background: linear-gradient(90deg, var(--color-accent), var(--color-primary));
+  opacity: 1;
+}
+.admin-content .stat-tile:hover {
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.16);
+}
+.admin-content .stat-tile .stat-value {
+  color: var(--color-primary-strong);
+}
+
+/* Topbar user chip + logout */
+.admin-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.admin-user-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.admin-user-email {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.admin-user-role {
+  font-size: 10.5px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.admin-shell .app-topbar .logout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- Sidebar: width / collapse, brand, icons, active ---- */
+.admin-shell .app-sidebar {
+  width: 236px;
+  transition: width 0.18s ease;
+  padding: 0; /* the inner wrapper owns the spacing */
+}
+.admin-shell .app-sidebar.app-sidebar--collapsed {
+  width: 70px !important;
+  min-width: 0 !important;
+}
+/* The aside stretches to the full content height (its purple background fills the
+   whole left column — no white gap on long pages). This inner wrapper is pinned
+   to the viewport so the brand stays on top and the collapse toggle stays at the
+   bottom, whatever the page length. */
+.admin-shell .app-sidebar-inner {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+}
+/* Nav scrolls inside the pinned wrapper; footer stays at the bottom. */
+.admin-shell .app-sidebar-nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+.admin-shell .app-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-shell .app-sidebar-brand > svg {
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.admin-shell .app-sidebar-foot {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.admin-shell .sidebar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.admin-shell .sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.admin-shell .sidebar-toggle svg {
+  flex-shrink: 0;
+}
+.admin-shell .app-sidebar--collapsed .app-sidebar-brand {
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 0 16px;
+}
+.admin-shell .app-sidebar--collapsed .sidebar-toggle {
+  justify-content: center;
+  padding: 9px 0;
+}
+.admin-shell .app-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.admin-shell .app-sidebar-link .nav-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+.admin-shell .app-sidebar-link:hover .nav-icon,
+.admin-shell .app-sidebar-link.active .nav-icon {
+  opacity: 1;
+}
+.admin-shell .app-sidebar--collapsed .app-sidebar-nav {
+  padding: 0 11px;
+}
+.admin-shell .app-sidebar--collapsed .app-sidebar-link {
+  justify-content: center;
+  gap: 0;
+  padding: 11px 0;
+}
+
+/* Segmented radio "cards" (e.g. upload: existing vs new paper) */
+.upload-mode-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--color-text);
+  background: #fff;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.upload-mode-card.active {
+  border-color: var(--color-primary);
+  background: var(--color-surface-muted);
+}
+.upload-mode-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.upload-mode-card input {
+  accent-color: var(--color-primary);
+  cursor: inherit;
+}
+.upload-mode-card small {
+  color: var(--color-text-muted);
+}
+
+/* Login submit keeps a full-width primary button. */
+.ee-btn-primary {
+  width: 100%;
+  margin-top: 20px;
+  padding: 13px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.ee-btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+.ee-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==================== Login (split-screen) ==================== */
+.ee-login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  background: var(--color-surface-muted);
+}
+.ee-login__brand {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  padding: 52px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(150deg, var(--ee-5) 0%, var(--ee-4) 58%, var(--ee-3) 125%);
+}
+/* soft decorative glow blobs — self-contained, no images */
+.ee-login__brand::before,
+.ee-login__brand::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(10px);
+  pointer-events: none;
+}
+.ee-login__brand::before {
+  width: 320px;
+  height: 320px;
+  top: -80px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 68%);
+}
+.ee-login__brand::after {
+  width: 380px;
+  height: 380px;
+  bottom: -120px;
+  left: -90px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.4), transparent 66%);
+}
+.ee-login__brandmark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+.ee-login__brandmark svg {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+}
+.ee-login__brandname {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.ee-login__hero {
+  position: relative;
+  z-index: 1;
+}
+.ee-login__hero h2 {
+  font-size: clamp(26px, 2.8vw, 36px);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.ee-login__hero p {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 15px;
+  max-width: 400px;
+  line-height: 1.55;
+}
+.ee-login__points {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+.ee-login__points span {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.ee-login__points span::before {
+  content: "✓";
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.ee-login__form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+.ee-login__card {
+  width: 100%;
+  max-width: 400px;
+}
+.ee-login__card h1 {
+  font-size: 27px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 6px;
+}
+.ee-login__card .sub {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 860px) {
+  .ee-login {
+    grid-template-columns: 1fr;
+  }
+  .ee-login__brand {
+    padding: 28px 24px;
+    min-height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+  }
+  .ee-login__hero,
+  .ee-login__points {
+    display: none;
+  }
+  .ee-login__form {
+    padding: 30px 20px;
+  }
+}

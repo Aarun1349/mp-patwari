@@ -21,11 +21,11 @@ function dayLabel(d: Date): string {
 const DAYS = 14;
 
 const STATUS_COLOR: Record<string, string> = {
-  submitted: "#1f7a3d",
-  locked: "#b3261e",
-  expired: "#c9a227",
-  in_progress: "#8a8372",
-  paused: "#8a8372",
+  submitted: "#10b981",
+  locked: "#7d0018",
+  expired: "#e99320",
+  in_progress: "#6b6785",
+  paused: "#6b6785",
 };
 const STATUS_LABEL: Record<string, string> = {
   submitted: "Submitted",
@@ -166,12 +166,12 @@ export default async function AdminDashboardPage() {
         <div className="dash-card">
           <h2>Revenue</h2>
           <p className="dash-card-sub">Paid orders per day · last {DAYS} days</p>
-          <BarChart data={revenueSeries} color="#c9a227" format={rupeesShort} />
+          <BarChart data={revenueSeries} color="#6366f1" format={rupeesShort} />
         </div>
         <div className="dash-card">
           <h2>Revenue by package</h2>
           <p className="dash-card-sub">All-time paid</p>
-          <HBars data={packageBars} color="#1a2a44" format={rupees} />
+          <HBars data={packageBars} color="#312e81" format={rupees} />
         </div>
       </div>
 
@@ -180,7 +180,7 @@ export default async function AdminDashboardPage() {
         <div className="dash-card">
           <h2>New signups</h2>
           <p className="dash-card-sub">Per day · last {DAYS} days</p>
-          <BarChart data={signupSeries} color="#1a2a44" height={150} />
+          <BarChart data={signupSeries} color="#6366f1" height={150} />
         </div>
         <div className="dash-card">
           <h2>Exam outcomes</h2>
@@ -190,7 +190,7 @@ export default async function AdminDashboardPage() {
         <div className="dash-card">
           <h2>Revenue by source</h2>
           <p className="dash-card-sub">First-touch acquisition</p>
-          <HBars data={sourceBars} color="#1f7a3d" format={rupees} />
+          <HBars data={sourceBars} color="#a78bfa" format={rupees} />
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Sans_Devanagari, Noto_Serif_Devanagari, Space_Mono } from "next/font/google";
 import "./globals.css";
+import "./theme.css";
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
   subsets: ["devanagari"],

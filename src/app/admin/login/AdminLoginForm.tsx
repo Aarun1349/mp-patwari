@@ -1,54 +1,30 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { adminLoginAction } from "@/app/actions/adminAuth";
+import { Input, Field } from "@/components/ui/Input";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 
 export function AdminLoginForm() {
   const [state, action, pending] = useActionState(adminLoginAction, undefined);
-  const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form action={action} className="auth-form">
-      <label htmlFor="email">Email</label>
-      <input id="email" name="email" type="email" required autoComplete="username" />
+    <form action={action} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <Field label="Email" htmlFor="email">
+        <Input id="email" name="email" type="email" required autoComplete="username" placeholder="you@examsexpress.in" />
+      </Field>
 
-      <label htmlFor="password">Password</label>
-      <div style={{ position: "relative" }}>
-        <input
-          id="password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          required
-          autoComplete="current-password"
-          style={{ paddingRight: "60px" }}
-        />
-        <button
-          type="button"
-          onClick={() => setShowPassword((v) => !v)}
-          aria-label={showPassword ? "Hide password" : "Show password"}
-          style={{
-            position: "absolute",
-            right: "8px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            background: "none",
-            border: "none",
-            color: "#1a2a44",
-            fontSize: "12px",
-            fontWeight: 600,
-            cursor: "pointer",
-            padding: "4px 6px",
-          }}
-        >
-          {showPassword ? "Hide" : "Show"}
-        </button>
-      </div>
+      <Field label="Password" htmlFor="password">
+        <PasswordInput id="password" name="password" required autoComplete="current-password" placeholder="••••••••" />
+      </Field>
 
-      {state?.error && <p className="auth-error">{state.error}</p>}
+      {state?.error && <Alert variant="error">{state.error}</Alert>}
 
-      <button type="submit" disabled={pending}>
+      <Button type="submit" variant="primary" size="lg" block loading={pending}>
         {pending ? "Signing in…" : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }
