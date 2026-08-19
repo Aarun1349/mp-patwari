@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import content, { type Lang } from "./landing-content";
+import { BrandIcon } from "@/components/ui/BrandIcon";
 
 export default function SiteHeader({
   lang,
@@ -16,7 +17,7 @@ export default function SiteHeader({
     <header>
       <div className="nav wrap">
         <Link href="/" className="brand">
-          <div className="seal-mark">ऐ</div>
+          <BrandIcon size={40} />
           <div className="brand-text">
             <div className="en">{t.brandEn}</div>
             <div className="hi">{t.brandHi}</div>
