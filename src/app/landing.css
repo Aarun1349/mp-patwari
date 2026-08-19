@@ -671,6 +671,35 @@
   .landing .static-card {
     padding: 32px 24px;
   }
+  /* Compact header so brand + lang toggle + login CTA fit a phone (no overflow) */
+  .landing .nav {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+  .landing .brand {
+    gap: 7px;
+    min-width: 0;
+  }
+  .landing .brand svg {
+    width: 30px;
+    height: 30px;
+  }
+  .landing .brand-text .en {
+    font-size: 15px;
+  }
+  .landing .brand-text .hi {
+    display: none;
+  }
+  .landing .lang-toggle {
+    padding: 6px 9px;
+    margin-right: 6px;
+    font-size: 11.5px;
+  }
+  .landing .nav-cta {
+    padding: 7px 11px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
 }
 
 .landing footer {
