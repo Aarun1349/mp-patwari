@@ -48,15 +48,15 @@ button {
   font-size: 14px;
   padding: 10px 18px;
   border-radius: 4px;
-  border: 1px solid rgba(26, 42, 68, 0.3);
+  border: 1px solid rgba(49, 46, 129, 0.3);
   background: #fff;
-  color: #1a2a44;
+  color: #312e81;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 button:hover:not(:disabled) {
-  background: #f0e9d8;
-  border-color: #1a2a44;
+  background: #ece9ff;
+  border-color: #312e81;
 }
 button:disabled {
   opacity: 0.45;
@@ -65,7 +65,7 @@ button:disabled {
 
 input[type="radio"],
 input[type="checkbox"] {
-  accent-color: #a3242a;
+  accent-color: #6366f1;
   width: 16px;
   height: 16px;
 }
@@ -76,13 +76,13 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f0e9d8;
+  background: #ece9ff;
   background-image: repeating-linear-gradient(
     to bottom,
     transparent,
     transparent 27px,
-    rgba(26, 42, 68, 0.06) 27px,
-    rgba(26, 42, 68, 0.06) 28px
+    rgba(49, 46, 129, 0.06) 27px,
+    rgba(49, 46, 129, 0.06) 28px
   );
   padding: 24px;
 }
@@ -97,12 +97,12 @@ input[type="checkbox"] {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  border: 2px solid #c9a227;
-  background: #1a2a44;
+  border: 2px solid #a78bfa;
+  background: #312e81;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c9a227;
+  color: #a78bfa;
   font-family: var(--font-noto-serif-devanagari), serif;
   font-weight: 700;
   font-size: 17px;
@@ -115,7 +115,7 @@ input[type="checkbox"] {
 .auth-brand .brand-text .en {
   font-size: 11px;
   letter-spacing: 0.14em;
-  color: #1a2a44;
+  color: #312e81;
   opacity: 0.65;
   text-transform: uppercase;
   font-family: var(--font-space-mono), monospace;
@@ -124,22 +124,22 @@ input[type="checkbox"] {
   font-family: var(--font-noto-serif-devanagari), serif;
   font-size: 19px;
   font-weight: 600;
-  color: #1a2a44;
+  color: #312e81;
 }
 .auth-card {
-  background: #faf6ec;
+  background: #f5f3ff;
   color: #2b2b2b;
-  border: 1px solid rgba(26, 42, 68, 0.22);
+  border: 1px solid rgba(49, 46, 129, 0.22);
   border-radius: 8px;
   padding: 36px;
   width: 100%;
   max-width: 420px;
-  box-shadow: 6px 6px 0 rgba(26, 42, 68, 0.12);
+  box-shadow: 6px 6px 0 rgba(49, 46, 129, 0.12);
 }
 .auth-card h1 {
   font-family: var(--font-noto-serif-devanagari), serif;
   font-size: 24px;
-  color: #1a2a44;
+  color: #312e81;
   margin-bottom: 8px;
 }
 .auth-card .muted {
@@ -156,7 +156,7 @@ input[type="checkbox"] {
   margin-top: 16px;
   padding: 11px;
   background: #fff;
-  border: 1px solid rgba(26, 42, 68, 0.3);
+  border: 1px solid rgba(49, 46, 129, 0.3);
   border-radius: 4px;
   font-size: 14.5px;
   font-weight: 600;
@@ -166,7 +166,7 @@ input[type="checkbox"] {
 }
 .auth-oauth-btn:hover {
   background: #f7f7f7;
-  box-shadow: 0 1px 3px rgba(26, 42, 68, 0.15);
+  box-shadow: 0 1px 3px rgba(49, 46, 129, 0.15);
 }
 .auth-divider {
   display: flex;
@@ -181,7 +181,7 @@ input[type="checkbox"] {
   content: "";
   flex: 1;
   height: 1px;
-  background: rgba(26, 42, 68, 0.18);
+  background: rgba(49, 46, 129, 0.18);
 }
 .auth-form {
   display: flex;
@@ -200,7 +200,7 @@ input[type="checkbox"] {
   display: block;
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid rgba(26, 42, 68, 0.3);
+  border: 1px solid rgba(49, 46, 129, 0.3);
   border-radius: 4px;
   font-size: 15px;
   font-family: inherit;
@@ -215,8 +215,8 @@ input[type="checkbox"] {
 .auth-form select:focus,
 .auth-form textarea:focus {
   outline: none;
-  border-color: #1a2a44;
-  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.25);
+  border-color: #312e81;
+  box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.25);
 }
 .auth-form input[type="radio"],
 .auth-form input[type="checkbox"] {
@@ -225,7 +225,7 @@ input[type="checkbox"] {
 }
 .auth-form button[type="submit"] {
   margin-top: 16px;
-  background: #a3242a;
+  background: #6366f1;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -233,16 +233,16 @@ input[type="checkbox"] {
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
-  box-shadow: 0 3px 0 #6f181c;
+  box-shadow: 0 3px 0 #211d5e;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .auth-form button[type="submit"]:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 0 #6f181c;
+  box-shadow: 0 4px 0 #211d5e;
 }
 .auth-form button[type="submit"]:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 0 2px 0 #6f181c;
+  box-shadow: 0 2px 0 #211d5e;
 }
 .auth-form button[type="submit"]:disabled {
   opacity: 0.6;
@@ -253,7 +253,7 @@ input[type="checkbox"] {
   margin-top: 8px;
   background: transparent;
   border: none;
-  color: #1a2a44;
+  color: #312e81;
   text-decoration: underline;
   cursor: pointer;
   font-size: 13px;
@@ -261,12 +261,12 @@ input[type="checkbox"] {
 .auth-secondary-link {
   display: inline-block;
   margin-top: 20px;
-  color: #1a2a44;
+  color: #312e81;
   text-decoration: underline;
   font-size: 14px;
 }
 .auth-error {
-  color: #a3242a;
+  color: #6366f1;
   font-size: 13px;
 }
 .auth-success {
@@ -274,22 +274,22 @@ input[type="checkbox"] {
   font-size: 13px;
 }
 .dashboard-highlight {
-  background: #1a2a44;
-  color: #f0e9d8;
+  background: #312e81;
+  color: #ece9ff;
   border-radius: 8px;
   padding: 20px 24px;
   margin-top: 16px;
 }
 .dashboard-highlight h2 {
   font-size: 14px;
-  color: #c9a227;
+  color: #a78bfa;
   margin-bottom: 8px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 .dashboard-highlight p {
   font-size: 14px;
-  color: rgba(240, 233, 216, 0.85);
+  color: rgba(236, 233, 255, 0.85);
 }
 .dashboard-highlight a {
   color: #fff;
@@ -306,17 +306,17 @@ input[type="checkbox"] {
   display: block;
   padding: 14px 16px;
   background: #fff;
-  border: 1px solid rgba(26, 42, 68, 0.15);
+  border: 1px solid rgba(49, 46, 129, 0.15);
   border-radius: 6px;
   font-weight: 600;
   font-size: 13.5px;
-  color: #1a2a44;
+  color: #312e81;
   text-align: center;
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 .dashboard-links-grid a:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(26, 42, 68, 0.1);
+  box-shadow: 0 4px 10px rgba(49, 46, 129, 0.1);
 }
 
 /* Logged-in app shell: sidebar + topbar + content + footer (dashboard, profile, history, purchases, packages, upload) */
@@ -327,8 +327,8 @@ input[type="checkbox"] {
 .app-sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: #1a2a44;
-  color: #f0e9d8;
+  background: #312e81;
+  color: #ece9ff;
   display: flex;
   flex-direction: column;
   padding: 24px 0;
@@ -339,7 +339,7 @@ input[type="checkbox"] {
   gap: 10px;
   padding: 0 20px 20px;
   margin-bottom: 12px;
-  border-bottom: 1px solid rgba(240, 233, 216, 0.15);
+  border-bottom: 1px solid rgba(236, 233, 255, 0.15);
 }
 .app-sidebar-brand .brand-text {
   line-height: 1.15;
@@ -366,33 +366,33 @@ input[type="checkbox"] {
   padding: 10px 14px;
   border-radius: 4px;
   font-size: 14px;
-  color: rgba(240, 233, 216, 0.85);
+  color: rgba(236, 233, 255, 0.85);
   transition: background 0.15s ease, color 0.15s ease;
 }
 .app-sidebar-link:hover {
-  background: rgba(240, 233, 216, 0.08);
+  background: rgba(236, 233, 255, 0.08);
   color: #fff;
 }
 .app-sidebar-link.active {
-  background: #c9a227;
-  color: #101a2c;
+  background: #a78bfa;
+  color: #211d5e;
   font-weight: 700;
 }
 .app-sidebar-divider {
   height: 1px;
-  background: rgba(240, 233, 216, 0.15);
+  background: rgba(236, 233, 255, 0.15);
   margin: 16px 20px;
 }
 .app-sidebar-nav-info .app-sidebar-link {
   font-size: 13px;
-  color: rgba(240, 233, 216, 0.55);
+  color: rgba(236, 233, 255, 0.55);
 }
 .app-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background: #f0e9d8;
+  background: #ece9ff;
 }
 .app-topbar {
   display: flex;
@@ -400,15 +400,15 @@ input[type="checkbox"] {
   align-items: center;
   gap: 14px;
   padding: 14px 28px;
-  background: #a3242a;
-  border-bottom: 3px solid #6f181c;
+  background: #6366f1;
+  border-bottom: 3px solid #211d5e;
   font-size: 13px;
   color: #fff;
 }
 .app-topbar .logout-btn {
   background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.7);
-  color: #6f181c;
+  color: #211d5e;
   padding: 7px 14px;
   border-radius: 4px;
   font-weight: 700;
@@ -416,7 +416,7 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 .app-topbar .logout-btn:hover {
-  background: #f0e9d8;
+  background: #ece9ff;
 }
 .app-content {
   flex: 1;
@@ -437,9 +437,9 @@ input[type="checkbox"] {
      forms), so narrow forms sit in the middle instead of shrunk to the left. */
   margin-inline: auto;
   background: #ffffff;
-  border-color: rgba(26, 42, 68, 0.12);
+  border-color: rgba(49, 46, 129, 0.12);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(26, 42, 68, 0.07);
+  box-shadow: 0 1px 3px rgba(49, 46, 129, 0.07);
   padding: 24px 26px;
 }
 /* The dashboard supplies its own KPI/chart cards, so its wrapper is just a
@@ -466,15 +466,15 @@ input[type="checkbox"] {
   line-height: 1.2;
   border: 1px solid transparent;
   border-radius: 8px;
-  background: #1a2a44;
-  color: #f4ecdb;
+  background: #312e81;
+  color: #efecff;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.15s ease, opacity 0.15s ease;
 }
 .admin-content button:hover:not(:disabled),
 .admin-content .btn:hover {
-  background: #24374f;
+  background: #3730a3;
 }
 .admin-content button:disabled {
   opacity: 0.45;
@@ -482,18 +482,18 @@ input[type="checkbox"] {
 }
 .admin-content .btn-secondary {
   background: #fff;
-  color: #1a2a44;
-  border-color: rgba(26, 42, 68, 0.28);
+  color: #312e81;
+  border-color: rgba(49, 46, 129, 0.28);
 }
 .admin-content .btn-secondary:hover {
-  background: #f6f1e5;
+  background: #f2efff;
 }
 .admin-content .btn-danger {
-  background: #b3261e;
+  background: #6366f1;
   color: #fff;
 }
 .admin-content .btn-danger:hover {
-  background: #98201a;
+  background: #4f46e5;
 }
 .admin-content .btn-sm {
   padding: 5px 11px;
@@ -503,7 +503,7 @@ input[type="checkbox"] {
 
 /* Standard admin links (the global a{} rule strips link affordance). */
 .admin-content a:not(.btn):not(.app-sidebar-link):not(.filter-pill) {
-  color: #a3242a;
+  color: #6366f1;
   font-weight: 600;
   text-decoration: none;
 }
@@ -525,15 +525,15 @@ input[type="checkbox"] {
 }
 .admin-search input {
   padding: 8px 12px;
-  border: 1px solid rgba(26, 42, 68, 0.25);
+  border: 1px solid rgba(49, 46, 129, 0.25);
   border-radius: 8px;
   font-size: 13px;
   min-width: 240px;
   background: #fff;
-  color: #1a2a44;
+  color: #312e81;
 }
 .admin-toolbar .toolbar-note {
-  color: #8a8372;
+  color: #847ea8;
   font-size: 12.5px;
 }
 .admin-toolbar .toolbar-spacer {
@@ -542,11 +542,11 @@ input[type="checkbox"] {
 
 /* Question-upload result report. */
 .upload-report {
-  border: 1px solid rgba(26, 42, 68, 0.14);
+  border: 1px solid rgba(49, 46, 129, 0.14);
   border-radius: 10px;
   padding: 14px 16px;
   margin: 6px 0;
-  background: #fbf8f0;
+  background: #faf9ff;
 }
 .upload-report-summary {
   display: flex;
@@ -568,12 +568,12 @@ input[type="checkbox"] {
   color: #1f7a3d;
 }
 .ur-pill.fail {
-  background: rgba(179, 38, 30, 0.14);
-  color: #b3261e;
+  background: rgba(99, 102, 241, 0.14);
+  color: #6366f1;
 }
 .ur-note {
   font-size: 12.5px;
-  color: #8a8372;
+  color: #847ea8;
 }
 
 /* Pagination control below admin tables. */
@@ -585,11 +585,11 @@ input[type="checkbox"] {
   flex-wrap: wrap;
   margin-top: 16px;
   padding-top: 14px;
-  border-top: 1px solid rgba(26, 42, 68, 0.1);
+  border-top: 1px solid rgba(49, 46, 129, 0.1);
 }
 .admin-pagination .pg-info {
   font-size: 12.5px;
-  color: #8a8372;
+  color: #847ea8;
 }
 .admin-pagination .pg-controls {
   display: flex;
@@ -598,7 +598,7 @@ input[type="checkbox"] {
 }
 .admin-pagination .pg-page {
   font-size: 12.5px;
-  color: #1a2a44;
+  color: #312e81;
   font-weight: 600;
 }
 .admin-content .btn.pg-disabled {
@@ -610,21 +610,21 @@ input[type="checkbox"] {
 .admin-content a.filter-pill {
   padding: 7px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(26, 42, 68, 0.25);
+  border: 1px solid rgba(49, 46, 129, 0.25);
   font-size: 12.5px;
   font-weight: 600;
-  color: #1a2a44;
+  color: #312e81;
   background: #fff;
   text-decoration: none;
 }
 .admin-content a.filter-pill.active {
-  background: #1a2a44;
-  color: #f4ecdb;
-  border-color: #1a2a44;
+  background: #312e81;
+  color: #efecff;
+  border-color: #312e81;
 }
 .app-footer {
-  background: #101a2c;
-  color: rgba(240, 233, 216, 0.6);
+  background: #211d5e;
+  color: rgba(236, 233, 255, 0.6);
   padding: 20px 24px;
   text-align: center;
   font-size: 12px;
@@ -637,7 +637,7 @@ input[type="checkbox"] {
 }
 .app-footer .footer-links a,
 .app-footer .footer-links .footer-link-btn {
-  color: rgba(240, 233, 216, 0.85);
+  color: rgba(236, 233, 255, 0.85);
   text-decoration: underline;
 }
 .app-footer .footer-links .footer-link-btn {
@@ -648,7 +648,7 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 .app-footer .footer-links .footer-link-btn:hover {
-  color: #f0e9d8;
+  color: #ece9ff;
 }
 @media (max-width: 760px) {
   .app-shell {
@@ -699,8 +699,8 @@ input[type="checkbox"] {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: rgba(201, 162, 39, 0.14);
-  color: #c9a227;
+  background: rgba(167, 139, 250, 0.14);
+  color: #a78bfa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -708,7 +708,7 @@ input[type="checkbox"] {
 }
 .empty-state h2 {
   font-size: 18px;
-  color: #1a2a44;
+  color: #312e81;
   margin: 0 0 6px;
 }
 .empty-state p {
@@ -722,17 +722,17 @@ input[type="checkbox"] {
   display: inline-flex;
   align-items: center;
   padding: 11px 22px;
-  background: #1a2a44;
-  color: #f0e9d8;
+  background: #312e81;
+  color: #ece9ff;
   border-radius: 8px;
   font-weight: 700;
   font-size: 14px;
   text-decoration: none;
-  box-shadow: 0 4px 12px rgba(26, 42, 68, 0.22);
+  box-shadow: 0 4px 12px rgba(49, 46, 129, 0.22);
   transition: background 0.15s ease;
 }
 .empty-state .empty-cta:hover {
-  background: #24374f;
+  background: #3730a3;
 }
 
 /* Small colored pill for attempt/order status — reused across Practice
@@ -750,15 +750,15 @@ input[type="checkbox"] {
   color: #1e5c1e;
 }
 .status-badge.status-bad {
-  background: rgba(163, 36, 42, 0.1);
-  color: #a3242a;
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
 }
 .status-badge.status-pending {
-  background: rgba(201, 162, 39, 0.15);
-  color: #8a6d10;
+  background: rgba(167, 139, 250, 0.15);
+  color: #6d28d9;
 }
 .status-badge.status-neutral {
-  background: rgba(26, 42, 68, 0.08);
+  background: rgba(49, 46, 129, 0.08);
   color: #5c5c5c;
 }
 
@@ -775,7 +775,7 @@ input[type="checkbox"] {
   position: relative;
   overflow: hidden;
   background: #fff;
-  border: 1px solid rgba(26, 42, 68, 0.12);
+  border: 1px solid rgba(49, 46, 129, 0.12);
   border-radius: 10px;
   padding: 18px 18px 16px;
   transition: box-shadow 0.15s ease;
@@ -787,11 +787,11 @@ input[type="checkbox"] {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #c9a227, #1a2a44);
+  background: linear-gradient(90deg, #a78bfa, #312e81);
   opacity: 0.85;
 }
 .stat-tile:hover {
-  box-shadow: 0 6px 18px rgba(26, 42, 68, 0.1);
+  box-shadow: 0 6px 18px rgba(49, 46, 129, 0.1);
 }
 .stat-tile .stat-label {
   font-family: var(--font-space-mono, monospace);
@@ -804,25 +804,25 @@ input[type="checkbox"] {
 .stat-tile .stat-value {
   font-size: 26px;
   font-weight: 800;
-  color: #1a2a44;
+  color: #312e81;
   line-height: 1;
 }
 .stat-tile .stat-value small {
   font-size: 14px;
   font-weight: 600;
-  color: #8a8372;
+  color: #847ea8;
 }
 .stat-tile .stat-sub {
   margin-top: 8px;
   font-size: 12px;
-  color: #8a8372;
+  color: #847ea8;
 }
 
 /* Inline accuracy bar used in the Practice History table. */
 .mini-acc {
   height: 5px;
   border-radius: 3px;
-  background: rgba(26, 42, 68, 0.1);
+  background: rgba(49, 46, 129, 0.1);
   overflow: hidden;
   margin-top: 6px;
   max-width: 120px;
@@ -851,7 +851,7 @@ input[type="checkbox"] {
   margin-top: 20px;
   margin-bottom: 8px;
   font-size: 16px;
-  color: #1a2a44;
+  color: #312e81;
 }
 .static-content p,
 .static-content li {
@@ -867,9 +867,9 @@ input[type="checkbox"] {
 .report-table th,
 .report-table td {
   padding: 13px 12px;
-  border-bottom: 1px solid rgba(26, 42, 68, 0.1);
+  border-bottom: 1px solid rgba(49, 46, 129, 0.1);
   text-align: left;
-  color: #1a2a44;
+  color: #312e81;
 }
 .report-table th {
   color: #5c5c5c;
@@ -880,7 +880,7 @@ input[type="checkbox"] {
   font-weight: 600;
 }
 .report-table tbody tr:hover {
-  background: rgba(26, 42, 68, 0.025);
+  background: rgba(49, 46, 129, 0.025);
 }
 
 /* Action links inside tables (View report, Retake, Resume, ...) — plain <a>
@@ -897,24 +897,24 @@ input[type="checkbox"] {
   display: inline-block;
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid rgba(163, 36, 42, 0.35);
-  color: #a3242a;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #6366f1;
   font-size: 12.5px;
   font-weight: 700;
   white-space: nowrap;
   transition: background 0.12s ease, border-color 0.12s ease;
 }
 .table-actions a:hover {
-  background: rgba(163, 36, 42, 0.08);
-  border-color: #a3242a;
+  background: rgba(99, 102, 241, 0.08);
+  border-color: #6366f1;
 }
 .table-actions a.action-primary {
-  background: #a3242a;
+  background: #6366f1;
   color: #fff;
-  border-color: #a3242a;
+  border-color: #6366f1;
 }
 .table-actions a.action-primary:hover {
-  background: #8a1e23;
+  background: #4338ca;
 }
 
 /* Exam room / instructions — responsive breakpoint. Inline styles can't
@@ -969,25 +969,25 @@ input[type="checkbox"] {
   margin-top: 20px;
 }
 .package-card {
-  background: #1a2a44;
-  color: #f0e9d8;
+  background: #312e81;
+  color: #ece9ff;
   border-radius: 8px;
   padding: 24px 22px;
   display: flex;
   flex-direction: column;
   position: relative;
-  border: 1px solid rgba(240, 233, 216, 0.12);
+  border: 1px solid rgba(236, 233, 255, 0.12);
 }
 .package-card.popular {
-  border-color: #c9a227;
-  box-shadow: 0 0 0 1px #c9a227;
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 1px #a78bfa;
 }
 .package-card .tag {
   position: absolute;
   top: -12px;
   left: 20px;
-  background: #c9a227;
-  color: #101a2c;
+  background: #a78bfa;
+  color: #211d5e;
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
@@ -1002,18 +1002,18 @@ input[type="checkbox"] {
   font-family: var(--font-space-mono), monospace;
   font-size: 32px;
   font-weight: 700;
-  color: #c9a227;
+  color: #a78bfa;
   margin-bottom: 2px;
 }
 .package-card .per {
   font-size: 12px;
-  color: rgba(240, 233, 216, 0.65);
+  color: rgba(236, 233, 255, 0.65);
   margin-bottom: 16px;
 }
 .package-card ul {
   list-style: none;
   font-size: 13px;
-  color: rgba(240, 233, 216, 0.85);
+  color: rgba(236, 233, 255, 0.85);
   margin-bottom: 20px;
   flex-grow: 1;
   padding: 0;
@@ -1026,7 +1026,7 @@ input[type="checkbox"] {
   content: "—";
   position: absolute;
   left: 0;
-  color: #c9a227;
+  color: #a78bfa;
 }
 .package-card .coupon-row {
   display: flex;
@@ -1038,18 +1038,18 @@ input[type="checkbox"] {
   min-width: 0;
   padding: 9px 10px;
   border-radius: 4px;
-  border: 1px solid rgba(240, 233, 216, 0.3);
-  background: rgba(240, 233, 216, 0.06);
-  color: #f0e9d8;
+  border: 1px solid rgba(236, 233, 255, 0.3);
+  background: rgba(236, 233, 255, 0.06);
+  color: #ece9ff;
   font-size: 13px;
 }
 .package-card .coupon-row input::placeholder {
-  color: rgba(240, 233, 216, 0.45);
+  color: rgba(236, 233, 255, 0.45);
 }
 .package-card-buy {
   background: transparent;
-  border: 1.5px solid #c9a227;
-  color: #c9a227;
+  border: 1.5px solid #a78bfa;
+  color: #a78bfa;
   padding: 11px;
   border-radius: 4px;
   font-weight: 700;
@@ -1058,14 +1058,14 @@ input[type="checkbox"] {
   width: 100%;
 }
 .package-card-buy:hover:not(:disabled) {
-  background: rgba(201, 162, 39, 0.12);
+  background: rgba(167, 139, 250, 0.12);
 }
 .package-card.popular .package-card-buy {
-  background: #c9a227;
-  color: #101a2c;
+  background: #a78bfa;
+  color: #211d5e;
 }
 .package-card.popular .package-card-buy:hover:not(:disabled) {
-  background: #ddb52c;
+  background: #c4b5fd;
 }
 
 /* Login — split panel: a branded trust panel (navy, ledger-texture, the same
@@ -1077,15 +1077,15 @@ input[type="checkbox"] {
   grid-template-columns: 1fr 1fr;
 }
 .login-brand-panel {
-  background: #1a2a44;
+  background: #312e81;
   background-image: repeating-linear-gradient(
     to bottom,
     transparent,
     transparent 27px,
-    rgba(240, 233, 216, 0.05) 27px,
-    rgba(240, 233, 216, 0.05) 28px
+    rgba(236, 233, 255, 0.05) 27px,
+    rgba(236, 233, 255, 0.05) 28px
   );
-  color: #f0e9d8;
+  color: #ece9ff;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1093,12 +1093,18 @@ input[type="checkbox"] {
   position: relative;
   overflow: hidden;
 }
+.login-lang-toggle {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  z-index: 3;
+}
 .login-brand-panel::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 85% 15%, rgba(201, 162, 39, 0.12), transparent 45%),
-    radial-gradient(circle at 10% 90%, rgba(163, 36, 42, 0.14), transparent 40%);
+  background: radial-gradient(circle at 85% 15%, rgba(167, 139, 250, 0.16), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(99, 102, 241, 0.18), transparent 40%);
   pointer-events: none;
 }
 .login-brand-panel .login-brand-mark {
@@ -1112,11 +1118,11 @@ input[type="checkbox"] {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  border: 2px solid #c9a227;
+  border: 2px solid #a78bfa;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c9a227;
+  color: #a78bfa;
   font-family: var(--font-noto-serif-devanagari), serif;
   font-weight: 700;
   font-size: 20px;
@@ -1144,10 +1150,10 @@ input[type="checkbox"] {
   position: relative;
 }
 .login-brand-panel h1 .accent {
-  color: #c9a227;
+  color: #a78bfa;
 }
 .login-brand-panel > p {
-  color: rgba(240, 233, 216, 0.8);
+  color: rgba(236, 233, 255, 0.8);
   max-width: 420px;
   margin-bottom: 36px;
   position: relative;
@@ -1166,15 +1172,15 @@ input[type="checkbox"] {
   align-items: flex-start;
   gap: 12px;
   font-size: 14.5px;
-  color: rgba(240, 233, 216, 0.92);
+  color: rgba(236, 233, 255, 0.92);
 }
 .login-trust-points .check {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(201, 162, 39, 0.15);
-  border: 1px solid rgba(201, 162, 39, 0.5);
-  color: #c9a227;
+  background: rgba(167, 139, 250, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.5);
+  color: #a78bfa;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1188,7 +1194,7 @@ input[type="checkbox"] {
   align-items: center;
   justify-content: center;
   padding: 40px 24px;
-  background: #faf6ec;
+  background: #f5f3ff;
 }
 @media (max-width: 900px) {
   .login-split {

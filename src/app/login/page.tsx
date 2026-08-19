@@ -1,16 +1,11 @@
 import { LoginForm } from "./LoginForm";
+import { LoginBrandPanel } from "./LoginBrandPanel";
 
 const ERROR_MESSAGES: Record<string, string> = {
   google_failed: "Google sign-in didn't complete. Please try again.",
   google_not_configured: "Google sign-in isn't available yet — please use your mobile number.",
   session_conflict: "This account is already logged in on another device. Please log out there first.",
 };
-
-const TRUST_POINTS = [
-  "MPPEB पैटर्न पर आधारित असली परीक्षा जैसा अनुभव",
-  "पहला फुल मॉक टेस्ट पूरी तरह मुफ़्त, कोई कार्ड डिटेल नहीं",
-  "आपका डेटा सुरक्षित — किसी तीसरे पक्ष के साथ साझा नहीं होता",
-];
 
 export default async function LoginPage({
   searchParams,
@@ -22,29 +17,7 @@ export default async function LoginPage({
 
   return (
     <main className="login-split">
-      <div className="login-brand-panel">
-        <div className="login-brand-mark">
-          <div className="seal-mark">ऐ</div>
-          <div>
-            <div className="en">ExamsExpress</div>
-            <div className="hi">मॉक टेस्ट सीरीज़</div>
-          </div>
-        </div>
-
-        <h1>
-          परीक्षा हॉल में <span className="accent">पहली बार</span> कंप्यूटर पर टेस्ट मत दीजिए
-        </h1>
-        <p>असली परीक्षा जैसा टाइमर, सेक्शन और स्क्रीन — यहीं अभ्यास करें, तैयार होकर जाएँ।</p>
-
-        <ul className="login-trust-points">
-          {TRUST_POINTS.map((point) => (
-            <li key={point}>
-              <span className="check">✓</span>
-              {point}
-            </li>
-          ))}
-        </ul>
-      </div>
+      <LoginBrandPanel />
 
       <div className="login-form-panel">
         <div className="auth-card">
