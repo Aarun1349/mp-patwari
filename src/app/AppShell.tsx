@@ -1,6 +1,4 @@
-"use client";
-
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import { logoutAction } from "@/app/actions/auth";
 import { AppSidebar } from "./AppSidebar";
 import { AppFooter } from "./AppFooter";
@@ -12,29 +10,14 @@ export function AppShell({
   userLabel: string;
   children: ReactNode;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const initial = (userLabel || "U").trim().charAt(0).toUpperCase();
 
   // `admin-shell` reuses the shared purple frame CSS (sidebar / topbar / off-canvas
-  // drawer); `student-shell` scopes the student content reskin.
+  // drawer); `student-shell` scopes the student content reskin. The sidebar owns
+  // its own mobile drawer + collapse state (see AppSidebar).
   return (
     <div className="app-shell admin-shell student-shell">
-      <button
-        type="button"
-        className="admin-hamburger"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open menu"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
-
-      {mobileOpen && <div className="admin-backdrop" onClick={() => setMobileOpen(false)} />}
-
-      <AppSidebar mobileOpen={mobileOpen} onNavigate={() => setMobileOpen(false)} />
+      <AppSidebar />
 
       <div className="app-main">
         <div className="app-topbar">

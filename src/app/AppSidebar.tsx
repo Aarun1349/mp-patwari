@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { BrandIcon } from "@/components/ui/BrandIcon";
 
 function I({ children }: { children: ReactNode }) {
@@ -74,40 +74,117 @@ const NAV_LINKS: { href: string; label: string; icon: ReactNode }[] = [
   },
 ];
 
-export function AppSidebar({
-  mobileOpen,
-  onNavigate,
-}: {
-  mobileOpen?: boolean;
-  onNavigate?: () => void;
-}) {
+export function AppSidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem("ee-app-sidebar-collapsed") === "1") {
+      setCollapsed(true);
+    }
+  }, []);
+
+  function toggle() {
+    setCollapsed((c) => {
+      const next = !c;
+      try {
+        localStorage.setItem("ee-app-sidebar-collapsed", next ? "1" : "0");
+      } catch {}
+      return next;
+    });
+  }
+
+  // On the mobile drawer, always show labels even if the desktop state is collapsed.
+  const showLabels = !collapsed || mobileOpen;
 
   return (
-    <aside className={`app-sidebar${mobileOpen ? " mobile-open" : ""}`}>
-      <div className="app-sidebar-inner">
-        <Link href="/dashboard" className="app-sidebar-brand" onClick={onNavigate}>
-          <BrandIcon size={34} />
-          <div className="brand-text">
-            <div className="en">ExamsExpress</div>
-            <div className="hi">मॉक टेस्ट सीरीज़</div>
-          </div>
-        </Link>
+    <>
+      {/* Hidden while the drawer is open so it never covers the drawer's EE logo. */}
+      {!mobileOpen && (
+        <button
+          type="button"
+          className="admin-hamburger"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      )}
 
-        <nav className="app-sidebar-nav">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={onNavigate}
-              className={`app-sidebar-link${pathname === link.href ? " active" : ""}`}
-            >
-              <span className="nav-icon">{link.icon}</span>
-              <span className="nav-label">{link.label}</span>
+      {mobileOpen && <div className="admin-backdrop" onClick={() => setMobileOpen(false)} />}
+
+      <aside className={`app-sidebar${collapsed ? " app-sidebar--collapsed" : ""}${mobileOpen ? " mobile-open" : ""}`}>
+        <div className="app-sidebar-inner">
+          <div className="app-sidebar-brand">
+            <Link href="/dashboard" className="app-sidebar-brand-link" onClick={() => setMobileOpen(false)}>
+              <BrandIcon size={34} />
+              {showLabels && (
+                <div className="brand-text">
+                  <div className="en">ExamsExpress</div>
+                  <div className="hi">मॉक टेस्ट सीरीज़</div>
+                </div>
+              )}
             </Link>
-          ))}
-        </nav>
-      </div>
-    </aside>
+            {/* Mobile-only close button (desktop uses the collapse toggle below). */}
+            <button
+              type="button"
+              className="app-sidebar-close"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+
+          <nav className="app-sidebar-nav">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                title={collapsed ? link.label : undefined}
+                className={`app-sidebar-link${pathname === link.href ? " active" : ""}`}
+              >
+                <span className="nav-icon">{link.icon}</span>
+                {showLabels && <span className="nav-label">{link.label}</span>}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="app-sidebar-foot">
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={toggle}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {collapsed ? (
+                  <>
+                    <polyline points="13 17 18 12 13 7" />
+                    <polyline points="6 17 11 12 6 7" />
+                  </>
+                ) : (
+                  <>
+                    <polyline points="11 17 6 12 11 7" />
+                    <polyline points="18 17 13 12 18 7" />
+                  </>
+                )}
+              </svg>
+              {!collapsed && <span>Collapse</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }

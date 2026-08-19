@@ -674,8 +674,22 @@
 
 /* --- Tablet + mobile: the sidebar becomes an off-canvas drawer opened by a
    hamburger button (the desktop sticky/100vh sidebar doesn't fit small screens). --- */
+/* Student sidebar: brand is a link (icon + text); close button is mobile-only. */
+.admin-shell .app-sidebar-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.admin-shell .app-sidebar-brand-link > svg {
+  border-radius: 9px;
+  flex-shrink: 0;
+}
 .admin-hamburger,
-.admin-backdrop {
+.admin-backdrop,
+.app-sidebar-close {
   display: none;
 }
 @media (max-width: 1024px) {
@@ -725,6 +739,26 @@
   /* collapse toggle is a desktop-only affordance */
   .admin-shell .app-sidebar-foot {
     display: none;
+  }
+  /* mobile drawer gets a close (X) button in the brand row instead */
+  .admin-shell .app-sidebar-brand {
+    justify-content: space-between;
+  }
+  .app-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+  }
+  .app-sidebar-close:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
   /* leave room for the hamburger in the topbar */
   .admin-shell .app-topbar {
