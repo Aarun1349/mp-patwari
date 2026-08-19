@@ -895,12 +895,18 @@
 .paper-detail__side .auth-card h1 {
   font-size: 20px;
 }
-@media (max-width: 1024px) {
+/* The two-column detail needs a wide screen (sidebar + settings + questions);
+   below that it stacks so the questions table gets full width. */
+@media (max-width: 1200px) {
   .paper-detail {
     grid-template-columns: 1fr;
   }
   .paper-detail__side {
     position: static;
+  }
+  /* stacked settings panel has room for a 2-col form again, but keep it tidy */
+  .paper-detail__side .auth-card {
+    max-width: 640px;
   }
 }
 
