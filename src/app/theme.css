@@ -703,12 +703,16 @@
     z-index: 70;
     width: 40px;
     height: 40px;
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: 9px;
-    background: var(--color-surface);
-    color: var(--color-primary-strong);
+    /* branded purple button with a white icon — clearly visible, not a blank box */
+    background: #6366f1;
+    color: #ffffff;
     cursor: pointer;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(49, 46, 129, 0.28);
+  }
+  .admin-hamburger:hover {
+    background: #4f46e5;
   }
   .admin-backdrop {
     display: block;
