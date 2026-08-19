@@ -968,6 +968,59 @@ input[type="checkbox"] {
   gap: 18px;
   margin-top: 20px;
 }
+.auth-card-wide + .auth-card-wide {
+  margin-top: 22px;
+}
+/* Packages page section headers + explore rails */
+.section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.official-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ece9ff;
+  color: #312e81;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.explore-title {
+  font-size: 20px;
+  color: #312e81;
+  margin-bottom: 4px;
+}
+.explore-group {
+  margin-top: 22px;
+}
+.explore-group-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.16);
+  padding-bottom: 8px;
+}
+.explore-group-title {
+  font-size: 16px;
+  color: #211d5e;
+  margin: 0;
+}
+.explore-store-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #6366f1;
+  white-space: nowrap;
+}
 .package-card {
   background: #312e81;
   color: #ece9ff;
