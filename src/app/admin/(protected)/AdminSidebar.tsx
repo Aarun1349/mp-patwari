@@ -114,6 +114,7 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("ee-admin-sidebar-collapsed") === "1") {
@@ -134,58 +135,79 @@ export function AdminSidebar({
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(href + "/");
 
+  // On the mobile drawer, always show labels even if the desktop state is collapsed.
+  const showLabels = !collapsed || mobileOpen;
+
   return (
-    <aside className={`app-sidebar${collapsed ? " app-sidebar--collapsed" : ""}`}>
-      <div className="app-sidebar-inner">
-      <div className="app-sidebar-brand">
-        <BrandIcon size={34} />
-        {!collapsed && (
-          <div className="brand-text">
-            <div className="en">ExamsExpress</div>
-            <div className="hi">{roleLabel || "Admin"}</div>
-          </div>
-        )}
-      </div>
+    <>
+      <button
+        type="button"
+        className="admin-hamburger"
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open menu"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
 
-      <nav className="app-sidebar-nav">
-        {links.map((n) => (
-          <a
-            key={n.href}
-            href={n.href}
-            className={`app-sidebar-link${isActive(n.href) ? " active" : ""}`}
-            title={collapsed ? n.label : undefined}
-          >
-            <span className="nav-icon">{ICONS[n.href] ?? <DefaultIcon />}</span>
-            {!collapsed && <span className="nav-label">{n.label}</span>}
-          </a>
-        ))}
-      </nav>
+      {mobileOpen && <div className="admin-backdrop" onClick={() => setMobileOpen(false)} />}
 
-      <div className="app-sidebar-foot">
-        <button
-          type="button"
-          className="sidebar-toggle"
-          onClick={toggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {collapsed ? (
-              <>
-                <polyline points="13 17 18 12 13 7" />
-                <polyline points="6 17 11 12 6 7" />
-              </>
-            ) : (
-              <>
-                <polyline points="11 17 6 12 11 7" />
-                <polyline points="18 17 13 12 18 7" />
-              </>
+      <aside className={`app-sidebar${collapsed ? " app-sidebar--collapsed" : ""}${mobileOpen ? " mobile-open" : ""}`}>
+        <div className="app-sidebar-inner">
+          <div className="app-sidebar-brand">
+            <BrandIcon size={34} />
+            {showLabels && (
+              <div className="brand-text">
+                <div className="en">ExamsExpress</div>
+                <div className="hi">{roleLabel || "Admin"}</div>
+              </div>
             )}
-          </svg>
-          {!collapsed && <span>Collapse</span>}
-        </button>
-      </div>
-      </div>
-    </aside>
+          </div>
+
+          <nav className="app-sidebar-nav">
+            {links.map((n) => (
+              <a
+                key={n.href}
+                href={n.href}
+                className={`app-sidebar-link${isActive(n.href) ? " active" : ""}`}
+                title={collapsed ? n.label : undefined}
+                onClick={() => setMobileOpen(false)}
+              >
+                <span className="nav-icon">{ICONS[n.href] ?? <DefaultIcon />}</span>
+                {showLabels && <span className="nav-label">{n.label}</span>}
+              </a>
+            ))}
+          </nav>
+
+          <div className="app-sidebar-foot">
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={toggle}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {collapsed ? (
+                  <>
+                    <polyline points="13 17 18 12 13 7" />
+                    <polyline points="6 17 11 12 6 7" />
+                  </>
+                ) : (
+                  <>
+                    <polyline points="11 17 6 12 11 7" />
+                    <polyline points="18 17 13 12 18 7" />
+                  </>
+                )}
+              </svg>
+              {!collapsed && <span>Collapse</span>}
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }
