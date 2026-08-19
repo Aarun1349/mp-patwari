@@ -19,3 +19,14 @@ export const STOREFRONT_APEX = "examsexpress.in";
 export function storefrontUrl(slug: string): string {
   return `https://${slug}.${STOREFRONT_APEX}`;
 }
+
+/**
+ * The href to link a tenant storefront from inside the app. In production this
+ * is the clean branded subdomain (`https://<slug>.examsexpress.in`); in local
+ * dev, where subdomains don't resolve, it falls back to the on-site `/t/<slug>`
+ * route the middleware rewrites the subdomain to. Use this for in-app links so
+ * users see the subdomain in prod, never the internal `/t/` path.
+ */
+export function storefrontHref(slug: string): string {
+  return process.env.NODE_ENV === "production" ? storefrontUrl(slug) : `/t/${slug}`;
+}

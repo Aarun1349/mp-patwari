@@ -3,7 +3,7 @@ import { verifySession } from "@/lib/auth/session";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
 import { getDefaultExamId } from "@/lib/exam/defaultExam";
-import { PLATFORM_TENANT_ID } from "@/lib/tenant";
+import { PLATFORM_TENANT_ID, storefrontHref } from "@/lib/tenant";
 import { BuyButton } from "./BuyButton";
 
 export default async function PackagesPage() {
@@ -119,7 +119,7 @@ export default async function PackagesPage() {
             <div key={g.tenant.id} className="explore-group">
               <div className="explore-group-head">
                 <h3 className="explore-group-title">{g.tenant.name}</h3>
-                <Link href={`/t/${g.tenant.slug}`} className="explore-store-link">
+                <Link href={storefrontHref(g.tenant.slug)} className="explore-store-link">
                   Visit storefront →
                 </Link>
               </div>
