@@ -1,12 +1,14 @@
 .landing {
-  --navy: #1a2a44;
-  --navy-deep: #101a2c;
-  --cream: #f0e9d8;
-  --paper: #faf6ec;
-  --seal: #a3242a;
-  --gold: #c9a227;
-  --ink: #2b2b2b;
-  --line: rgba(26, 42, 68, 0.18);
+  /* Purple/indigo brand — remapped from the old navy/cream/gold so the whole
+     public site (landing + teacher storefront) matches the admin design system. */
+  --navy: #312e81; /* deep indigo — hero / dark surfaces */
+  --navy-deep: #211d5e; /* darkest — footer */
+  --cream: #ece9ff; /* light lavender — text on dark, soft accents */
+  --paper: #f5f3ff; /* page background */
+  --seal: #6366f1; /* primary — CTA buttons (was red) */
+  --gold: #a78bfa; /* accent — kickers / highlights (was gold) */
+  --ink: #1e1b34; /* body text */
+  --line: rgba(99, 102, 241, 0.16);
 
   font-family: var(--font-noto-sans-devanagari), "Noto Sans", sans-serif;
   background: var(--paper);
@@ -109,7 +111,7 @@
 .landing .lang-toggle {
   background: transparent;
   border: 1px solid rgba(240, 233, 216, 0.45);
-  color: #f0e9d8;
+  color: #ece9ff;
   padding: 7px 14px;
   border-radius: 8px;
   font-weight: 600;
@@ -135,8 +137,8 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 85% 20%, rgba(201, 162, 39, 0.1), transparent 45%),
-    radial-gradient(circle at 10% 90%, rgba(163, 36, 42, 0.12), transparent 40%);
+  background: radial-gradient(circle at 85% 20%, rgba(167, 139, 250, 0.1), transparent 45%),
+    radial-gradient(circle at 10% 90%, rgba(99, 102, 241, 0.12), transparent 40%);
   pointer-events: none;
 }
 .landing .hero-grid {
@@ -154,7 +156,7 @@
   font-size: 12px;
   letter-spacing: 0.12em;
   color: var(--gold);
-  border: 1px solid rgba(201, 162, 39, 0.4);
+  border: 1px solid rgba(167, 139, 250, 0.4);
   padding: 6px 12px;
   border-radius: 20px;
   margin-bottom: 22px;
@@ -193,7 +195,7 @@
   font-size: 15.5px;
   border: none;
   cursor: pointer;
-  box-shadow: 0 6px 0 #6f181c;
+  box-shadow: 0 6px 0 #211d5e;
   transition: transform 0.12s ease;
 }
 .landing .btn-primary:hover {
@@ -497,7 +499,7 @@
 }
 .landing .price-card.popular {
   border-color: var(--gold);
-  background: rgba(201, 162, 39, 0.08);
+  background: rgba(167, 139, 250, 0.08);
 }
 .landing .price-card .tag {
   position: absolute;
@@ -789,7 +791,7 @@
   color: #1f7a3d;
 }
 .exam-status.soon {
-  background: rgba(26, 42, 68, 0.08);
+  background: rgba(49, 46, 129, 0.08);
   color: #6b6455;
 }
 .exam-cta {
@@ -800,7 +802,7 @@
 .exam-card.is-live:hover {
   transform: translateY(-2px);
   border-color: var(--gold);
-  box-shadow: 0 10px 24px rgba(26, 42, 68, 0.12);
+  box-shadow: 0 10px 24px rgba(49, 46, 129, 0.12);
 }
 .exam-card.is-soon {
   opacity: 0.72;
