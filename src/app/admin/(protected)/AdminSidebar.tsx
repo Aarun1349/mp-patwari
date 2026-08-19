@@ -140,31 +140,48 @@ export function AdminSidebar({
 
   return (
     <>
-      <button
-        type="button"
-        className="admin-hamburger"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open menu"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
+      {/* Hidden while the drawer is open so it never covers the drawer's EE logo. */}
+      {!mobileOpen && (
+        <button
+          type="button"
+          className="admin-hamburger"
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      )}
 
       {mobileOpen && <div className="admin-backdrop" onClick={() => setMobileOpen(false)} />}
 
       <aside className={`app-sidebar${collapsed ? " app-sidebar--collapsed" : ""}${mobileOpen ? " mobile-open" : ""}`}>
         <div className="app-sidebar-inner">
           <div className="app-sidebar-brand">
-            <BrandIcon size={34} />
-            {showLabels && (
-              <div className="brand-text">
-                <div className="en">ExamsExpress</div>
-                <div className="hi">{roleLabel || "Admin"}</div>
-              </div>
-            )}
+            <div className="app-sidebar-brand-link">
+              <BrandIcon size={34} />
+              {showLabels && (
+                <div className="brand-text">
+                  <div className="en">ExamsExpress</div>
+                  <div className="hi">{roleLabel || "Admin"}</div>
+                </div>
+              )}
+            </div>
+            {/* Mobile-only close button (desktop uses the collapse toggle below). */}
+            <button
+              type="button"
+              className="app-sidebar-close"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
           </div>
 
           <nav className="app-sidebar-nav">
