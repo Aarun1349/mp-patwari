@@ -477,14 +477,16 @@
    so wide tables never overflow the page on mobile. */
 .admin-content .report-table {
   display: block;
-  width: max-content;
-  max-width: 100%;
+  /* Fill the full width of the card on desktop; nowrap cells force horizontal
+     overflow on narrow screens so the table scrolls instead of squishing. */
+  width: 100%;
   overflow-x: auto;
 }
 .admin-content .report-table th,
 .admin-content .report-table td {
   color: var(--color-text);
   border-bottom-color: var(--color-border);
+  white-space: nowrap;
 }
 .admin-content .report-table th {
   color: var(--color-text-muted);

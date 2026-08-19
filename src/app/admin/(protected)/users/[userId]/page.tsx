@@ -47,7 +47,7 @@ export default async function AdminUserDetailPage({
 
   return (
     <>
-      <div className="auth-card" style={{ maxWidth: "560px" }}>
+      <div className="auth-card" style={{ maxWidth: "560px", marginLeft: 0, marginRight: 0 }}>
         <h1>{user.name ?? "Unnamed user"}</h1>
         <p className="muted">
           <Link href="/admin/users">← Back to Users</Link>
