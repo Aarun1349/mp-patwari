@@ -7,6 +7,74 @@ record with rationale.
 
 ---
 
+## Batch 4 — Student reskin, subdomain storefronts LIVE, mobile + admin polish · 2026-08-19/20 · branch `local-test-one` (pushed master + multiexam-platform)
+
+**Context.** Extended the purple design system from admin to the **student/public
+surface**, restructured the buy page for the marketplace, and took the **tenant
+storefront subdomains live in production**. Then a screen-by-screen mobile pass.
+Commits ~`a3d014a` → `7474ff4`.
+
+**Student / public reskin.**
+- `landing.css` + `globals.css` old navy/gold/cream palette **mechanically remapped
+  to purple** (same token mapping as the admin reskin). Student login brand panel,
+  app shell (sidebar/topbar/off-canvas drawer via the shared `.admin-shell` frame),
+  storefront — all purple now.
+- Site header (landing **and** tenant storefronts) uses the **EE `BrandIcon`**
+  instead of the old `ऐ` seal. All `ऐ` seal usages in JSX are gone.
+
+**Buy page marketplace restructure** (see [[Features/packages-marketplace-restructure]]).
+- Three data-driven sections: **ExamsExpress Official** (our flagship-exam packages,
+  pinned top) → **Explore more exams** (our packages for other exams) → **From
+  independent teachers** (non-platform packages grouped by tenant, each linking to
+  the storefront). Sections 2 & 3 hide when empty. No schema change.
+- **Fixed-width package cards** — `.package-grid` / `.price-grid` cap cards at 300px
+  (`auto-fill` + `justify-content:start`) so a lone package no longer stretches
+  full-width. Storefront coupon input styled (was bare — only `.package-card` had CSS).
+- `storefrontHref()` helper: branded subdomain in prod, `/t/<slug>` in local dev
+  (subdomains don't resolve on localhost; session cookies don't cross subdomains).
+
+**Combo / cross-exam bundles** — **Phase 2 design only**, captured for later, not
+built. See [[Features/combo-cross-exam-bundles]] (BundlePackage line-items,
+idempotent multi-entitlement fan-out, live-exams-only). Needs an ADR before build.
+
+**🚀 Tenant storefront subdomains LIVE in production (2026-08-20).**
+`<slug>.examsexpress.in` serves the storefront over valid HTTPS. Chain: wildcard DNS
+`*.examsexpress.in → 13.202.164.83` → Caddy **on-demand TLS** (`on_demand_tls { ask
+http://app:3000/api/verify-domain }` + `*.examsexpress.in { tls { on_demand }
+reverse_proxy app:3000 }`) → `/api/verify-domain` returns 200 only for apex/www +
+**active** tenant slugs (new teacher is `isActive:true` by default — no "Live"
+checkbox needed) → `proxy.ts` rewrites to `/t/<slug>`. Verified with tenant
+`numero10`. **Gotcha:** if TLS handshake fails while verify-domain returns 200 →
+`docker compose restart caddy` + ensure **Lightsail port 80 open** (ACME challenge).
+
+**Mobile polish.**
+- **Off-canvas sidebar drawer** — legacy `globals.css @760px` horizontal-bar rules
+  broke the drawer's vertical nav; scoped them to `.app-shell:not(.admin-shell)`.
+- Student `AppSidebar` + admin `AdminSidebar` made self-contained (own drawer +
+  desktop **collapse shutter**, persisted). Hamburger **hidden while drawer open**
+  (was covering the EE logo) + a **close (X) button** in the drawer brand row.
+  Hamburger is a solid purple `#6366f1` button; icons bumped to 26px; close is
+  light `#ece9ff`.
+- Landing header no longer overflows at 360px (compact nav ≤600px). Login language
+  toggle no longer overlaps the brand mark. Exam **result** stat cards no longer
+  overflow (`min-width:0` + ≤480px shrink); `result.css` remapped to purple.
+
+**Admin.**
+- **Full-width tables** — `.admin-content .report-table` fills the card
+  (`width:100%` + nowrap cells) on desktop, scrolls horizontally on mobile
+  (verified: fills at 900px, scrolls at 320px).
+- **User detail** profile card left-aligned so it lines up with the full-width
+  Recent Attempts / Orders below.
+
+**⚠️ Still NOT satisfying the user (paused 2026-08-20, "kal fir retry").** Sidebar
+**toggle-button icons** and the **admin users / single-user pages** — the user says
+these still aren't right after several attempts. Blocker: these shells are
+auth-gated and the review browser has no session, so changes were compile-/CSS-tested
+but never seen rendered. Next time: get a fresh **post-deploy** screenshot or a way
+to log in. Tracked in memory `examsexpress-mobile-admin-polish-pending`.
+
+---
+
 ## Batch 3 — Admin QA fixes + multi-language foundation · 2026-08-18 · branch `local-test-one`
 
 **Context.** Continued the screen-by-screen admin polish and, on the founder's

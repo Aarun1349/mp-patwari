@@ -1,6 +1,6 @@
 # Current State
 
-_Snapshot as of 2026-08-09. Update this whenever what-exists changes._
+_Snapshot as of 2026-08-20. Update this whenever what-exists changes._
 
 ## Status in one line
 **Live in production** at https://examsexpress.in on a self-managed AWS Lightsail
@@ -17,9 +17,14 @@ auto-submit, resume) → instant scorecard + section-wise report → buy a packa
 (Razorpay) → credits unlock more mocks → purchases/history/invoice.
 
 ### Marketplace ✅ (deployed; recruitment is the open work, not code)
-Tenants (teachers) with storefronts (`/t/[slug]`), tenant-owned papers/packages/
-questions, credit isolation per `(user, exam, tenant)`, buy-a-package auto-enrols
-the student, payout statements (gross→commission→TDS→net).
+Tenants (teachers) with storefronts, tenant-owned papers/packages/questions, credit
+isolation per `(user, exam, tenant)`, buy-a-package auto-enrols the student, payout
+statements (gross→commission→TDS→net). **Storefront subdomains are LIVE** (2026-08-20):
+`<slug>.examsexpress.in` over valid HTTPS via Caddy on-demand TLS +
+`/api/verify-domain` (active tenants only); `/t/[slug]` is the internal route the
+subdomain rewrites to (and the link form used in local dev). Buy page leads with our
+own **Official** packages, then explore-by-exam and by-teacher sections. New teachers
+are `isActive:true` by default (no "Live" toggle in the onboard form yet).
 
 ### Admin + RBAC ✅
 Separate admin auth; data-driven roles (`admin` = `"*"`, plus sub_admin/partner/
