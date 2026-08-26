@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers, cookies } from "next/headers";
 import { requestOtp, verifyOtp, RateLimitedError, InvalidOtpError } from "@/lib/auth/otp";
 import { createSession, destroySession, SessionConflictError } from "@/lib/auth/session";
+import { getClientIp } from "@/lib/http/clientIp";
 
 export type AuthActionState = { success?: boolean; error?: string } | undefined;
 
@@ -14,7 +15,7 @@ export async function requestOtpAction(
   const phone = String(formData.get("phone") ?? "");
 
   try {
-    await requestOtp(phone);
+    await requestOtp(phone, await getClientIp());
     return { success: true };
   } catch (err) {
     if (err instanceof RateLimitedError || err instanceof InvalidOtpError) {
@@ -42,7 +43,7 @@ export async function verifyOtpAction(
   let userId: string;
   let isNewUser = false;
   try {
-    const result = await verifyOtp(phone, code, attribution);
+    const result = await verifyOtp(phone, code, attribution, await getClientIp());
     userId = result.userId;
     isNewUser = result.isNewUser;
   } catch (err) {

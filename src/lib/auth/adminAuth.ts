@@ -5,8 +5,18 @@ import { verifyPassword } from "@/lib/auth/password";
 
 export class AdminAuthError extends Error {}
 
-export async function adminLogin(email: string, password: string): Promise<string> {
+export async function adminLogin(email: string, password: string, ip?: string): Promise<string> {
   const normalizedEmail = email.trim().toLowerCase();
+
+  // Per-IP cap catches credential-stuffing that rotates the email to dodge the
+  // per-email limit below.
+  if (ip && ip !== "unknown") {
+    const ipCheck = await checkRateLimit(`admin:login:ip:${ip}`, {
+      windowSeconds: 15 * 60,
+      max: 15,
+    });
+    if (!ipCheck.allowed) throw new AdminAuthError("Too many attempts. Please wait a few minutes and try again.");
+  }
 
   const { allowed } = await checkRateLimit(`admin:login:${normalizedEmail}`, {
     windowSeconds: 10 * 60,

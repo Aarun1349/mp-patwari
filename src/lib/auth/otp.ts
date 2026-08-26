@@ -25,10 +25,21 @@ function normalizePhone(phone: string): string {
   return phone.replace(/\D/g, "").slice(-10);
 }
 
-export async function requestOtp(rawPhone: string): Promise<void> {
+export async function requestOtp(rawPhone: string, ip?: string): Promise<void> {
   const phone = normalizePhone(rawPhone);
   if (phone.length !== 10) {
     throw new InvalidOtpError("Enter a valid 10-digit mobile number.");
+  }
+
+  // Per-IP cap FIRST: without it, one attacker rotating through many phone
+  // numbers from a single IP would each pass the per-phone limit and burn real
+  // SMS money. 20 sends / 15 min per IP is generous for shared NAT yet caps abuse.
+  if (ip && ip !== "unknown") {
+    const ipCheck = await checkRateLimit(`otp:send:ip:${ip}`, {
+      windowSeconds: 15 * 60,
+      max: 20,
+    });
+    if (!ipCheck.allowed) throw new RateLimitedError();
   }
 
   const { allowed } = await checkRateLimit(`otp:send:${phone}`, {
@@ -58,9 +69,20 @@ export interface SignupAttribution {
 export async function verifyOtp(
   rawPhone: string,
   code: string,
-  attribution?: SignupAttribution
+  attribution?: SignupAttribution,
+  ip?: string
 ): Promise<{ userId: string; isNewUser: boolean }> {
   const phone = normalizePhone(rawPhone);
+
+  // Per-IP cap on verify attempts stops code-guessing that rotates phone numbers
+  // to slip under the per-phone limit.
+  if (ip && ip !== "unknown") {
+    const ipCheck = await checkRateLimit(`otp:verify:ip:${ip}`, {
+      windowSeconds: 15 * 60,
+      max: 30,
+    });
+    if (!ipCheck.allowed) throw new RateLimitedError();
+  }
 
   const { allowed } = await checkRateLimit(`otp:verify:${phone}`, {
     windowSeconds: 10 * 60,

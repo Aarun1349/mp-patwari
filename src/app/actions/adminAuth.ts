@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { adminLogin, AdminAuthError } from "@/lib/auth/adminAuth";
 import { createAdminSession, destroyAdminSession } from "@/lib/auth/adminSession";
+import { getClientIp } from "@/lib/http/clientIp";
 
 export type AdminAuthActionState = { error?: string } | undefined;
 
@@ -16,7 +17,7 @@ export async function adminLoginAction(
 
   let adminUserId: string;
   try {
-    adminUserId = await adminLogin(email, password);
+    adminUserId = await adminLogin(email, password, await getClientIp());
   } catch (err) {
     if (err instanceof AdminAuthError) return { error: err.message };
     console.error("adminLoginAction failed", err);
