@@ -7,6 +7,47 @@ record with rationale.
 
 ---
 
+## Batch 5 — P0 production-hardening (started) · 2026-08-20 · branch `local-test-one` (pushed master + multiexam-platform)
+
+**Context.** After the launch recap, started the **P0 "before real money/scale"
+robustness track**: backups, payment-idempotency verification, monitoring hooks, and
+rate-limiting. Commits ~`6c1c7c7` → `8d3cdb3`. Comms/payments pivots (Razorpay→PayU,
+WhatsApp/Meta, official emails) are captured for later — not built this batch.
+
+**💰 Payment idempotency — audited, solid (no fix needed).** `creditOrderForPayment`
+(the single choke point for both the webhook and the client confirm path) flips
+`Order.status created→paid` with an atomic `updateMany` **inside** the credit
+transaction; `flip.count===0` ⇒ skip. This dedupes webhook-retry, confirm-before-webhook,
+and concurrent firing (Postgres row-lock). Webhook verifies HMAC; the client fast-path
+verifies session **and** `verifyPaymentSignature` — no self-credit. *Still to add:
+automated idempotency tests + a reconciliation job (Razorpay captured ↔ orders ↔ credits).*
+
+**💾 DB backups — off-site + restore drill.** `deploy/backup.sh` already dumped locally;
+added **rclone off-site sync** (env-gated `BACKUP_RCLONE_REMOTE`) + a gzip/size
+**integrity guard** so a truncated dump never replaces good ones. New `deploy/restore.sh`
+= monthly **restore DRILL** (restores newest dump into a scratch DB, sanity-checks,
+drops it — prod untouched). New `deploy/BACKUPS.md` = 3-layer strategy (nightly
+dump+off-site · Lightsail snapshots · restore drill) + real disaster-recovery steps.
+Added `.gitattributes` (`*.sh eol=lf`) so a Windows checkout can't break bash on the server.
+
+**🩺 Uptime — `/api/health`.** New route runs `SELECT 1` against Postgres and returns
+200/503 (never cached) so an uptime monitor catches a DB outage, not just a live HTTP port.
+
+**🚦 Rate-limiting — per-IP added.** The DB-backed fixed-window limiter (`checkRateLimit`,
+atomic INSERT…ON CONFLICT) already capped OTP send/verify, admin login, order-create and
+the exam engine — but every key was per-identifier, so one IP rotating through many phone
+numbers slipped every per-phone cap and burned SMS money. Added per-IP gates: OTP send
+20/15min, OTP verify 30/15min, admin login 15/15min. IP via new `getClientIp()`
+(Caddy `x-real-ip`/`x-forwarded-for`); skipped on "unknown". No schema change.
+
+**⏳ Pending — YOUR setup (server/consoles):** rclone remote (R2/B2) + `BACKUP_RCLONE_REMOTE`
++ cron + Lightsail auto-snapshots (see `deploy/BACKUPS.md`); an uptime monitor pointed at
+`/api/health`; a Sentry account → DSN (then I wire it). **Pending — my code:** Sentry
+wiring, payment idempotency tests + reconciliation job, and the Founder Dashboard + daily
+pocket digest. See memory `examsexpress-deploy-state`.
+
+---
+
 ## Batch 4 — Student reskin, subdomain storefronts LIVE, mobile + admin polish · 2026-08-19/20 · branch `local-test-one` (pushed master + multiexam-platform)
 
 **Context.** Extended the purple design system from admin to the **student/public
