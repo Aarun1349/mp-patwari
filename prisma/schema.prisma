@@ -440,6 +440,22 @@ model Tenant {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
 
+  // Teacher payout KYC + agreement (Workstream D). Payouts are gated on
+  // kycVerified AND the current agreement version being accepted. ⚠️ PAN / bank
+  // details must be encrypted / tokenised at rest before production (deferred —
+  // see the legal playbook); dev stores them plainly.
+  payeeLegalName      String?
+  panNumber           String?
+  payoutGstin         String?
+  bankAccountName     String?
+  bankAccountNumber   String?
+  bankIfsc            String?
+  upiId               String?
+  kycVerified         Boolean   @default(false)
+  kycVerifiedAt       DateTime?
+  agreementVersion    String? // version of the teacher agreement accepted
+  agreementAcceptedAt DateTime?
+
   papers           Paper[]
   packages         Package[]
   orders           Order[]
