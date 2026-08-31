@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { verifySession } from "@/lib/auth/session";
 import { AppShell } from "@/app/AppShell";
 import { prisma } from "@/lib/prisma";
@@ -57,6 +58,9 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
+      <p className="muted" style={{ marginTop: 16 }}>
+        <Link href="/account/data">Your data &amp; privacy</Link> — download a copy of your data or delete your account.
+      </p>
     </AppShell>
   );
 }
