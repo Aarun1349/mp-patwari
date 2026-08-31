@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { verifySession, destroySession } from "@/lib/auth/session";
 import { eraseUserData } from "@/lib/privacy";
+import { writeAudit } from "@/lib/audit";
 
 export type EraseState = { error?: string } | undefined;
 
@@ -25,6 +26,14 @@ export async function eraseAccountAction(
     console.error("eraseAccountAction failed", err);
     return { error: "Something went wrong. Please try again or contact support." };
   }
+
+  await writeAudit({
+    actorType: "student",
+    actorId: userId,
+    action: "account_erased",
+    resourceType: "User",
+    resourceId: userId,
+  });
 
   await destroySession();
   redirect("/?erased=1");

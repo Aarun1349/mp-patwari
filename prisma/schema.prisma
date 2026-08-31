@@ -540,6 +540,28 @@ model PayoutStatement {
   @@map("payout_statements")
 }
 
+// Append-only audit trail of sensitive actions (login, purchase, erasure, KYC,
+// payout, tenant/content changes) + a super-admin activity monitor. Never edited
+// or deleted; actorLabel is denormalised so a row stays readable even after the
+// actor's account is erased.
+model AuditLog {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  actorType    String // "student" | "admin" | "system"
+  actorId      String?
+  actorLabel   String?
+  action       String // e.g. "login", "signup", "purchase", "account_erased", "kyc_verified", "payout_recorded"
+  resourceType String?
+  resourceId   String?
+  ip           String?
+  metadata     Json?
+
+  @@index([actorType, actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
 // Atomic monotonic counters (e.g. sequential invoice numbers). Incremented inside
 // the crediting transaction so numbers are gap-free and unique under concurrency.
 model SequenceCounter {

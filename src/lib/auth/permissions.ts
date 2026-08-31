@@ -27,6 +27,7 @@ export const PERMISSIONS = {
   PAYOUT_READ: "payout.read",
   STUDENT_READ: "student.read",
   ORDER_READ: "order.read",
+  AUDIT_READ: "audit.read",
   GRIEVANCE_MANAGE: "grievance.manage",
   NOTIFICATION_BROADCAST: "notification.broadcast",
   // Tenant-scoped (require additional tenantId scoping by the caller)

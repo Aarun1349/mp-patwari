@@ -6,6 +6,7 @@ import { checkPermission, PERMISSIONS } from "@/lib/auth/permissions";
 import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 import { LEGAL } from "@/lib/legal";
 import { recordPayout } from "@/lib/billing/payout";
+import { writeAudit } from "@/lib/audit";
 
 export type PayoutActionState = { error?: string; ok?: string } | undefined;
 
@@ -56,6 +57,14 @@ export async function setKycVerifiedAction(formData: FormData): Promise<void> {
     where: { id: tenantId },
     data: { kycVerified: verify, kycVerifiedAt: verify ? new Date() : null },
   });
+  await writeAudit({
+    actorType: "admin",
+    actorId: gate.adminUser.id,
+    actorLabel: gate.adminUser.email,
+    action: verify ? "kyc_verified" : "kyc_unverified",
+    resourceType: "Tenant",
+    resourceId: tenantId,
+  });
   revalidatePath(`/admin/tenants/${tenantId}/payout`);
 }
 
@@ -69,6 +78,15 @@ export async function acceptAgreementAction(formData: FormData): Promise<void> {
   await prisma.tenant.update({
     where: { id: tenantId },
     data: { agreementVersion: LEGAL.payout.agreementVersion, agreementAcceptedAt: new Date() },
+  });
+  await writeAudit({
+    actorType: "admin",
+    actorId: gate.adminUser.id,
+    actorLabel: gate.adminUser.email,
+    action: "agreement_accepted",
+    resourceType: "Tenant",
+    resourceId: tenantId,
+    metadata: { version: LEGAL.payout.agreementVersion },
   });
   revalidatePath(`/admin/tenants/${tenantId}/payout`);
 }
@@ -87,6 +105,15 @@ export async function recordPayoutAction(
     const res = await recordPayout(tenantId);
     revalidatePath(`/admin/tenants/${tenantId}/payout`);
     if ("nothingToPay" in res) return { ok: "Nothing new to pay out." };
+    await writeAudit({
+      actorType: "admin",
+      actorId: gate.adminUser.id,
+      actorLabel: gate.adminUser.email,
+      action: "payout_recorded",
+      resourceType: "PayoutStatement",
+      resourceId: res.statementId,
+      metadata: { tenantId, netPaise: res.netPaise },
+    });
     return { ok: `Payout recorded: ₹${(res.netPaise / 100).toFixed(2)} net (TDS withheld).` };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Could not record payout." };

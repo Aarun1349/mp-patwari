@@ -20,6 +20,7 @@ const NAV: { href: string; label: string; perm: string | null }[] = [
   { href: "/admin/acquisition", label: "Acquisition", perm: PERMISSIONS.STUDENT_READ },
   { href: "/admin/orders", label: "Orders & Revenue", perm: PERMISSIONS.ORDER_READ },
   { href: "/admin/attempts", label: "Attempts", perm: PERMISSIONS.ORDER_READ },
+  { href: "/admin/activity", label: "Activity", perm: PERMISSIONS.AUDIT_READ },
 ];
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
