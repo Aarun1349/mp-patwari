@@ -93,7 +93,14 @@ export async function creditOrderForPayment(
     });
 
     if (order.couponId) {
-      await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
+      // Atomic, race-safe cap: increment only while under maxRedemptions, so
+      // concurrent redemptions can never push the count past the limit (Prisma
+      // can't compare two columns in a typed update, hence raw SQL).
+      await tx.$executeRaw`
+        UPDATE coupons SET "redemptionCount" = "redemptionCount" + 1
+        WHERE id = ${order.couponId}
+          AND ("maxRedemptions" IS NULL OR "redemptionCount" < "maxRedemptions")
+      `;
     }
 
     return {
@@ -201,7 +208,14 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
     });
 
     if (order.couponId) {
-      await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
+      // Atomic, race-safe cap: increment only while under maxRedemptions, so
+      // concurrent redemptions can never push the count past the limit (Prisma
+      // can't compare two columns in a typed update, hence raw SQL).
+      await tx.$executeRaw`
+        UPDATE coupons SET "redemptionCount" = "redemptionCount" + 1
+        WHERE id = ${order.couponId}
+          AND ("maxRedemptions" IS NULL OR "redemptionCount" < "maxRedemptions")
+      `;
     }
 
     return {

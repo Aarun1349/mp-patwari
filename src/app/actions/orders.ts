@@ -43,7 +43,7 @@ export async function createOrderAction(packageId: string, couponCode?: string):
   let finalAmountPaise = pkg.pricePaise;
   if (couponCode?.trim()) {
     try {
-      const priced = await validateAndPriceCoupon(couponCode, pkg);
+      const priced = await validateAndPriceCoupon(couponCode, pkg, userId);
       couponId = priced.coupon.id;
       discountPaise = priced.discountPaise;
       finalAmountPaise = priced.finalAmountPaise;

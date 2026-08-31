@@ -10,7 +10,11 @@ export interface PricedCoupon {
   finalAmountPaise: number;
 }
 
-export async function validateAndPriceCoupon(rawCode: string, pkg: Package): Promise<PricedCoupon> {
+export async function validateAndPriceCoupon(
+  rawCode: string,
+  pkg: Package,
+  userId: string
+): Promise<PricedCoupon> {
   const code = rawCode.trim().toUpperCase();
   const coupon = await prisma.coupon.findUnique({ where: { code } });
   if (!coupon || !coupon.isActive) throw new InvalidCouponError("Invalid coupon code.");
@@ -21,6 +25,15 @@ export async function validateAndPriceCoupon(rawCode: string, pkg: Package): Pro
   if (coupon.maxRedemptions !== null && coupon.redemptionCount >= coupon.maxRedemptions) {
     throw new InvalidCouponError("This coupon has already been fully redeemed.");
   }
+
+  // Single-use per user: you can't reuse a coupon you've already paid with. (The
+  // global cap is additionally enforced atomically at redemption time in
+  // creditOrder, so concurrent orders can never push redemptionCount past max.)
+  const priorUse = await prisma.order.findFirst({
+    where: { userId, couponId: coupon.id, status: "paid" },
+    select: { id: true },
+  });
+  if (priorUse) throw new InvalidCouponError("You've already used this coupon.");
 
   const discountPaise =
     coupon.discountType === "percent"
