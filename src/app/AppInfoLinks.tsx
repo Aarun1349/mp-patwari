@@ -43,6 +43,15 @@ export function AppInfoLinks() {
       <button type="button" className="footer-link-btn" onClick={() => setOpen("disclaimer")}>
         Disclaimer &amp; Policies
       </button>
+      <Link href="/legal/terms" className="footer-link-btn">
+        Terms
+      </Link>
+      <Link href="/legal/privacy" className="footer-link-btn">
+        Privacy
+      </Link>
+      <Link href="/legal/refund" className="footer-link-btn">
+        Refunds
+      </Link>
 
       {open && (
         <InfoModal title={title} lang={lang} onLang={setLang} onClose={() => setOpen(null)}>
