@@ -207,6 +207,29 @@
 .ee-btn--block {
   width: 100%;
 }
+/* Account data & privacy (DPDP erasure form) */
+.delete-account {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 460px;
+  margin-top: 6px;
+}
+.delete-label {
+  font-size: 14px;
+  color: var(--color-text);
+}
+.delete-account .ee-input {
+  max-width: 220px;
+}
+.delete-error {
+  color: var(--color-error);
+  font-size: 13px;
+  margin: -2px 0 0;
+}
+.delete-account .ee-btn--danger {
+  align-self: flex-start;
+}
 .ee-btn--sm {
   padding: 6px 12px;
   font-size: 13px;
