@@ -99,7 +99,10 @@ async function main() {
   const exam = await prisma.exam.upsert({
     where: { slug: "mp-patwari" },
     update: {},
-    create: { name: "MP Patwari", slug: "mp-patwari", board: "MPESB", shortName: "Patwari", sortOrder: 0 },
+    // sortOrder 5 keeps MP Patwari below MP SI, which is the default exam (sortOrder 0,
+    // set by seed-mp-si.ts). On a fresh DB where only this seed runs, Patwari is the
+    // sole exam and is the default regardless.
+    create: { name: "MP Patwari", slug: "mp-patwari", board: "MPESB", shortName: "Patwari", sortOrder: 5 },
   });
   const examId = exam.id;
 

@@ -13,7 +13,9 @@ const prisma = new PrismaClient();
 // tune codes/counts once the syllabus PDF is confirmed. Run once:
 //   npx tsx --env-file=.env prisma/seed-mp-si.ts
 
-const EXAM = { name: "MP Police SI / Subedar", slug: "mp-si", board: "MPESB", shortName: "MP SI", sortOrder: 1 };
+// sortOrder 0 = MP SI is the DEFAULT exam (lowest sortOrder wins in getDefaultExamId()
+// and shows first in the landing exam selector). MP Patwari is demoted below it in main().
+const EXAM = { name: "MP Police SI / Subedar", slug: "mp-si", board: "MPESB", shortName: "MP SI", sortOrder: 0 };
 
 const SECTIONS = [
   { code: "GK", nameEn: "General Knowledge", nameHi: "सामान्य ज्ञान", sortOrder: 1 },
@@ -42,6 +44,15 @@ async function main() {
     create: EXAM,
   });
   console.log(`Exam: ${exam.name} (${exam.slug})`);
+
+  // Make MP SI the default exam: demote MP Patwari below it if it exists, so
+  // getDefaultExamId() (lowest active sortOrder) and the landing selector both
+  // put MP SI first. No-op on a DB that never had Patwari.
+  const demoted = await prisma.exam.updateMany({
+    where: { slug: "mp-patwari" },
+    data: { sortOrder: 5 },
+  });
+  if (demoted.count) console.log("Demoted MP Patwari below MP SI (sortOrder → 5).");
 
   for (const s of SECTIONS) {
     await prisma.section.upsert({

@@ -43,8 +43,11 @@ export async function generateQuestionsAction(
   const section = await prisma.section.findUnique({ where: { id: parsed.data.sectionId } });
   if (!section) return { error: "Section not found." };
 
+  const exam = await prisma.exam.findUnique({ where: { id: section.examId }, select: { name: true } });
+  const examName = exam?.name ?? "MP Police Sub Inspector";
+
   try {
-    const questions = await generateQuestions(section.nameEn, parsed.data.count, parsed.data.topicHint ?? "");
+    const questions = await generateQuestions(examName, section.nameEn, parsed.data.count, parsed.data.topicHint ?? "");
     return { questions, paperId: parsed.data.paperId, sectionId: parsed.data.sectionId };
   } catch (err) {
     if (err instanceof GroqApiError) return { error: err.message };

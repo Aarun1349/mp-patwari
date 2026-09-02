@@ -84,8 +84,8 @@ export async function startAttempt(userId: string, paperId: string): Promise<{ a
 
   return await prisma.$transaction(async (tx) => {
     if (!paper.isFree) {
-      // Decrement credit for THIS paper's exam only — a Patwari credit can't
-      // fund an MP Constable test.
+      // Decrement credit for THIS paper's exam only — an MP SI credit can't
+      // fund an MP Patwari test.
       const credit = await tx.userCredit.updateMany({
         where: { userId, examId: paper.examId, tenantId: paper.tenantId, testsRemaining: { gt: 0 } },
         data: { testsRemaining: { decrement: 1 } },

@@ -91,7 +91,7 @@ export function ProfileForm({
         name="examInterest"
         type="text"
         maxLength={150}
-        placeholder="e.g. MP Patwari"
+        placeholder="e.g. MP Sub Inspector"
         defaultValue={examInterest}
       />
 

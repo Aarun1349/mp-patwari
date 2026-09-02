@@ -26,6 +26,7 @@ export interface GeneratedQuestion {
 /** Plain fetch to Groq's OpenAI-compatible chat completions endpoint — matches
  * this codebase's Razorpay/MSG91/Google pattern of no vendor SDK. */
 export async function generateQuestions(
+  examName: string,
   sectionNameEn: string,
   count: number,
   topicHint: string
@@ -38,11 +39,11 @@ export async function generateQuestions(
 
   const prompt = [
     `Generate ${count} multiple-choice practice questions for the "${sectionNameEn}" section`,
-    `of an MP Patwari (Madhya Pradesh state recruitment exam, India) mock test.`,
+    `of a ${examName} (Indian state government recruitment exam) mock test.`,
     topicHint ? `Focus specifically on: ${topicHint}.` : "",
-    `Questions should be in Hindi if the subject is typically taught/tested in Hindi in this exam`,
-    `(General Knowledge, Math & Reasoning, Hindi, Rural Economy & Panchayati Raj), or English for`,
-    `the General English and Computer Knowledge sections. Each question must have exactly 4 distinct`,
+    `Write each question in the language that section is normally tested in for this exam`,
+    `(Hindi for General Knowledge / Reasoning / Hindi / state-GK type sections, English for the`,
+    `English and Computer sections). Each question must have exactly 4 distinct`,
     `options with exactly one correct answer. Keep questions factually accurate and at a level`,
     `appropriate for a state-level recruitment exam (not overly advanced, not trivial).`,
     ``,
