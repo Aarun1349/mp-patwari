@@ -7,6 +7,33 @@ record with rationale.
 
 ---
 
+## Batch 7 — Home rethemed to MP SI + OTP login hidden · 2026-09-02 · branch `local-test-one` (pushed master + multiexam-platform)
+
+**Context.** MP SI / Subedar 2026 is the active wave (MPESB notification out,
+applications from 9 Sept), so the **root landing** (`/`) — still MP Patwari-themed
+— was retargeted to MP SI. Separately, phone/OTP login is not usable in production
+(MSG91 DLT template still pending approval), so it was hidden to avoid a dead path.
+
+**Changes.**
+- **`src/app/landing-content.ts`** — hero lede, stats, admit card, exam-pattern
+  table, FAQ and footer rethemed MP Patwari → MP SI / Subedar Prelims. Numbers
+  taken from the already-verified `/mp-si` page (`app/mp-si/msi-content.ts`):
+  100 questions / 100 marks / 120 min / **no negative marking**, CBT, qualifying,
+  board **MPESB** (`esb.mp.gov.in`). Kept honest — subject-wise split points to the
+  official notification rather than inventing weightage.
+- **`src/app/LandingClient.tsx`** — admit-card tag `#MP-PTW` → `#MP-SI`.
+- **`src/app/login/page.tsx`** — divider + `<LoginForm />` (phone OTP) commented
+  out; Google is the only visible method. `google_not_configured` copy no longer
+  refers users to the hidden mobile option. Backend OTP code (`lib/auth/otp.ts`,
+  `sms.ts`, `actions/auth.ts`) untouched — re-enable = uncomment.
+
+**Verified.** `npm run build` clean (exit 0). Committed `626b068`.
+
+**Still MP-Patwari-worded (not in this pass, flagged):** `app/about/about-content.ts`,
+`lib/ai/groq.ts` (AI-gen prompt), `lib/exam/defaultExam.ts`. Home + admit card done.
+
+---
+
 ## Batch 5 — P0 production-hardening (started) · 2026-08-20 · branch `local-test-one` (pushed master + multiexam-platform)
 
 **Context.** After the launch recap, started the **P0 "before real money/scale"
