@@ -93,21 +93,21 @@ export function UploadForm({
       {effectiveMode === "new" && (
         <>
           <Field label="Title" htmlFor="title">
-            <Input id="title" name="title" type="text" placeholder="e.g. MP Constable Mock Test 01" required />
+            <Input id="title" name="title" type="text" placeholder="e.g. MP SI Prelims Mock 01" required />
           </Field>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
             <Field label="Duration (minutes)" htmlFor="durationMinutes" hint="Max 180">
-              <Input id="durationMinutes" name="durationMinutes" type="number" min={1} max={180} defaultValue={180} required />
+              <Input id="durationMinutes" name="durationMinutes" type="number" min={1} max={180} defaultValue={120} required />
             </Field>
             <Field label="Total questions" htmlFor="totalQuestions" hint="Max 300">
               <Input id="totalQuestions" name="totalQuestions" type="number" min={1} max={300} defaultValue={100} required />
             </Field>
             <Field label="Total marks" htmlFor="totalMarks">
-              <Input id="totalMarks" name="totalMarks" type="number" defaultValue={200} required />
+              <Input id="totalMarks" name="totalMarks" type="number" defaultValue={100} required />
             </Field>
-            <Field label="Negative marking ratio" hint="0 – 0.50" htmlFor="negativeMarkingRatio">
-              <Input id="negativeMarkingRatio" name="negativeMarkingRatio" type="number" step="0.01" min={0} max={0.5} defaultValue={0.25} required />
+            <Field label="Negative marking ratio" hint="0 = no negative marking · max 0.50" htmlFor="negativeMarkingRatio">
+              <Input id="negativeMarkingRatio" name="negativeMarkingRatio" type="number" step="0.01" min={0} max={0.5} defaultValue={0} required />
             </Field>
           </div>
 

@@ -27,6 +27,11 @@ export async function GET(req: Request) {
       : Promise.resolve([]),
   ]);
 
+  // No marks / negative_marks columns: scoring is DERIVED from the paper
+  // (total marks ÷ questions, and the paper's negative-marking ratio), so any
+  // per-question values in the sheet are ignored by the importer. Leaving them
+  // out keeps the template honest — e.g. a no-negative-marking exam like MP SI
+  // never implies a per-question penalty.
   const header = [
     "section_code",
     "question_text",
@@ -35,14 +40,12 @@ export async function GET(req: Request) {
     "option_c",
     "option_d",
     "correct_option",
-    "marks",
-    "negative_marks",
   ];
   const exampleCode = sections[0]?.code ?? "GK";
   const questionRows: (string | number)[][] = [
     header,
-    [exampleCode, "What is the capital of Madhya Pradesh?", "Indore", "Bhopal", "Gwalior", "Jabalpur", "B", 1, 0.25],
-    [exampleCode, "Which river flows through Bhopal region?", "Narmada", "Betwa", "Chambal", "Tapti", "A", 1, 0.25],
+    [exampleCode, "What is the capital of Madhya Pradesh?", "Indore", "Bhopal", "Gwalior", "Jabalpur", "B"],
+    [exampleCode, "Which river flows through Bhopal region?", "Narmada", "Betwa", "Chambal", "Tapti", "A"],
   ];
   const ws = XLSX.utils.aoa_to_sheet(questionRows);
   ws["!cols"] = [
@@ -52,8 +55,6 @@ export async function GET(req: Request) {
     { wch: 20 },
     { wch: 20 },
     { wch: 20 },
-    { wch: 14 },
-    { wch: 8 },
     { wch: 14 },
   ];
   const wb = XLSX.utils.book_new();
