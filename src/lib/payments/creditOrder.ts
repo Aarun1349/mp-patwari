@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { sendReceiptEmail } from "@/lib/email/sendReceipt";
 import { PLATFORM_TENANT_ID } from "@/lib/tenant";
+import { writeAudit } from "@/lib/audit";
 
 export interface CreditResult {
   credited: boolean;
@@ -93,12 +94,20 @@ export async function creditOrderForPayment(
     });
 
     if (order.couponId) {
-      await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
+      // Atomic, race-safe cap: increment only while under maxRedemptions, so
+      // concurrent redemptions can never push the count past the limit (Prisma
+      // can't compare two columns in a typed update, hence raw SQL).
+      await tx.$executeRaw`
+        UPDATE coupons SET "redemptionCount" = "redemptionCount" + 1
+        WHERE id = ${order.couponId}
+          AND ("maxRedemptions" IS NULL OR "redemptionCount" < "maxRedemptions")
+      `;
     }
 
     return {
       credited: true,
       orderId: order.id,
+      userId: order.userId,
       status: "paid",
       receipt: {
         to: order.user.email,
@@ -129,6 +138,16 @@ export async function creditOrderForPayment(
     console.log(`Order ${result.orderId} credited — no email on file, skipping receipt.`);
   }
 
+  if (result.credited && "userId" in result) {
+    await writeAudit({
+      actorType: "student",
+      actorId: result.userId,
+      action: "purchase",
+      resourceType: "Order",
+      resourceId: result.orderId,
+      metadata: receipt ? { package: receipt.packageName, amountPaise: receipt.amountPaise } : null,
+    });
+  }
   return { credited: result.credited, orderId: result.orderId, status: result.status };
 }
 
@@ -201,12 +220,20 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
     });
 
     if (order.couponId) {
-      await tx.coupon.update({ where: { id: order.couponId }, data: { redemptionCount: { increment: 1 } } });
+      // Atomic, race-safe cap: increment only while under maxRedemptions, so
+      // concurrent redemptions can never push the count past the limit (Prisma
+      // can't compare two columns in a typed update, hence raw SQL).
+      await tx.$executeRaw`
+        UPDATE coupons SET "redemptionCount" = "redemptionCount" + 1
+        WHERE id = ${order.couponId}
+          AND ("maxRedemptions" IS NULL OR "redemptionCount" < "maxRedemptions")
+      `;
     }
 
     return {
       credited: true,
       orderId: order.id,
+      userId: order.userId,
       status: "paid",
       receipt: {
         to: order.user.email,
@@ -235,5 +262,15 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
     }
   }
 
+  if (result.credited && "userId" in result) {
+    await writeAudit({
+      actorType: "student",
+      actorId: result.userId,
+      action: "purchase",
+      resourceType: "Order",
+      resourceId: result.orderId,
+      metadata: receipt ? { package: receipt.packageName, amountPaise: receipt.amountPaise } : null,
+    });
+  }
   return { credited: result.credited, orderId: result.orderId, status: result.status };
 }

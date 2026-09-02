@@ -95,6 +95,11 @@ const ICONS: Record<string, ReactNode> = {
       <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
     </I>
   ),
+  "/admin/activity": (
+    <I>
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </I>
+  ),
 };
 
 function DefaultIcon() {

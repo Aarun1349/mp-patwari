@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_Devanagari, Noto_Serif_Devanagari, Space_Mono } from "next/font/google";
 import "./globals.css";
 import "./theme.css";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
   subsets: ["devanagari"],
@@ -42,6 +43,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         {children}
+        <CookieConsent />
       </body>
     </html>
   );

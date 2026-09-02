@@ -440,6 +440,22 @@ model Tenant {
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
 
+  // Teacher payout KYC + agreement (Workstream D). Payouts are gated on
+  // kycVerified AND the current agreement version being accepted. ⚠️ PAN / bank
+  // details must be encrypted / tokenised at rest before production (deferred —
+  // see the legal playbook); dev stores them plainly.
+  payeeLegalName      String?
+  panNumber           String?
+  payoutGstin         String?
+  bankAccountName     String?
+  bankAccountNumber   String?
+  bankIfsc            String?
+  upiId               String?
+  kycVerified         Boolean   @default(false)
+  kycVerifiedAt       DateTime?
+  agreementVersion    String? // version of the teacher agreement accepted
+  agreementAcceptedAt DateTime?
+
   papers           Paper[]
   packages         Package[]
   orders           Order[]
@@ -522,6 +538,28 @@ model PayoutStatement {
 
   @@index([tenantId])
   @@map("payout_statements")
+}
+
+// Append-only audit trail of sensitive actions (login, purchase, erasure, KYC,
+// payout, tenant/content changes) + a super-admin activity monitor. Never edited
+// or deleted; actorLabel is denormalised so a row stays readable even after the
+// actor's account is erased.
+model AuditLog {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  actorType    String // "student" | "admin" | "system"
+  actorId      String?
+  actorLabel   String?
+  action       String // e.g. "login", "signup", "purchase", "account_erased", "kyc_verified", "payout_recorded"
+  resourceType String?
+  resourceId   String?
+  ip           String?
+  metadata     Json?
+
+  @@index([actorType, actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 // Atomic monotonic counters (e.g. sequential invoice numbers). Incremented inside

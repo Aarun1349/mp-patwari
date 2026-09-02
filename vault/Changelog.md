@@ -32,6 +32,73 @@ applications from 9 Sept), so the **root landing** (`/`) — still MP Patwari-th
 **Still MP-Patwari-worded (not in this pass, flagged):** `app/about/about-content.ts`,
 `lib/ai/groq.ts` (AI-gen prompt), `lib/exam/defaultExam.ts`. Home + admit card done.
 
+> **Follow-up (same day):** the remaining Patwari refs above were done — `groq.ts`
+> is now exam-aware, `defaultExam.ts`/`entitlement.ts`/profile placeholder updated,
+> and MP SI made the **default exam** (seed sortOrder 0, Patwari demoted). Batch 6
+> (legal) was then merged into `local-test-one` for deployment — see its ⚠️ deploy
+> prerequisites below (placeholder legal identity + `db push` still required).
+
+---
+
+## Batch 6 — Legal / compliance layer (Certur → ExamsExpress port) · 2026-08-31 · branch `legal-compliance` (merged into local-test-one 2026-09-02)
+
+**Context.** Ported Certur's done legal/financial/compliance layer onto ExamsExpress
+as the gate before onboarding real users + teachers (see [[certur-legal-layer-replication]]).
+All work is on a **staged branch `legal-compliance`** (off local-test-one), pushed only
+to `origin/legal-compliance` — NOT master/multiexam-platform, because it renders
+placeholder entity/GSTIN and needs counsel sign-off + real values before it can go
+live. ~30 files. Commits `03a4dcb` → `ae8b429`.
+
+**Foundation.** `lib/legal.ts` — legal identity + policy config (entity/CIN/address/
+grievance-officer/jurisdiction placeholders, `refundWindowDays=0` matching EE's live
+no-refund stance, retention, teacher-agreement version + TDS 194J) + `computeTds()`.
+GST rate/GSTIN/SAC stay in the existing `billing/tax.ts` (env-driven, tax OFF).
+
+**A · Legal & trust pages** (browser-verified). `/legal/{terms,privacy,refund}` +
+shared `LegalPage` shell (plain CSS + landing chrome, purple) — Privacy is DPDP-aware
+on EE's real data model; Terms cover the exam platform, "not affiliated with any
+board", and the teacher marketplace. Cookie-consent banner (site-wide, root layout) +
+legal links in both footers.
+
+**B · Safe money.** GST invoice now shows the **CGST/SGST split** + seller legal
+entity/address/GSTIN. **Coupons** made single-use per user + race-safe (atomic
+conditional increment in `creditOrder`). Payment idempotency was already solid
+(audited Batch 5). Refund flow N/A — EE runs a no-refund policy (manual exceptions).
+
+**C · DPDP rights** (verified). `lib/privacy.ts`: `collectUserData` (right to access)
++ `eraseUserData` (right to erasure as anonymise + soft-delete — nulls PII, frees
+phone/googleId, keeps orders/invoices/credits/attempts, deletes sessions). GET
+`/api/privacy/export` (JSON download) + `/account/data` (download + type-DELETE
+erasure), linked from `/profile`. No schema change (erasure via existing fields).
+
+**D · Teacher payout backbone** (SCHEMA CHANGE). Adapted to EE's simple
+1-tenant-owns-package model (not Certur's multi-curator ledger). Tenant gains KYC +
+agreement fields. `lib/billing/payout.ts`: `payoutReadiness()` gate (KYC verified AND
+current agreement accepted), `previewPayout()` (gross→commission→net→TDS→payable),
+`recordPayout()` (gated + incremental, TDS withheld). Draft `TeacherAgreement`
+(IP assignment / no-dumps / revenue share / TDS). Admin `/tenants/[id]/payout` page
+(KYC form + verify + agreement acceptance + gated record-payout + history), linked
+from the teachers list. **Teacher onboarding is now gated on KYC + a signed agreement.**
+
+**Audit log + activity monitor** (SCHEMA CHANGE). New `AuditLog` (append-only) +
+`lib/audit.ts` `writeAudit()` (best-effort, denormalised actorLabel). Wired: student
+login/signup, admin login, purchase (single credit choke point — once per real
+credit), account erasure, KYC verify, agreement acceptance, payout recorded. New
+`AUDIT_READ` permission (super-admin only). `/admin/activity` — filterable, paginated
+super-admin monitor, in the nav.
+
+**Already present (no work needed):** security headers (`next.config`), per-IP +
+per-account rate-limiting (Batch 5), idempotent payment/webhook (EE ahead of Certur's
+mock), invoice numbering, userId-scoping, answer-key protection.
+
+**⚠️ Deploy prerequisites (before this branch merges/deploys):** (1) fill REAL legal
+entity + GSTIN + grievance officer + address in `lib/legal.ts` (+ `PLATFORM_GSTIN`
+env); (2) **counsel/CA sign-off** on the draft legal text + agreement + GST/TDS
+treatment; (3) deploy needs a **`db push`** (2 schema changes: Tenant KYC + AuditLog)
+— run the migrate service. **Deferred to prod (per playbook):** CSP, admin MFA,
+pentest, encrypt PAN/bank at rest. Secret-redaction logger + external error tracking
+(Sentry) still to do.
+
 ---
 
 ## Batch 5 — P0 production-hardening (started) · 2026-08-20 · branch `local-test-one` (pushed master + multiexam-platform)

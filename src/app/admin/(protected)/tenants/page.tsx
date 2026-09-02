@@ -72,12 +72,17 @@ export default async function AdminTenantsPage() {
                   </span>
                 </td>
                 <td>
-                  <form action={toggleTenantActiveAction}>
-                    <input type="hidden" name="id" value={t.id} />
-                    <button type="submit" className={`btn-sm ${t.isActive ? "btn-danger" : "btn-secondary"}`}>
-                      {t.isActive ? "Deactivate" : "Activate"}
-                    </button>
-                  </form>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <Link href={`/admin/tenants/${t.id}/payout`} className="btn-sm btn-secondary">
+                      Payout
+                    </Link>
+                    <form action={toggleTenantActiveAction}>
+                      <input type="hidden" name="id" value={t.id} />
+                      <button type="submit" className={`btn-sm ${t.isActive ? "btn-danger" : "btn-secondary"}`}>
+                        {t.isActive ? "Deactivate" : "Activate"}
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}

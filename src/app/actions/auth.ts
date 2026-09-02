@@ -5,6 +5,7 @@ import { headers, cookies } from "next/headers";
 import { requestOtp, verifyOtp, RateLimitedError, InvalidOtpError } from "@/lib/auth/otp";
 import { createSession, destroySession, SessionConflictError } from "@/lib/auth/session";
 import { getClientIp } from "@/lib/http/clientIp";
+import { writeAudit } from "@/lib/audit";
 
 export type AuthActionState = { success?: boolean; error?: string } | undefined;
 
@@ -70,6 +71,14 @@ export async function verifyOtpAction(
     console.error("createSession failed", err);
     return { error: "Something went wrong. Please try again." };
   }
+
+  await writeAudit({
+    actorType: "student",
+    actorId: userId,
+    actorLabel: phone,
+    action: isNewUser ? "signup" : "login",
+    ip: await getClientIp(),
+  });
 
   // Attribution is now stamped on the account — clear the first-touch cookies so
   // they can't be reused for a later signup on the same device.

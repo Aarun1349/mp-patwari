@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { adminLogin, AdminAuthError } from "@/lib/auth/adminAuth";
 import { createAdminSession, destroyAdminSession } from "@/lib/auth/adminSession";
 import { getClientIp } from "@/lib/http/clientIp";
+import { writeAudit } from "@/lib/audit";
 
 export type AdminAuthActionState = { error?: string } | undefined;
 
@@ -28,6 +29,14 @@ export async function adminLoginAction(
   await createAdminSession(adminUserId, {
     ip: headersList.get("x-forwarded-for") ?? undefined,
     userAgent: headersList.get("user-agent") ?? undefined,
+  });
+
+  await writeAudit({
+    actorType: "admin",
+    actorId: adminUserId,
+    actorLabel: email.trim().toLowerCase(),
+    action: "admin_login",
+    ip: await getClientIp(),
   });
 
   redirect("/admin");
