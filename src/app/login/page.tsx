@@ -1,9 +1,9 @@
-import { LoginForm } from "./LoginForm";
+// import { LoginForm } from "./LoginForm"; // OTP login hidden until MSG91 DLT approved
 import { LoginBrandPanel } from "./LoginBrandPanel";
 
 const ERROR_MESSAGES: Record<string, string> = {
   google_failed: "Google sign-in didn't complete. Please try again.",
-  google_not_configured: "Google sign-in isn't available yet — please use your mobile number.",
+  google_not_configured: "Google sign-in isn't available right now. Please try again shortly.",
   session_conflict: "This account is already logged in on another device. Please log out there first.",
 };
 
@@ -47,11 +47,15 @@ export default async function LoginPage({
             Continue with Google
           </a>
 
+          {/* OTP / mobile-number login hidden until MSG91 DLT template is approved.
+              Re-enable by uncommenting the divider + <LoginForm /> below. */}
+          {/*
           <div className="auth-divider">
             <span>or use your mobile number</span>
           </div>
 
           <LoginForm />
+          */}
         </div>
       </div>
     </main>

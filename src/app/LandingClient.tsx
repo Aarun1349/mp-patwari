@@ -159,7 +159,7 @@ export function LandingClient({ packages, exams }: { packages: LandingPackage[];
                 <div className="t2">{t.admitCard.t2}</div>
               </div>
               <div className="mono" style={{ fontSize: "11px" }}>
-                #MP-PTW
+                #MP-SI
               </div>
             </div>
             <div className="ac-body">
