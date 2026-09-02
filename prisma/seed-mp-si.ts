@@ -87,6 +87,28 @@ async function main() {
     console.log(`Created draft mock: ${p.title} (100Q · 120min · no-negative)`);
   }
 
+  // Paid PRELIMS package tiers (platform/house, scoped to MP SI). Prices in paise;
+  // mrpPaise drives the struck-through "was ₹X". Re-running refreshes prices.
+  // NOTE: Mains-set + combo (Prelims+Mains) SKUs need the stage-scoped credit model
+  // (Phase B) — a single-exam package can't honestly split prelims vs mains credits.
+  const PRELIMS_PACKAGES = [
+    { name: "1 Prelims Mock", testCount: 1, pricePaise: 9900, mrpPaise: 0, kind: "standard" as const, validityDays: 30, sortOrder: 1 },
+    { name: "5 Prelims Mocks", testCount: 5, pricePaise: 39900, mrpPaise: 44900, kind: "standard" as const, validityDays: 90, sortOrder: 2 },
+    { name: "10 Prelims Mocks", testCount: 10, pricePaise: 59900, mrpPaise: 69900, kind: "standard" as const, validityDays: 120, sortOrder: 3 },
+  ];
+  for (const pkg of PRELIMS_PACKAGES) {
+    const existing = await prisma.package.findFirst({
+      where: { name: pkg.name, examId: exam.id, tenantId: "platform" },
+    });
+    if (existing) {
+      await prisma.package.update({ where: { id: existing.id }, data: pkg });
+      console.log(`Package updated: ${pkg.name} (₹${pkg.pricePaise / 100})`);
+    } else {
+      await prisma.package.create({ data: { ...pkg, examId: exam.id, tenantId: "platform" } });
+      console.log(`Package created: ${pkg.name} (₹${pkg.pricePaise / 100})`);
+    }
+  }
+
   console.log("\nMP SI seed done. Next: upload 100 questions to each mock in /admin, then activate.");
 }
 

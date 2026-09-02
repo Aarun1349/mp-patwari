@@ -59,7 +59,16 @@ export default async function PackagesPage() {
           {pkg.name}
           {pkg.kind === "topup" && " (Top-up)"}
         </div>
-        <div className="amount">₹{(pkg.pricePaise / 100).toFixed(0)}</div>
+        <div className="amount">
+          ₹{(pkg.pricePaise / 100).toFixed(0)}
+          {pkg.mrpPaise > pkg.pricePaise && (
+            <span
+              style={{ textDecoration: "line-through", opacity: 0.55, fontSize: "0.6em", marginLeft: "8px", fontWeight: 400 }}
+            >
+              ₹{(pkg.mrpPaise / 100).toFixed(0)}
+            </span>
+          )}
+        </div>
         <div className="per">
           {pkg.testCount} test{pkg.testCount === 1 ? "" : "s"} · ₹{perTest.toFixed(0)}/test
         </div>

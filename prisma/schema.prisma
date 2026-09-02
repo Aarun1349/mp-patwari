@@ -274,6 +274,7 @@ model Package {
   name         String
   testCount    Int
   pricePaise   Int
+  mrpPaise     Int         @default(0) // list/MRP price for a struck-through "was ₹X"; 0 = no MRP shown
   kind         PackageKind @default(standard)
   validityDays Int
   sortOrder    Int         @default(0)
