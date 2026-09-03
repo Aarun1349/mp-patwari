@@ -58,10 +58,10 @@ const NON_MCQ_STAGE = { papersPerSet: 1, defaultQuestions: 0, defaultMarks: 0, d
 
 const EXAMS: ExamCfg[] = [
   {
-    // DEEP-FILLED (validated 2026-09-03 from adda247 / mphc.gov.in reporting):
-    // written Prelims 100Q/100/120min, 5 subjects × 20Q; then a 50-mark Hindi
-    // typing test (10 min, ~350 words) — non-MCQ. No separate Mains. Negative
-    // marking not stated in sources → 0 (TENTATIVE, confirm from official PDF).
+    // DEEP-FILLED + VALIDATED (2026-09-03, mphc.gov.in reporting): written Prelims
+    // 100Q/100/120min, 5 subjects × 20Q, NO negative marking (CONFIRMED — sources agree
+    // the prelims MCQs carry no negative marking). Then a 50-mark Hindi typing test
+    // (10 min, ~350 words, 0.5 deduction/error) — non-MCQ. No separate Mains.
     slug: "mp-hc-ag3", name: "MP High Court Assistant Grade-III", board: "MP High Court",
     shortName: "MP HC AG-III", sortOrder: 10,
     stages: [
