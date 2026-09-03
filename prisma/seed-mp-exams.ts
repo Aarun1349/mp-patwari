@@ -115,12 +115,17 @@ const EXAMS: ExamCfg[] = [
     packages: SINGLE_PAPER_PACKAGES("General Mock"),
   },
   {
+    // Structure only (NOT deep-filled). Validation 2026-09-03 found CONFLICTING reports:
+    // Prelims = Paper I (GS) + Paper II (GAT/CSAT), each 200 marks / 2 hours; Paper II
+    // qualifying (33%). Negative marking DISPUTED (some say none; one says 2026 introduced
+    // it on GS Paper I) and per-paper question count unclear (100 vs 200) — so pattern stays
+    // TENTATIVE pending the official MPPSC scheme. Two blockers before mocks/packages:
+    //   (1) confirm the official pattern; (2) Phase B — a 2-paper prelims "set" sold/attempted
+    //       as one unit, and the descriptive Mains is outside the MCQ engine.
     slug: "mppsc-state-service", name: "MPPSC State Service Examination", board: "MPPSC",
     shortName: "MPPSC State Service", sortOrder: 12,
     stages: [
-      // Prelims: Paper I (GS) + Paper II (CSAT), each ~200 marks / 2 hours, no negative
-      // per current reporting — TENTATIVE, verify official scheme. 2 papers make one set.
-      { key: "PRELIMS", name: "Prelims", sortOrder: 1, papersPerSet: 2, defaultQuestions: 100, defaultMarks: 200, defaultDurationMinutes: 120, defaultNegativeRatio: 0, qualifying: true },
+      { key: "PRELIMS", name: "Prelims (Paper I GS + Paper II CSAT)", sortOrder: 1, papersPerSet: 2, defaultQuestions: 100, defaultMarks: 200, defaultDurationMinutes: 120, defaultNegativeRatio: 0, qualifying: true },
       { key: "MAINS", name: "Mains (descriptive)", sortOrder: 2, ...NON_MCQ_STAGE }, // descriptive — out of MCQ engine scope
     ],
     sections: [sec(S.GS, 1), sec(S.CSAT, 2), sec(S.CA, 3), sec(S.MP_GK, 4)],
