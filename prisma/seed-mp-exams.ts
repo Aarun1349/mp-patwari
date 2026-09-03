@@ -19,7 +19,13 @@ type StageCfg = {
 };
 type SectionCfg = { code: string; nameEn: string; nameHi: string; sortOrder: number };
 // Deep-fill (optional, added once an exam's pattern is validated): draft mocks + packages.
-type MockCfg = { title: string; stageKey: string; sequenceNo: number; isFree: boolean };
+// A mock defaults to its stage's pattern; the optional overrides let a subset mock
+// (e.g. a Group-3 "Common General" practice = only the 100 general Qs of the full
+// 200-Q paper) carry its own questions/marks/duration.
+type MockCfg = {
+  title: string; stageKey: string; sequenceNo: number; isFree: boolean;
+  questions?: number; marks?: number; durationMinutes?: number; negativeRatio?: number;
+};
 type PackageCfg = { name: string; testCount: number; pricePaise: number; mrpPaise: number; kind: "standard" | "topup"; validityDays: number; sortOrder: number };
 type ExamCfg = {
   slug: string; name: string; board: string; shortName: string; sortOrder: number;
@@ -92,12 +98,21 @@ const EXAMS: ExamCfg[] = [
     packages: SINGLE_PAPER_PACKAGES("Written Mock"),
   },
   {
+    // DEEP-FILLED + VALIDATED (2026-09-03, adda247 / pw.live reporting): full paper is
+    // 200 MCQ / 200 marks / 180 min, NO negative marking, bilingual — 100 Q General
+    // (Section A) + 100 Q post-specific Technical (Section B). Technical is post-dependent,
+    // so only the Common General series is built now (blueprint); technical streams per demand.
     slug: "mpesb-group-3", name: "MPESB Group-3 (Sub Engineer & equivalent)", board: "MPESB",
     shortName: "MPESB Group-3", sortOrder: 11,
-    // Post-dependent: only the Common General section is scaffolded. Technical streams
-    // (Civil/Electrical/Mechanical/Draftsman/…) are added per post/demand, per rulebook.
-    stages: [{ key: "WRITTEN", name: "Written Exam", sortOrder: 1, ...TENTATIVE_WRITTEN }],
+    stages: [{ key: "WRITTEN", name: "Written Exam", sortOrder: 1, papersPerSet: 1, defaultQuestions: 200, defaultMarks: 200, defaultDurationMinutes: 180, defaultNegativeRatio: 0, qualifying: false }],
     sections: [sec(S.GK, 1), sec(S.HINDI, 2), sec(S.ENGLISH, 3), sec(S.MATH, 4), sec(S.SCIENCE, 5), sec(S.COMPUTER, 6), sec(S.CA, 7), sec(S.MP_GK, 8)],
+    // Common General practice = only the 100 general Qs (Section A), valid for all posts.
+    // Full 200-Q post mocks arrive with each technical stream later.
+    mocks: [
+      { title: "MPESB Group-3 — Common General Free Mock 1", stageKey: "WRITTEN", sequenceNo: 1, isFree: true, questions: 100, marks: 100, durationMinutes: 90 },
+      { title: "MPESB Group-3 — Common General Free Mock 2", stageKey: "WRITTEN", sequenceNo: 2, isFree: true, questions: 100, marks: 100, durationMinutes: 90 },
+    ],
+    packages: SINGLE_PAPER_PACKAGES("General Mock"),
   },
   {
     slug: "mppsc-state-service", name: "MPPSC State Service Examination", board: "MPPSC",
@@ -173,8 +188,10 @@ async function main() {
       const existing = await prisma.paper.findFirst({ where: { examId: exam.id, title: m.title } });
       const data = {
         stageId: st.id, setNo: m.sequenceNo, paperNoInSet: 1,
-        totalQuestions: st.defaultQuestions, totalMarks: st.defaultMarks,
-        durationMinutes: st.defaultDurationMinutes, negativeMarkingRatio: st.defaultNegativeRatio,
+        totalQuestions: m.questions ?? st.defaultQuestions,
+        totalMarks: m.marks ?? st.defaultMarks,
+        durationMinutes: m.durationMinutes ?? st.defaultDurationMinutes,
+        negativeMarkingRatio: m.negativeRatio ?? st.defaultNegativeRatio,
       };
       if (existing) {
         await prisma.paper.update({ where: { id: existing.id }, data });
