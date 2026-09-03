@@ -18,9 +18,13 @@ type StageCfg = {
   defaultNegativeRatio: number; qualifying: boolean;
 };
 type SectionCfg = { code: string; nameEn: string; nameHi: string; sortOrder: number };
+// Deep-fill (optional, added once an exam's pattern is validated): draft mocks + packages.
+type MockCfg = { title: string; stageKey: string; sequenceNo: number; isFree: boolean };
+type PackageCfg = { name: string; testCount: number; pricePaise: number; mrpPaise: number; kind: "standard" | "topup"; validityDays: number; sortOrder: number };
 type ExamCfg = {
   slug: string; name: string; board: string; shortName: string; sortOrder: number;
   stages: StageCfg[]; sections: SectionCfg[];
+  mocks?: MockCfg[]; packages?: PackageCfg[]; // present only for deep-filled (validated) exams
 };
 
 // Reusable subject building blocks.
@@ -54,13 +58,33 @@ const NON_MCQ_STAGE = { papersPerSet: 1, defaultQuestions: 0, defaultMarks: 0, d
 
 const EXAMS: ExamCfg[] = [
   {
+    // DEEP-FILLED (validated 2026-09-03 from adda247 / mphc.gov.in reporting):
+    // written Prelims 100Q/100/120min, 5 subjects × 20Q; then a 50-mark Hindi
+    // typing test (10 min, ~350 words) — non-MCQ. No separate Mains. Negative
+    // marking not stated in sources → 0 (TENTATIVE, confirm from official PDF).
     slug: "mp-hc-ag3", name: "MP High Court Assistant Grade-III", board: "MP High Court",
     shortName: "MP HC AG-III", sortOrder: 10,
     stages: [
-      { key: "WRITTEN", name: "Written Exam", sortOrder: 1, ...TENTATIVE_WRITTEN },
-      { key: "TYPING", name: "Hindi Typing Skill Test", sortOrder: 2, ...NON_MCQ_STAGE }, // skill test — not an MCQ mock
+      { key: "WRITTEN", name: "Written Exam (Prelims)", sortOrder: 1, papersPerSet: 1, defaultQuestions: 100, defaultMarks: 100, defaultDurationMinutes: 120, defaultNegativeRatio: 0, qualifying: false },
+      { key: "TYPING", name: "Hindi Typing Skill Test (50 marks)", sortOrder: 2, ...NON_MCQ_STAGE }, // skill test — not an MCQ mock
     ],
-    sections: [sec(S.GK, 1), sec(S.HINDI, 2), sec(S.ENGLISH, 3), sec(S.MATH, 4), sec(S.COMPUTER, 5), sec(S.MP_GK, 6)],
+    // Official 5 subjects, 20Q / 20 marks each.
+    sections: [
+      { code: "GK", nameEn: "General Knowledge & General Studies", nameHi: "सामान्य ज्ञान एवं सामान्य अध्ययन", sortOrder: 1 },
+      { code: "MATH", nameEn: "Mathematics & Logical Reasoning", nameHi: "गणित एवं तार्किक तर्कशक्ति", sortOrder: 2 },
+      sec(S.HINDI, 3), sec(S.ENGLISH, 4), sec(S.COMPUTER, 5),
+    ],
+    // Two free written mocks (drafts) — upload 100 questions each, then activate.
+    mocks: [
+      { title: "MP HC AG-III — Free Mock 1", stageKey: "WRITTEN", sequenceNo: 1, isFree: true },
+      { title: "MP HC AG-III — Free Mock 2", stageKey: "WRITTEN", sequenceNo: 2, isFree: true },
+    ],
+    // Package tiers — MP SI default pricing applied; adjust if HC should differ.
+    packages: [
+      { name: "1 Written Mock", testCount: 1, pricePaise: 9900, mrpPaise: 0, kind: "standard", validityDays: 30, sortOrder: 1 },
+      { name: "5 Written Mocks", testCount: 5, pricePaise: 39900, mrpPaise: 44900, kind: "standard", validityDays: 90, sortOrder: 2 },
+      { name: "10 Written Mocks", testCount: 10, pricePaise: 59900, mrpPaise: 69900, kind: "standard", validityDays: 120, sortOrder: 3 },
+    ],
   },
   {
     slug: "mpesb-group-3", name: "MPESB Group-3 (Sub Engineer & equivalent)", board: "MPESB",
@@ -105,13 +129,17 @@ async function main() {
       update: { name: cfg.name, board: cfg.board, shortName: cfg.shortName, sortOrder: cfg.sortOrder },
       create: { slug: cfg.slug, name: cfg.name, board: cfg.board, shortName: cfg.shortName, sortOrder: cfg.sortOrder },
     });
+
+    const stageByKey: Record<string, { id: string } & StageCfg> = {};
     for (const st of cfg.stages) {
-      await prisma.examStage.upsert({
+      const stage = await prisma.examStage.upsert({
         where: { examId_key: { examId: exam.id, key: st.key } },
         update: st,
         create: { ...st, examId: exam.id },
       });
+      stageByKey[st.key] = { id: stage.id, ...st };
     }
+
     for (const s of cfg.sections) {
       await prisma.section.upsert({
         where: { examId_code: { examId: exam.id, code: s.code } },
@@ -119,9 +147,52 @@ async function main() {
         create: { ...s, examId: exam.id },
       });
     }
-    console.log(`✔ ${cfg.name} — ${cfg.stages.length} stage(s), ${cfg.sections.length} section(s) [patterns TENTATIVE]`);
+    // Prune stale sections no longer in the config, but only if empty (never drop
+    // a section that already has questions).
+    const keep = new Set(cfg.sections.map((s) => s.code));
+    const stale = await prisma.section.findMany({
+      where: { examId: exam.id, code: { notIn: [...keep] } },
+      include: { _count: { select: { questions: true } } },
+    });
+    for (const s of stale) {
+      if (s._count.questions === 0) {
+        try { await prisma.section.delete({ where: { id: s.id } }); } catch { /* referenced elsewhere — leave it */ }
+      }
+    }
+
+    // Deep-fill (validated exams only): draft mocks + packages.
+    let mockCount = 0;
+    for (const m of cfg.mocks ?? []) {
+      const st = stageByKey[m.stageKey];
+      if (!st) continue;
+      const existing = await prisma.paper.findFirst({ where: { examId: exam.id, title: m.title } });
+      const data = {
+        stageId: st.id, setNo: m.sequenceNo, paperNoInSet: 1,
+        totalQuestions: st.defaultQuestions, totalMarks: st.defaultMarks,
+        durationMinutes: st.defaultDurationMinutes, negativeMarkingRatio: st.defaultNegativeRatio,
+      };
+      if (existing) {
+        await prisma.paper.update({ where: { id: existing.id }, data });
+      } else {
+        await prisma.paper.create({
+          data: { title: m.title, sequenceNo: m.sequenceNo, examId: exam.id, tenantId: "platform", isFree: m.isFree, isActive: false, sourceLang: "hi", ...data },
+        });
+      }
+      mockCount++;
+    }
+
+    let pkgCount = 0;
+    for (const pkg of cfg.packages ?? []) {
+      const existing = await prisma.package.findFirst({ where: { name: pkg.name, examId: exam.id, tenantId: "platform" } });
+      if (existing) await prisma.package.update({ where: { id: existing.id }, data: pkg });
+      else await prisma.package.create({ data: { ...pkg, examId: exam.id, tenantId: "platform" } });
+      pkgCount++;
+    }
+
+    const deep = cfg.mocks ? ` · ${mockCount} mock(s) · ${pkgCount} package(s) [VALIDATED]` : " [patterns TENTATIVE]";
+    console.log(`✔ ${cfg.name} — ${cfg.stages.length} stage(s), ${cfg.sections.length} section(s)${deep}`);
   }
-  console.log("\nCatalog scaffold done. Validate each exam's pattern from its official rulebook before building mocks.");
+  console.log("\nCatalog seed done. Exams without mocks still need pattern validation from their official rulebook.");
 }
 
 main()

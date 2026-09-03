@@ -19,7 +19,7 @@ Status vocab: `CONFIRMED` · `TENTATIVE` · `TBD` · `REVISED` · `CLOSED` · `E
 | Exam | slug | Body | Stages | Pattern status | Priority | Key dates |
 |---|---|---|---|---|---|---|
 | MP Police SI / Subedar | `mp-si` | MPESB | Prelims + Mains (+ PET + Interview) | Prelims **CONFIRMED** (100Q/100/120min/0-neg, web-validated); Mains **TENTATIVE** (2 papers/set, 300 each, negative) | P1 | Apply 9–23 Sep; Written from 28 Oct 2026 |
-| MP High Court Assistant Gr-III | `mp-hc-ag3` | MP High Court | Written + Hindi Typing skill | **TBD** — verify HC notification | P1 | Apply 17 Aug–15 Sep; exam date TBD |
+| MP High Court Assistant Gr-III | `mp-hc-ag3` | MP High Court | Written Prelims + Hindi Typing (50m) + DV | Written **CONFIRMED** (100Q/100/120min, 5 subjects×20Q; validated 2026-09-03 via adda247/mphc reporting) — **negative marking TENTATIVE** (0, confirm official PDF). No separate Mains. Typing = non-MCQ. **Deep-filled: 2 mocks + 3 packages.** | P1 | Apply 17 Aug–15 Sep; exam date TBD (~1,174 posts) |
 | MPESB Group-3 (Sub Engineer etc.) | `mpesb-group-3` | MPESB | Written (post-dependent: Common + technical stream) | **TBD** — post-wise, verify rulebook | P1 | Apply 29 Aug–12 Sep; exam from 7 Oct 2026 |
 | MPPSC State Service | `mppsc-state-service` | MPPSC | Prelims (Paper I GS + Paper II CSAT) + Mains (descriptive) + Interview | Prelims **TENTATIVE** (Paper I/II each 200/2hr, no-neg — "verify"); Mains TBD | P1 | Prelims 26 Apr; Mains 7–12 Sep 2026 |
 | MPESB Group-2 Sub Gr-1 / Krishi Vistar Adhikari | `mpesb-group-2-sg1` | MPESB | Written (post-specific + agriculture) | **TBD** | P2 | Apply 3–17 Jul; exam from 17 Sep 2026 |
@@ -40,4 +40,7 @@ MPESB rulebook → MPESB advert/notice → MPESB student dashboard → MPPSC not
 
 ## Scaffold state (config-driven, this repo)
 - `prisma/seed-mp-si.ts` — MP SI (full: stages + sections + free Prelims mocks + Mains set draft + packages).
-- `prisma/seed-mp-exams.ts` — the other 5 exams: identity + stages (structure) + subject sections only. **No mock papers, no packages** yet (patterns unvalidated). Deep-fill per exam after official validation.
+- `prisma/seed-mp-exams.ts` — the other 5 exams. Each `ExamCfg` gains optional `mocks` + `packages` once its pattern is validated (deep-fill). **Deep-filled: MP HC AG-III** (2 free written mocks + 3 packages). The other 4 are structure-only (stages + sections, patterns TENTATIVE) pending official validation.
+
+## Deep-fill order (P1 first)
+1. ✅ MP SI (own seed) · 2. ✅ MP HC AG-III · 3. ⏳ MPESB Group-3 · 4. ⏳ MPPSC State Service · then P2 (Group-2 Krishi, Forest).
