@@ -55,10 +55,13 @@ async function seedQuestions(paperId: string, sectionId: string, marks: number, 
   return ids;
 }
 
-async function runPaper(label: string, userId: string, paperId: string, sectionId: string, expectScore: number) {
+async function runPaper(label: string, userId: string, paperId: string, sectionId: string) {
   const paper = await prisma.paper.findUniqueOrThrow({ where: { id: paperId } });
   const marks = paper.totalMarks / paper.totalQuestions;
   const negativeMarks = paper.negativeMarkingRatio * marks;
+  // Expected is derived from THIS paper's pattern, so the test stays valid for any
+  // exam/stage (no negative for Prelims, 1/3 for MP SI Mains, 0.25 for Group-2, …).
+  const expectScore = CORRECT * marks - WRONG * negativeMarks;
   console.log(`\n▶ ${label} — ${paper.title}`);
   console.log(`  pattern: ${marks} marks/Q, negative ${negativeMarks}/Q (ratio ${paper.negativeMarkingRatio})`);
 
@@ -96,10 +99,10 @@ async function main() {
 
   const created: { attemptId: string; qids: string[] }[] = [];
   try {
-    // Prelims: 6 correct × 1 − 2 wrong × 0 = 6
-    created.push(await runPaper("PRELIMS", user.id, prelims.id, section.id, CORRECT * 1 - WRONG * 0));
-    // Mains: 6 correct × 3 − 2 wrong × 0.75 = 18 − 1.5 = 16.5
-    created.push(await runPaper("MAINS", user.id, mains.id, section.id, CORRECT * 3 - WRONG * 0.75));
+    // Prelims: no negative marking. Mains: 1/3 negative per wrong. Expected scores
+    // are computed inside runPaper from each paper's actual pattern.
+    created.push(await runPaper("PRELIMS", user.id, prelims.id, section.id));
+    created.push(await runPaper("MAINS", user.id, mains.id, section.id));
 
     // Confirm the paid-Mains attempt consumed exactly one credit (5 → 4).
     const credit = await prisma.userCredit.findFirstOrThrow({ where: { userId: user.id, examId: exam.id } });

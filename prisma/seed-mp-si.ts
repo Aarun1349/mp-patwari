@@ -37,11 +37,12 @@ const STAGES = [
   },
   {
     key: "MAINS", name: "Mains", sortOrder: 2, papersPerSet: 2,
-    // ⚠️ PROVISIONAL — confirm exact figures from the official MPESB notification.
-    // Confirmed so far: 2 papers per set, 300 marks each, negative marking present.
-    // Question count + exact negative ratio not yet confirmed (0.25 placeholder).
+    // VALIDATED 2026-09-04: 2 papers per set, 300 marks each, 2 hours each, negative
+    // marking 1/3 per wrong answer (no deduction for unattempted). Paper I = 2 sections
+    // × 150 marks. Per-paper question count not stated → 100 placeholder (adjust when
+    // the official notification confirms it). Technical posts add a Paper-III (300).
     defaultQuestions: 100, defaultMarks: 300, defaultDurationMinutes: 120,
-    defaultNegativeRatio: 0.25, qualifying: false,
+    defaultNegativeRatio: 1 / 3, qualifying: false,
   },
 ];
 
@@ -98,10 +99,14 @@ async function main() {
   // Free PRELIMS mocks — pattern comes from the Prelims stage config (config-driven).
   for (const p of PAPERS) {
     const stageLink = { stageId: stageByKey.PRELIMS, setNo: p.sequenceNo, paperNoInSet: 1 };
+    const pattern = {
+      totalQuestions: prelimsStage.defaultQuestions, totalMarks: prelimsStage.defaultMarks,
+      durationMinutes: prelimsStage.defaultDurationMinutes, negativeMarkingRatio: prelimsStage.defaultNegativeRatio,
+    };
     const existing = await prisma.paper.findFirst({ where: { examId: exam.id, title: p.title } });
     if (existing) {
-      await prisma.paper.update({ where: { id: existing.id }, data: stageLink });
-      console.log(`Prelims mock exists, linked to stage: ${p.title}`);
+      await prisma.paper.update({ where: { id: existing.id }, data: { ...stageLink, ...pattern } });
+      console.log(`Prelims mock exists, refreshed from config: ${p.title}`);
       continue;
     }
     await prisma.paper.create({
@@ -130,10 +135,14 @@ async function main() {
   for (let i = 1; i <= mainsStage.papersPerSet; i++) {
     const title = `MP SI Mains Set ${mainsSetNo} — Paper ${i}`;
     const stageLink = { stageId: stageByKey.MAINS, setNo: mainsSetNo, paperNoInSet: i };
+    const pattern = {
+      totalQuestions: mainsStage.defaultQuestions, totalMarks: mainsStage.defaultMarks,
+      durationMinutes: mainsStage.defaultDurationMinutes, negativeMarkingRatio: mainsStage.defaultNegativeRatio,
+    };
     const existing = await prisma.paper.findFirst({ where: { examId: exam.id, title } });
     if (existing) {
-      await prisma.paper.update({ where: { id: existing.id }, data: stageLink });
-      console.log(`Mains paper exists, linked to stage: ${title}`);
+      await prisma.paper.update({ where: { id: existing.id }, data: { ...stageLink, ...pattern } });
+      console.log(`Mains paper exists, refreshed from config: ${title}`);
       continue;
     }
     await prisma.paper.create({
