@@ -124,8 +124,35 @@ model Exam {
   sections Section[]
   packages Package[]
   credits  UserCredit[]
+  stages   ExamStage[]
 
   @@map("exams")
+}
+
+// Per-exam, per-stage PATTERN CONFIG — the single place an exam's shape lives so
+// mock + package creation are config-driven (ADR 0001). A new official notification
+// changes the pattern → edit this config, not code. e.g. MP SI: PRELIMS (1 paper,
+// 100Q/100/120min/0-neg, qualifying) and MAINS (2 papers per set, 300 marks each,
+// negative marking). A "mock" of a stage = `papersPerSet` papers grouped as one set.
+model ExamStage {
+  id                     String  @id @default(cuid())
+  examId                 String
+  exam                   Exam    @relation(fields: [examId], references: [id])
+  key                    String // "PRELIMS" | "MAINS" (uppercase, unique per exam)
+  name                   String // display name, e.g. "Prelims"
+  sortOrder              Int     @default(0)
+  papersPerSet           Int     @default(1) // papers that make one mock/set of this stage
+  defaultQuestions       Int // per paper — seeds a new mock's totalQuestions
+  defaultMarks           Int // per paper — seeds totalMarks
+  defaultDurationMinutes Int // per paper
+  defaultNegativeRatio   Float   @default(0) // per paper
+  qualifying             Boolean @default(false) // marks don't count toward final merit
+  isActive               Boolean @default(true)
+
+  papers Paper[]
+
+  @@unique([examId, key])
+  @@map("exam_stages")
 }
 
 model Section {
@@ -160,6 +187,15 @@ model Paper {
   createdAt            DateTime @default(now())
   examId               String
   exam                 Exam     @relation(fields: [examId], references: [id])
+  // Stage this paper belongs to (Prelims/Mains). Nullable for backward-compat:
+  // legacy single-stage papers stay null and behave as before.
+  stageId              String?
+  stage                ExamStage? @relation(fields: [stageId], references: [id])
+  // Papers of one multi-paper "set" (e.g. a Mains set = Paper 1 + Paper 2) share
+  // the same setNo within a stage; paperNoInSet orders them (1, 2, …). A single-
+  // paper mock (Prelims) is its own set with paperNoInSet = 1.
+  setNo                Int      @default(1)
+  paperNoInSet         Int      @default(1)
   // Owning tenant. Defaults to the platform tenant so existing rows and
   // platform-authored papers need no backfill; tenant flows set it explicitly.
   tenantId             String   @default("platform")

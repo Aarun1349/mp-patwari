@@ -27,6 +27,24 @@ const SECTIONS = [
   { code: "MP_GK", nameEn: "Madhya Pradesh GK", nameHi: "म.प्र. सामान्य ज्ञान", sortOrder: 7 },
 ];
 
+// Stage PATTERN CONFIG (ADR 0001 — exams are config, not code). Change these when a
+// new MPESB notification changes the pattern; mock creation reads these defaults.
+const STAGES = [
+  {
+    key: "PRELIMS", name: "Prelims", sortOrder: 1, papersPerSet: 1,
+    defaultQuestions: 100, defaultMarks: 100, defaultDurationMinutes: 120,
+    defaultNegativeRatio: 0, qualifying: true, // confirmed: 100Q/100/120min, no negative, qualifying
+  },
+  {
+    key: "MAINS", name: "Mains", sortOrder: 2, papersPerSet: 2,
+    // ⚠️ PROVISIONAL — confirm exact figures from the official MPESB notification.
+    // Confirmed so far: 2 papers per set, 300 marks each, negative marking present.
+    // Question count + exact negative ratio not yet confirmed (0.25 placeholder).
+    defaultQuestions: 100, defaultMarks: 300, defaultDurationMinutes: 120,
+    defaultNegativeRatio: 0.25, qualifying: false,
+  },
+];
+
 // Two free Prelims mock shells — created as drafts (isActive:false). Upload 100
 // questions to each (Excel / AI-gen in admin), then activate to go live.
 const PAPERS = [
@@ -54,6 +72,20 @@ async function main() {
   });
   if (demoted.count) console.log("Demoted MP Patwari below MP SI (sortOrder → 5).");
 
+  // Stage config — the source of truth for this exam's pattern (ADR 0001).
+  const stageByKey: Record<string, string> = {};
+  for (const st of STAGES) {
+    const stage = await prisma.examStage.upsert({
+      where: { examId_key: { examId: exam.id, key: st.key } },
+      update: st,
+      create: { ...st, examId: exam.id },
+    });
+    stageByKey[st.key] = stage.id;
+    console.log(`Stage: ${stage.name} (${st.papersPerSet} paper/set, ${st.defaultMarks} marks, neg ${st.defaultNegativeRatio})`);
+  }
+  const prelimsStage = STAGES.find((s) => s.key === "PRELIMS")!;
+  const mainsStage = STAGES.find((s) => s.key === "MAINS")!;
+
   for (const s of SECTIONS) {
     await prisma.section.upsert({
       where: { examId_code: { examId: exam.id, code: s.code } },
@@ -63,10 +95,13 @@ async function main() {
   }
   console.log(`Seeded ${SECTIONS.length} sections.`);
 
+  // Free PRELIMS mocks — pattern comes from the Prelims stage config (config-driven).
   for (const p of PAPERS) {
+    const stageLink = { stageId: stageByKey.PRELIMS, setNo: p.sequenceNo, paperNoInSet: 1 };
     const existing = await prisma.paper.findFirst({ where: { examId: exam.id, title: p.title } });
     if (existing) {
-      console.log(`Paper exists, skipping: ${p.title}`);
+      await prisma.paper.update({ where: { id: existing.id }, data: stageLink });
+      console.log(`Prelims mock exists, linked to stage: ${p.title}`);
       continue;
     }
     await prisma.paper.create({
@@ -75,16 +110,49 @@ async function main() {
         sequenceNo: p.sequenceNo,
         examId: exam.id,
         tenantId: "platform",
+        ...stageLink,
         isFree: true,
         isActive: false, // draft — activate after uploading questions
-        totalQuestions: 100,
-        totalMarks: 100,
-        durationMinutes: 120,
-        negativeMarkingRatio: 0, // Prelims: no negative marking
+        totalQuestions: prelimsStage.defaultQuestions,
+        totalMarks: prelimsStage.defaultMarks,
+        durationMinutes: prelimsStage.defaultDurationMinutes,
+        negativeMarkingRatio: prelimsStage.defaultNegativeRatio,
         sourceLang: "hi",
       },
     });
-    console.log(`Created draft mock: ${p.title} (100Q · 120min · no-negative)`);
+    console.log(`Created Prelims mock: ${p.title} (${prelimsStage.defaultMarks} marks · no-negative)`);
+  }
+
+  // One MAINS SET (Paper 1 + Paper 2) as drafts — for the end-to-end test. Both papers
+  // share setNo=1; paperNoInSet orders them. Paid (isFree:false), draft until questions
+  // are uploaded + activated. Pattern comes from the Mains stage config.
+  const mainsSetNo = 1;
+  for (let i = 1; i <= mainsStage.papersPerSet; i++) {
+    const title = `MP SI Mains Set ${mainsSetNo} — Paper ${i}`;
+    const stageLink = { stageId: stageByKey.MAINS, setNo: mainsSetNo, paperNoInSet: i };
+    const existing = await prisma.paper.findFirst({ where: { examId: exam.id, title } });
+    if (existing) {
+      await prisma.paper.update({ where: { id: existing.id }, data: stageLink });
+      console.log(`Mains paper exists, linked to stage: ${title}`);
+      continue;
+    }
+    await prisma.paper.create({
+      data: {
+        title,
+        sequenceNo: 100 + i,
+        examId: exam.id,
+        tenantId: "platform",
+        ...stageLink,
+        isFree: false,
+        isActive: false,
+        totalQuestions: mainsStage.defaultQuestions,
+        totalMarks: mainsStage.defaultMarks,
+        durationMinutes: mainsStage.defaultDurationMinutes,
+        negativeMarkingRatio: mainsStage.defaultNegativeRatio,
+        sourceLang: "hi",
+      },
+    });
+    console.log(`Created Mains draft: ${title} (${mainsStage.defaultMarks} marks · neg ${mainsStage.defaultNegativeRatio})`);
   }
 
   // Paid PRELIMS package tiers (platform/house, scoped to MP SI). Prices in paise;
