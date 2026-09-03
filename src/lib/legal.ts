@@ -1,6 +1,8 @@
-// ⚠️ PLACEHOLDER LEGAL CONFIG — REVIEW WITH COUNSEL BEFORE THIS BRANCH DEPLOYS.
-// Fill in the real registered entity, CIN, address and grievance-officer details.
-// The legal-page copy this drives is an India-aware DRAFT template, NOT legal advice.
+// Legal identity — real registered entity (AMTECH, sole proprietorship, MSME/Udyam
+// registered, 2026-09-03). The legal-page COPY this drives is still an India-aware
+// DRAFT template that should get counsel/CA review before relying on it; the identity
+// values below are real. ⚠️ Confirm the grievance-officer EMAIL is a mailbox that is
+// actually monitored (see below) before publishing.
 //
 // Split of concerns: this file holds the legal IDENTITY + policy constants. GST
 // rate / GSTIN / SAC are commerce config and live in `billing/tax.ts` (env-driven,
@@ -11,13 +13,16 @@
 
 export const LEGAL = {
   companyName: "ExamsExpress",
-  legalEntity: "[Registered legal entity — e.g. AMTECH … Pvt. Ltd. / Proprietorship]",
-  cin: "[CIN, if incorporated]",
-  address: "[Registered office address, Gwalior, Madhya Pradesh, PIN]",
+  legalEntity: "AMTECH (Sole Proprietorship), Proprietor: Parul Singh",
+  cin: "N/A — Sole Proprietorship (MSME/Udyam registered)", // not rendered; no CIN for a proprietorship
+  address: "Sengars, Near Khandova Temple, Shivaji Nagar, Gwalior, Madhya Pradesh – 474009",
+  // ⚠️ These mailboxes must exist and be monitored (grievance contact is legally required).
+  // Branded addresses assumed — if not yet set up, switch to the registered email
+  // (ps3310059@gmail.com) or create these before publishing.
   supportEmail: "support@examsexpress.in",
-  grievanceOfficer: { name: "[Grievance Officer Name]", email: "grievance@examsexpress.in" },
+  grievanceOfficer: { name: "Parul Singh", email: "grievance@examsexpress.in" },
   jurisdiction: "the courts of Gwalior, Madhya Pradesh, India",
-  lastUpdated: "31 August 2026",
+  lastUpdated: "3 September 2026",
 
   // Commerce policy
   // ExamsExpress currently states "all purchases are final — no refunds" on the buy
