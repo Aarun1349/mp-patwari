@@ -25,6 +25,11 @@ Status vocab: `CONFIRMED` · `TENTATIVE` · `TBD` · `REVISED` · `CLOSED` · `E
 | MPESB Group-2 Sub Gr-1 / Krishi Vistar Adhikari | `mpesb-group-2-sg1` | MPESB | Written (post-specific + agriculture) | **TBD** | P2 | Apply 3–17 Jul; exam from 17 Sep 2026 |
 | MPPSC State Forest Service | `mppsc-forest-service` | MPPSC | Prelims (often shared w/ State Service) + Mains | **TBD** | P2 | Mains 27 Sep 2026 |
 
+## Pricing policy (founder, 2026-09-03)
+- **Single-paper (single-stage) exams** — e.g. MP HC AG-III, Group-3, Group-2: **1 free mock** + bundles **5 → ₹499 · 10 → ₹799 · 15 → ₹1199** (no paid single). Seeded via `SINGLE_PAPER_PACKAGES()` in `seed-mp-exams.ts`.
+- **Prelims + Mains exams** — e.g. MP SI, MPPSC State Service: **follow the MP SI model** (prelims tiers + mains sets + combos; mains-set/combo SKUs are Phase B). MP SI's own confirmed prices stand.
+- MRP/strikethrough (`mrpPaise`) optional per tier; 0 = none.
+
 ## Notes / rules honored (from the blueprint)
 - **Stages never mixed** in one mock config (Prelims ≠ Mains ≠ Skill/Physical). Each is an `ExamStage`.
 - **Group-3 is post-dependent** — do NOT build one identical technical syllabus for all posts; only the Common General section is scaffolded, technical streams (Civil/Electrical/Mechanical/Draftsman/…) added per demand.

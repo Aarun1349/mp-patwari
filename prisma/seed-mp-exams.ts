@@ -56,6 +56,15 @@ const TENTATIVE_WRITTEN = {
 // registered as structure with zeroed pattern; do not build MCQ mocks against these.
 const NON_MCQ_STAGE = { papersPerSet: 1, defaultQuestions: 0, defaultMarks: 0, defaultDurationMinutes: 0, defaultNegativeRatio: 0, qualifying: true };
 
+// Pricing policy (founder, 2026-09-03). Single-paper (single-stage) exams: one FREE
+// mock + these three bundles (no paid single). Prelims+Mains exams follow the MP SI
+// model (prelims tiers + mains sets + combos) instead — configured per exam.
+const SINGLE_PAPER_PACKAGES = (label: string): PackageCfg[] => [
+  { name: `5 ${label}s`, testCount: 5, pricePaise: 49900, mrpPaise: 0, kind: "standard", validityDays: 90, sortOrder: 1 },
+  { name: `10 ${label}s`, testCount: 10, pricePaise: 79900, mrpPaise: 0, kind: "standard", validityDays: 120, sortOrder: 2 },
+  { name: `15 ${label}s`, testCount: 15, pricePaise: 119900, mrpPaise: 0, kind: "standard", validityDays: 150, sortOrder: 3 },
+];
+
 const EXAMS: ExamCfg[] = [
   {
     // DEEP-FILLED + VALIDATED (2026-09-03, mphc.gov.in reporting): written Prelims
@@ -79,12 +88,8 @@ const EXAMS: ExamCfg[] = [
       { title: "MP HC AG-III — Free Mock 1", stageKey: "WRITTEN", sequenceNo: 1, isFree: true },
       { title: "MP HC AG-III — Free Mock 2", stageKey: "WRITTEN", sequenceNo: 2, isFree: true },
     ],
-    // Package tiers — MP SI default pricing applied; adjust if HC should differ.
-    packages: [
-      { name: "1 Written Mock", testCount: 1, pricePaise: 9900, mrpPaise: 0, kind: "standard", validityDays: 30, sortOrder: 1 },
-      { name: "5 Written Mocks", testCount: 5, pricePaise: 39900, mrpPaise: 44900, kind: "standard", validityDays: 90, sortOrder: 2 },
-      { name: "10 Written Mocks", testCount: 10, pricePaise: 59900, mrpPaise: 69900, kind: "standard", validityDays: 120, sortOrder: 3 },
-    ],
+    // Single-paper pricing policy: 1 free mock (above) + 5/10/15 bundles.
+    packages: SINGLE_PAPER_PACKAGES("Written Mock"),
   },
   {
     slug: "mpesb-group-3", name: "MPESB Group-3 (Sub Engineer & equivalent)", board: "MPESB",
@@ -184,9 +189,18 @@ async function main() {
     let pkgCount = 0;
     for (const pkg of cfg.packages ?? []) {
       const existing = await prisma.package.findFirst({ where: { name: pkg.name, examId: exam.id, tenantId: "platform" } });
-      if (existing) await prisma.package.update({ where: { id: existing.id }, data: pkg });
-      else await prisma.package.create({ data: { ...pkg, examId: exam.id, tenantId: "platform" } });
+      if (existing) await prisma.package.update({ where: { id: existing.id }, data: { ...pkg, isActive: true } });
+      else await prisma.package.create({ data: { ...pkg, examId: exam.id, tenantId: "platform", isActive: true } });
       pkgCount++;
+    }
+    // Retire platform packages no longer in the config (deactivate, never delete —
+    // orders reference packages). Keeps the buy page in sync with the current policy.
+    if (cfg.packages) {
+      const keepPkg = new Set(cfg.packages.map((p) => p.name));
+      await prisma.package.updateMany({
+        where: { examId: exam.id, tenantId: "platform", name: { notIn: [...keepPkg] }, isActive: true },
+        data: { isActive: false },
+      });
     }
 
     const deep = cfg.mocks ? ` · ${mockCount} mock(s) · ${pkgCount} package(s) [VALIDATED]` : " [patterns TENTATIVE]";
