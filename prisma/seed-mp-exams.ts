@@ -131,10 +131,19 @@ const EXAMS: ExamCfg[] = [
     sections: [sec(S.GS, 1), sec(S.CSAT, 2), sec(S.CA, 3), sec(S.MP_GK, 4)],
   },
   {
+    // DEEP-FILLED + VALIDATED (2026-09-04, careers360/careerpower reporting): 200 MCQ /
+    // 200 marks / 180 min, NEGATIVE MARKING 0.25 per wrong (unlike other MPESB exams),
+    // bilingual CBT — Part A 100 marks (general) + Part B 100 marks (Agriculture). Single
+    // post with a fixed agri syllabus, so full 200-Q mocks are buildable. Exam 17 Sep 2026.
     slug: "mpesb-group-2-sg1", name: "MPESB Group-2 Sub Group-1 / Krishi Vistar Adhikari", board: "MPESB",
     shortName: "MPESB Group-2 SG-1", sortOrder: 13,
-    stages: [{ key: "WRITTEN", name: "Written Exam", sortOrder: 1, ...TENTATIVE_WRITTEN }],
-    sections: [sec(S.HINDI, 1), sec(S.ENGLISH, 2), sec(S.MATH, 3), sec(S.GK, 4), sec(S.CA, 5), sec(S.COMPUTER, 6), sec(S.MP_GK, 7), sec(S.AGRI, 8)],
+    stages: [{ key: "WRITTEN", name: "Written Exam", sortOrder: 1, papersPerSet: 1, defaultQuestions: 200, defaultMarks: 200, defaultDurationMinutes: 180, defaultNegativeRatio: 0.25, qualifying: false }],
+    sections: [sec(S.GK, 1), sec(S.HINDI, 2), sec(S.ENGLISH, 3), sec(S.MATH, 4), sec(S.REASONING, 5), sec(S.SCIENCE, 6), sec(S.COMPUTER, 7), sec(S.AGRI, 8)],
+    mocks: [
+      { title: "MPESB Group-2 Krishi — Free Mock 1", stageKey: "WRITTEN", sequenceNo: 1, isFree: true },
+      { title: "MPESB Group-2 Krishi — Free Mock 2", stageKey: "WRITTEN", sequenceNo: 2, isFree: true },
+    ],
+    packages: SINGLE_PAPER_PACKAGES("Mock"),
   },
   {
     slug: "mppsc-forest-service", name: "MPPSC State Forest Service Examination", board: "MPPSC",
