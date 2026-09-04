@@ -92,9 +92,13 @@ async function main() {
   const mains = await prisma.paper.findFirstOrThrow({ where: { examId: exam.id, title: "MP SI Mains Set 1 — Paper 1" } });
 
   const user = await prisma.user.create({ data: { phone: "9990000001", name: `${TAG} user` } });
-  // Credit for the paid Mains paper (Prelims Free Mock is isFree, needs none).
-  await prisma.userCredit.create({
-    data: { userId: user.id, examId: exam.id, tenantId: "platform", testsRemaining: 5, testsTotalPurchased: 5 },
+  // Grant BOTH stage pools 5 each. The paid Mains paper must draw from the MAINS pool
+  // and leave the PRELIMS pool untouched (stage-scoped credits — Phase B).
+  await prisma.userCredit.createMany({
+    data: [
+      { userId: user.id, examId: exam.id, stage: "PRELIMS", tenantId: "platform", testsRemaining: 5, testsTotalPurchased: 5 },
+      { userId: user.id, examId: exam.id, stage: "MAINS", tenantId: "platform", testsRemaining: 5, testsTotalPurchased: 5 },
+    ],
   });
 
   const created: { attemptId: string; qids: string[] }[] = [];
@@ -104,10 +108,12 @@ async function main() {
     created.push(await runPaper("PRELIMS", user.id, prelims.id, section.id));
     created.push(await runPaper("MAINS", user.id, mains.id, section.id));
 
-    // Confirm the paid-Mains attempt consumed exactly one credit (5 → 4).
-    const credit = await prisma.userCredit.findFirstOrThrow({ where: { userId: user.id, examId: exam.id } });
-    console.log("\n▶ ENTITLEMENT");
-    check("Mains credit consumed (testsRemaining)", credit.testsRemaining, 4);
+    // Stage-scoped credits: the Mains attempt draws only from the MAINS pool.
+    const mainsPool = await prisma.userCredit.findFirstOrThrow({ where: { userId: user.id, examId: exam.id, stage: "MAINS" } });
+    const prelimsPool = await prisma.userCredit.findFirstOrThrow({ where: { userId: user.id, examId: exam.id, stage: "PRELIMS" } });
+    console.log("\n▶ ENTITLEMENT (stage-scoped credits)");
+    check("MAINS pool consumed by Mains attempt", mainsPool.testsRemaining, 4);
+    check("PRELIMS pool untouched by Mains attempt", prelimsPool.testsRemaining, 5);
   } finally {
     // Cleanup — remove only the fixtures this run created.
     console.log("\n🧹 Cleaning up test data…");

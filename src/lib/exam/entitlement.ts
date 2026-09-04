@@ -71,8 +71,12 @@ export async function getPaperAttemptSummary(
  * strictly atomic since real money is at stake there).
  */
 export async function startAttempt(userId: string, paperId: string): Promise<{ attemptId: string }> {
-  const paper = await prisma.paper.findUnique({ where: { id: paperId } });
+  const paper = await prisma.paper.findUnique({ where: { id: paperId }, include: { stage: true } });
   if (!paper || !paper.isActive) throw new PaperUnavailableError();
+  // Credit pool this paper draws from: its stage (Prelims vs Mains). Legacy single-
+  // stage papers have no stage → the default "PRELIMS" pool. A Prelims credit can't
+  // fund a Mains paper and vice-versa.
+  const stage = paper.stage?.key ?? "PRELIMS";
 
   const summary = await getPaperAttemptSummary(userId, paperId);
   if (summary.resumableAttemptId) {
@@ -87,7 +91,7 @@ export async function startAttempt(userId: string, paperId: string): Promise<{ a
       // Decrement credit for THIS paper's exam only — an MP SI credit can't
       // fund an MP Patwari test.
       const credit = await tx.userCredit.updateMany({
-        where: { userId, examId: paper.examId, tenantId: paper.tenantId, testsRemaining: { gt: 0 } },
+        where: { userId, examId: paper.examId, stage, tenantId: paper.tenantId, testsRemaining: { gt: 0 } },
         data: { testsRemaining: { decrement: 1 } },
       });
       if (credit.count === 0) throw new NoEntitlementError();

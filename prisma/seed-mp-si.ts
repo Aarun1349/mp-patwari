@@ -164,21 +164,30 @@ async function main() {
     console.log(`Created Mains draft: ${title} (${mainsStage.defaultMarks} marks · neg ${mainsStage.defaultNegativeRatio})`);
   }
 
-  // Paid PRELIMS package tiers (platform/house, scoped to MP SI). Prices in paise;
-  // mrpPaise drives the struck-through "was ₹X". Re-running refreshes prices.
-  // NOTE: Mains-set + combo (Prelims+Mains) SKUs need the stage-scoped credit model
-  // (Phase B) — a single-exam package can't honestly split prelims vs mains credits.
-  const PRELIMS_PACKAGES = [
-    { name: "1 Prelims Mock", testCount: 1, pricePaise: 9900, mrpPaise: 0, kind: "standard" as const, validityDays: 30, sortOrder: 1 },
-    { name: "5 Prelims Mocks", testCount: 5, pricePaise: 39900, mrpPaise: 44900, kind: "standard" as const, validityDays: 90, sortOrder: 2 },
-    { name: "10 Prelims Mocks", testCount: 10, pricePaise: 59900, mrpPaise: 69900, kind: "standard" as const, validityDays: 120, sortOrder: 3 },
+  // MP SI package catalog (platform/house, scoped to MP SI). testCount = Prelims-stage
+  // credits, mainsCount = Mains-stage credits. A Mains "set" = 2 papers = 2 mains
+  // credits (papersPerSet). Combos grant both. Prices in paise; mrpPaise drives the
+  // struck-through "was ₹X". Re-running refreshes prices. (Phase B — stage-scoped credits.)
+  const MP_SI_PACKAGES = [
+    // Prelims tiers
+    { name: "1 Prelims Mock", testCount: 1, mainsCount: 0, pricePaise: 9900, mrpPaise: 0, kind: "standard" as const, validityDays: 30, sortOrder: 1 },
+    { name: "5 Prelims Mocks", testCount: 5, mainsCount: 0, pricePaise: 39900, mrpPaise: 44900, kind: "standard" as const, validityDays: 90, sortOrder: 2 },
+    { name: "10 Prelims Mocks", testCount: 10, mainsCount: 0, pricePaise: 59900, mrpPaise: 69900, kind: "standard" as const, validityDays: 120, sortOrder: 3 },
+    // Mains-set tiers (1 set = 2 papers = 2 mains credits)
+    { name: "1 Mains Set", testCount: 0, mainsCount: 2, pricePaise: 19900, mrpPaise: 0, kind: "standard" as const, validityDays: 60, sortOrder: 4 },
+    { name: "5 Mains Sets", testCount: 0, mainsCount: 10, pricePaise: 69900, mrpPaise: 79900, kind: "standard" as const, validityDays: 120, sortOrder: 5 },
+    { name: "10 Mains Sets", testCount: 0, mainsCount: 20, pricePaise: 84900, mrpPaise: 99900, kind: "standard" as const, validityDays: 150, sortOrder: 6 },
+    // Combos (Prelims + Mains sets)
+    { name: "Combo: 1 Prelims + 1 Mains Set", testCount: 1, mainsCount: 2, pricePaise: 29900, mrpPaise: 0, kind: "standard" as const, validityDays: 90, sortOrder: 7 },
+    { name: "Combo: 5 Prelims + 5 Mains Sets", testCount: 5, mainsCount: 10, pricePaise: 119900, mrpPaise: 0, kind: "standard" as const, validityDays: 150, sortOrder: 8 },
+    { name: "Combo: 10 Prelims + 10 Mains Sets", testCount: 10, mainsCount: 20, pricePaise: 149900, mrpPaise: 0, kind: "standard" as const, validityDays: 180, sortOrder: 9 },
   ];
-  for (const pkg of PRELIMS_PACKAGES) {
+  for (const pkg of MP_SI_PACKAGES) {
     const existing = await prisma.package.findFirst({
       where: { name: pkg.name, examId: exam.id, tenantId: "platform" },
     });
     if (existing) {
-      await prisma.package.update({ where: { id: existing.id }, data: pkg });
+      await prisma.package.update({ where: { id: existing.id }, data: { ...pkg, isActive: true } });
       console.log(`Package updated: ${pkg.name} (₹${pkg.pricePaise / 100})`);
     } else {
       await prisma.package.create({ data: { ...pkg, examId: exam.id, tenantId: "platform" } });

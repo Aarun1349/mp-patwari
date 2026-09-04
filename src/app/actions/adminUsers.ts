@@ -36,13 +36,15 @@ export async function grantCreditsAction(
   if (!user) return { error: "User not found." };
 
   const examId = await getDefaultExamId();
+  // Admin-granted credits go to the Prelims/default-stage pool.
   await prisma.userCredit.upsert({
     where: {
-      userId_examId_tenantId: { userId: parsed.data.userId, examId, tenantId: PLATFORM_TENANT_ID },
+      userId_examId_stage_tenantId: { userId: parsed.data.userId, examId, stage: "PRELIMS", tenantId: PLATFORM_TENANT_ID },
     },
     create: {
       userId: parsed.data.userId,
       examId,
+      stage: "PRELIMS",
       tenantId: PLATFORM_TENANT_ID,
       testsRemaining: parsed.data.testCount,
     },

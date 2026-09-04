@@ -13,8 +13,9 @@ export default async function PackagesPage() {
   const examId = await getDefaultExamId();
 
   const [credit, packages] = await Promise.all([
-    prisma.userCredit.findUnique({
-      where: { userId_examId_tenantId: { userId, examId, tenantId: PLATFORM_TENANT_ID } },
+    prisma.userCredit.aggregate({
+      where: { userId, examId, tenantId: PLATFORM_TENANT_ID },
+      _sum: { testsRemaining: true, testsTotalPurchased: true },
     }),
     prisma.package.findMany({
       where: { isActive: true },
@@ -26,7 +27,7 @@ export default async function PackagesPage() {
     }),
   ]);
 
-  const isRepeatBuyer = (credit?.testsTotalPurchased ?? 0) > 0;
+  const isRepeatBuyer = (credit._sum.testsTotalPurchased ?? 0) > 0;
   const visible = packages.filter(
     (p) => p.kind === "standard" || (p.kind === "topup" && isRepeatBuyer)
   );
@@ -51,7 +52,15 @@ export default async function PackagesPage() {
 
   const card = (pkg: (typeof visible)[number]) => {
     const isPopular = pkg.name.toLowerCase() === "popular";
-    const perTest = pkg.testCount > 0 ? pkg.pricePaise / 100 / pkg.testCount : 0;
+    const totalTests = pkg.testCount + pkg.mainsCount;
+    const perTest = totalTests > 0 ? pkg.pricePaise / 100 / totalTests : 0;
+    // What the package grants: Prelims-only, Mains-only, or a combo.
+    const grantLabel =
+      pkg.mainsCount > 0 && pkg.testCount > 0
+        ? `${pkg.testCount} Prelims + ${pkg.mainsCount} Mains tests`
+        : pkg.mainsCount > 0
+          ? `${pkg.mainsCount} Mains test${pkg.mainsCount === 1 ? "" : "s"}`
+          : `${pkg.testCount} test${pkg.testCount === 1 ? "" : "s"}`;
     return (
       <div key={pkg.id} className={`package-card${isPopular ? " popular" : ""}`}>
         {isPopular && <span className="tag">Most Popular</span>}
@@ -70,10 +79,10 @@ export default async function PackagesPage() {
           )}
         </div>
         <div className="per">
-          {pkg.testCount} test{pkg.testCount === 1 ? "" : "s"} · ₹{perTest.toFixed(0)}/test
+          {grantLabel} · ₹{perTest.toFixed(0)}/test
         </div>
         <ul>
-          <li>{pkg.testCount} full-length mock tests</li>
+          <li>{grantLabel}</li>
           <li>Section-wise analysis after each test</li>
           <li>{pkg.validityDays} days validity</li>
           {pkg.kind === "topup" && <li>Existing-customer pricing</li>}
@@ -97,7 +106,7 @@ export default async function PackagesPage() {
           <span className="official-badge">ExamsExpress Official</span>
         </div>
         <p className="muted" style={{ marginTop: "-4px", marginBottom: "20px" }}>
-          {credit?.testsRemaining ?? 0} paid test(s) remaining on your account.
+          {credit._sum.testsRemaining ?? 0} paid test(s) remaining on your account.
         </p>
 
         {flagship.length > 0 ? (

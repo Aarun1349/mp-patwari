@@ -46,7 +46,7 @@ async function main() {
 
     // Re-grant one Ravi credit for the negative tests.
     await prisma.userCredit.update({
-      where: { userId_examId_tenantId: { userId: student.id, examId: exam.id, tenantId: ravi.id } },
+      where: { userId_examId_stage_tenantId: { userId: student.id, examId: exam.id, stage: "PRELIMS", tenantId: ravi.id } },
       data: { testsRemaining: 1 },
     });
 
@@ -58,7 +58,7 @@ async function main() {
 
     // 5) Ravi credit still intact (the failed attempts didn't touch it).
     const remaining = await prisma.userCredit.findUnique({
-      where: { userId_examId_tenantId: { userId: student.id, examId: exam.id, tenantId: ravi.id } },
+      where: { userId_examId_stage_tenantId: { userId: student.id, examId: exam.id, stage: "PRELIMS", tenantId: ravi.id } },
     });
     assert(remaining?.testsRemaining === 1, "Ravi-Sir balance untouched by cross-tenant attempts");
   } finally {

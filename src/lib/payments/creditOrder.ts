@@ -1,8 +1,40 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendReceiptEmail } from "@/lib/email/sendReceipt";
 import { PLATFORM_TENANT_ID } from "@/lib/tenant";
 import { writeAudit } from "@/lib/audit";
+
+/**
+ * Grant a package's credits into the per-STAGE pools, inside the crediting
+ * transaction. testCount → PRELIMS/default-stage pool; mainsCount → MAINS pool.
+ * A combo package sets both. Skips a pool whose grant is 0. Same idempotency as
+ * before — this runs only after the order's status flip succeeds.
+ */
+async function applyPackageCredit(
+  tx: Prisma.TransactionClient,
+  order: { userId: string; tenantId: string; package: { examId: string; testCount: number; mainsCount: number } }
+) {
+  const grants = [
+    { stage: "PRELIMS", count: order.package.testCount },
+    { stage: "MAINS", count: order.package.mainsCount },
+  ];
+  for (const g of grants) {
+    if (g.count <= 0) continue;
+    await tx.userCredit.upsert({
+      where: {
+        userId_examId_stage_tenantId: {
+          userId: order.userId, examId: order.package.examId, stage: g.stage, tenantId: order.tenantId,
+        },
+      },
+      create: {
+        userId: order.userId, examId: order.package.examId, stage: g.stage, tenantId: order.tenantId,
+        testsRemaining: g.count, testsTotalPurchased: g.count,
+      },
+      update: { testsRemaining: { increment: g.count }, testsTotalPurchased: { increment: g.count } },
+    });
+  }
+}
 
 export interface CreditResult {
   credited: boolean;
@@ -48,26 +80,7 @@ export async function creditOrderForPayment(
       include: { package: true, user: true },
     });
 
-    await tx.userCredit.upsert({
-      where: {
-        userId_examId_tenantId: {
-          userId: order.userId,
-          examId: order.package.examId,
-          tenantId: order.tenantId,
-        },
-      },
-      create: {
-        userId: order.userId,
-        examId: order.package.examId,
-        tenantId: order.tenantId,
-        testsRemaining: order.package.testCount,
-        testsTotalPurchased: order.package.testCount,
-      },
-      update: {
-        testsRemaining: { increment: order.package.testCount },
-        testsTotalPurchased: { increment: order.package.testCount },
-      },
-    });
+    await applyPackageCredit(tx, order);
 
     // Buying a teacher's package auto-enrolls the student with that teacher.
     if (order.tenantId !== PLATFORM_TENANT_ID) {
@@ -174,26 +187,7 @@ export async function creditFreeOrder(orderId: string): Promise<CreditResult> {
       include: { package: true, user: true },
     });
 
-    await tx.userCredit.upsert({
-      where: {
-        userId_examId_tenantId: {
-          userId: order.userId,
-          examId: order.package.examId,
-          tenantId: order.tenantId,
-        },
-      },
-      create: {
-        userId: order.userId,
-        examId: order.package.examId,
-        tenantId: order.tenantId,
-        testsRemaining: order.package.testCount,
-        testsTotalPurchased: order.package.testCount,
-      },
-      update: {
-        testsRemaining: { increment: order.package.testCount },
-        testsTotalPurchased: { increment: order.package.testCount },
-      },
-    });
+    await applyPackageCredit(tx, order);
 
     // Buying a teacher's package auto-enrolls the student with that teacher.
     if (order.tenantId !== PLATFORM_TENANT_ID) {

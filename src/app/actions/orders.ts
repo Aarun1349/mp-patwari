@@ -30,10 +30,12 @@ export async function createOrderAction(packageId: string, couponCode?: string):
   }
 
   if (pkg.kind === "topup") {
-    const credit = await prisma.userCredit.findUnique({
-      where: { userId_examId_tenantId: { userId, examId: pkg.examId, tenantId: pkg.tenantId } },
+    // "Existing customer of this exam" = has bought into any stage pool for it.
+    const credit = await prisma.userCredit.aggregate({
+      where: { userId, examId: pkg.examId, tenantId: pkg.tenantId },
+      _sum: { testsTotalPurchased: true },
     });
-    if (!credit || credit.testsTotalPurchased <= 0) {
+    if ((credit._sum.testsTotalPurchased ?? 0) <= 0) {
       return { error: "Top-up packages are only available to existing customers of this exam." };
     }
   }

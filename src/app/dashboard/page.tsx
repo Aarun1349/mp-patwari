@@ -13,18 +13,21 @@ export default async function DashboardPage() {
   const examId = await getDefaultExamId();
 
   const [credit, freePaper, attemptedPaperIds] = await Promise.all([
-    prisma.userCredit.findUnique({
-      where: { userId_examId_tenantId: { userId, examId, tenantId: PLATFORM_TENANT_ID } },
+    // Total remaining across this exam's stage pools (Prelims + Mains).
+    prisma.userCredit.aggregate({
+      where: { userId, examId, tenantId: PLATFORM_TENANT_ID },
+      _sum: { testsRemaining: true },
     }),
     prisma.paper.findFirst({ where: { isFree: true, isActive: true } }),
     prisma.attempt.findMany({ where: { userId }, select: { paperId: true } }),
   ]);
+  const testsRemaining = credit._sum.testsRemaining ?? 0;
 
   const attemptedSet = new Set(attemptedPaperIds.map((a) => a.paperId));
   const freeSummary = freePaper ? await getPaperAttemptSummary(userId, freePaper.id) : null;
 
   const nextPaidPaper =
-    credit && credit.testsRemaining > 0
+    testsRemaining > 0
       ? await prisma.paper.findFirst({
           // Only suggest platform papers here — the credit checked above is the
           // platform credit. A teacher's mocks are taken from their storefront.
@@ -68,9 +71,9 @@ export default async function DashboardPage() {
 
         <div className="dashboard-highlight">
           <h2>Tests Remaining</h2>
-          <p>{credit?.testsRemaining ?? 0} paid test(s) remaining</p>
+          <p>{testsRemaining} paid test(s) remaining</p>
           {nextPaidPaper && <Link href={`/exam/${nextPaidPaper.id}`}>Start Next Test →</Link>}
-          {(!credit || credit.testsRemaining === 0) && <Link href="/packages">Buy a test package →</Link>}
+          {testsRemaining === 0 && <Link href="/packages">Buy a test package →</Link>}
         </div>
 
         <nav className="dashboard-links-grid">

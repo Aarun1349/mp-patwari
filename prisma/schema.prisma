@@ -308,7 +308,8 @@ enum PackageKind {
 model Package {
   id           String      @id @default(cuid())
   name         String
-  testCount    Int
+  testCount    Int // Prelims / default-stage credits granted (also legacy single-stage credits)
+  mainsCount   Int         @default(0) // Mains-stage credits granted (a mains "set" = papersPerSet credits); combos set both
   pricePaise   Int
   mrpPaise     Int         @default(0) // list/MRP price for a struck-through "was ₹X"; 0 = no MRP shown
   kind         PackageKind @default(standard)
@@ -408,12 +409,15 @@ model UserCredit {
   testsRemaining      Int      @default(0)
   testsTotalPurchased Int      @default(0)
   updatedAt           DateTime @updatedAt
-  // Credit is scoped to (exam, tenant): a student's credits for Ravi Sir's Maths
-  // mocks can't be spent on another tenant's or the platform's papers.
+  // Credit is scoped to (exam, STAGE, tenant): a student's credits for Ravi Sir's
+  // Maths mocks can't be spent on another tenant's/platform's papers, and a Prelims
+  // credit can't fund a Mains paper. stage = the ExamStage.key the paper belongs to
+  // ("PRELIMS" default; legacy single-stage papers with no stage map to "PRELIMS").
+  stage               String   @default("PRELIMS")
   tenantId            String   @default("platform")
   tenant              Tenant   @relation(fields: [tenantId], references: [id])
 
-  @@unique([userId, examId, tenantId])
+  @@unique([userId, examId, stage, tenantId])
   @@map("user_credits")
 }
 

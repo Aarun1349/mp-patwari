@@ -38,12 +38,23 @@ no backfill needed.
 ## Consequences
 - **Good:** one place per exam defines its shape; mocks seed from it; Mains sets are
   first-class; combos (Prelims+Mains) become expressible once credits are stage-scoped.
-- **Cost / follow-ups (Phase B, money-touching — see [[Business-Rules]]):**
-  (1) `UserCredit` needs a `stage` dimension so credits are per user×exam×**stage**;
-  (2) `Package` should grant `{prelimsCount, mainsCount}` (combo = both > 0);
-  (3) attempt/entitlement must treat a Mains **set** (2 papers) as one unit;
-  (4) config-driven mock-creation UI (defaults pulled from the stage).
 - Needs a `prisma db push` on deploy (adds `exam_stages` + Paper columns).
+
+## Phase B — IMPLEMENTED (2026-09-04, money-touching; Business-Rules preserved)
+- `UserCredit` gained `stage` (unique now `userId+examId+stage+tenantId`; legacy rows →
+  "PRELIMS"). `Package` gained `mainsCount` (testCount = Prelims/default credits, mainsCount
+  = Mains credits; a Mains "set" = `papersPerSet` credits; combos set both).
+- `creditOrder` credits both stage pools in the same idempotent tx; `entitlement.startAttempt`
+  decrements the paper's **stage** pool (conditional `>0` decrement preserved → NoEntitlement).
+  A Prelims credit can't fund a Mains paper. Set-as-unit is handled at the package level
+  (a set grants papersPerSet credits) rather than in entitlement — keeps the per-attempt
+  decrement unchanged.
+- Balance reads (packages/dashboard/profile/storefront) sum across stage pools; admin grants
+  go to PRELIMS. MP SI's full 9-SKU catalog (Prelims + Mains sets + combos) is seeded.
+- Verified by the config-driven E2E: a Mains attempt draws only the MAINS pool, PRELIMS
+  untouched; scoring correct at 1/3 negative. ⚠️ The unique-index change makes prod's
+  `db push` require `--accept-data-loss` once (no column dropped; existing rows stay unique).
+- Still deferred: config-driven mock-creation UI (defaults from the stage) — nice-to-have.
 
 ## Related
 [[0001-config-driven-exams]] · [[combo-cross-exam-bundles]] · [[mp-si-packages-and-e2e]] ·

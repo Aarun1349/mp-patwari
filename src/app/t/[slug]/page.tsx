@@ -70,7 +70,8 @@ export default async function TenantStorefrontPage({
       where: { userId: session.userId, tenantId: data.tenant.id },
       select: { examId: true, testsRemaining: true },
     });
-    for (const c of credits) creditByExam[c.examId] = c.testsRemaining;
+    // Sum across stage pools (Prelims + Mains) for each exam.
+    for (const c of credits) creditByExam[c.examId] = (creditByExam[c.examId] ?? 0) + c.testsRemaining;
   }
 
   return (
