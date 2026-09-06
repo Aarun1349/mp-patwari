@@ -2,6 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requirePagePermission, PERMISSIONS } from "@/lib/auth/permissions";
+import { getStudentSectionWeakness } from "@/lib/exam/studentAnalytics";
+
+// Teacher-facing colour cue for accuracy — red = weak, amber = shaky, green = solid.
+function accuracyColor(pct: number): string {
+  if (pct < 50) return "#c0392b";
+  if (pct < 65) return "#b9770e";
+  return "#1e7a3d";
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   GENERAL: "General",
@@ -44,6 +52,9 @@ export default async function AdminUserDetailPage({
     },
   });
   if (!user) notFound();
+
+  const weakness = await getStudentSectionWeakness(userId);
+  const weakest = weakness.rows.filter((r) => r.attempted > 0).slice(0, 2);
 
   return (
     <>
@@ -107,6 +118,59 @@ export default async function AdminUserDetailPage({
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="auth-card auth-card-wide" style={{ marginTop: "20px" }}>
+        <div className="section-head">
+          <div>
+            <h2>Preparation X-ray</h2>
+            <p className="page-subtitle">Where this student is actually weak — across {weakness.attemptCount} completed test(s).</p>
+          </div>
+        </div>
+        {weakness.attemptCount === 0 && <p className="muted">No completed tests yet — the x-ray fills in once the student submits a mock.</p>}
+        {weakness.attemptCount > 0 && (
+          <>
+            {weakest.length > 0 && (
+              <p style={{ marginTop: "-4px", marginBottom: "16px" }}>
+                <strong>Weakest areas:</strong>{" "}
+                {weakest.map((r, i) => (
+                  <span key={r.code}>
+                    {i > 0 && ", "}
+                    <span style={{ color: accuracyColor(r.accuracyPct), fontWeight: 600 }}>
+                      {r.nameEn} ({r.accuracyPct}%)
+                    </span>
+                  </span>
+                ))}
+              </p>
+            )}
+            <table className="report-table">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Accuracy</th>
+                  <th>Correct / Attempted</th>
+                  <th>Skipped</th>
+                  <th>Marks lost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {weakness.rows.map((r) => (
+                  <tr key={r.code}>
+                    <td>{r.nameEn}</td>
+                    <td style={{ color: accuracyColor(r.accuracyPct), fontWeight: 600 }}>
+                      {r.attempted > 0 ? `${r.accuracyPct}%` : "—"}
+                    </td>
+                    <td>
+                      {r.correct} / {r.attempted}
+                    </td>
+                    <td>{r.skipped}</td>
+                    <td>{r.marksLost > 0 ? `−${r.marksLost.toFixed(2)}` : "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
 
       <div className="auth-card auth-card-wide" style={{ marginTop: "20px" }}>
